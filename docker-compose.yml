@@ -1,0 +1,11 @@
+version: "2.1"
+
+services:
+  api-server:
+    image: api-server
+    build: .
+    environment:
+      - AWSREGION=eu-west-2
+      - API_NAME=api-server
+    ports:
+      - 8079:8079
