@@ -11,7 +11,7 @@ const passport = require("passport");
  * @swagger
  * tags:
  *   name: Password
- *   description: Password Functions for Nexus Intelligence Applications
+ *   description: Password Functions for BI Platform Applications
  */
 
 /**
