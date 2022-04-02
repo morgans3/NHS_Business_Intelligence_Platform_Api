@@ -16,7 +16,7 @@ const hallmonitor = require("../config/admincheck");
  * @swagger
  * tags:
  *   name: Requests
- *   description: Requests functionality for Nexus Intelligence Applications
+ *   description: Requests functionality for BI Platform Applications
  */
 
 /**
@@ -338,7 +338,7 @@ router.post("/account/complete", (req, res, next) => {
         });
 
         const message = `
-        <p>Your access to Nexus Intelligence has been approved, you can now login using the below details...</p>
+        <p>Your access to the BI Platform has been approved, you can now login using the below details...</p>
         <p><b>Username:</b> ${userAccount.username} <br><b>Password:</b> ${userAccount.password} <br><b>Organisation:</b> Collaborative Partners</p>
         <p>When you first login please change your password to keep your account secure.</p>
     `;
