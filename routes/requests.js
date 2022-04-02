@@ -196,8 +196,8 @@ router.post("/account", (req, res, next) => {
     const message = `
     <p>A member of your organisation has requested access to the COVID 19 Data Hub. Details of the request are below...</p>
     ${messagesHelper.generateAccountRequestTable(formSubmission)}
-    <p>Please click below to authorise or deny this request...</p>
-`;
+    <p>Please click below to authorise or deny this request...</p>`;
+
     const actions = [
       {
         class: "primary",
@@ -340,8 +340,7 @@ router.post("/account/complete", (req, res, next) => {
         const message = `
         <p>Your access to the BI Platform has been approved, you can now login using the below details...</p>
         <p><b>Username:</b> ${userAccount.username} <br><b>Password:</b> ${userAccount.password} <br><b>Organisation:</b> Collaborative Partners</p>
-        <p>When you first login please change your password to keep your account secure.</p>
-    `;
+        <p>When you first login please change your password to keep your account secure.</p>`;
 
         const actions = [
           {
