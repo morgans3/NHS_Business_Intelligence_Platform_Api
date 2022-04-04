@@ -8,6 +8,10 @@ module.exports.getUserByUsername = function (username, callback) {
   DynamoDB.getItemByKey(AWS, tableName, "username", username, callback);
 };
 
+module.exports.getUserByPartialUsername = function (username, callback) {
+  DynamoDB.getItemByIndex(AWS, tableName, "username", username, callback);
+};
+
 module.exports.getUserByEmail = function (email, callback) {
   DynamoDB.getItemByIndex(AWS, tableName, "email", email, callback);
 };

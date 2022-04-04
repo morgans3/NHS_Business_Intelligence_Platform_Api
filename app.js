@@ -16,6 +16,7 @@ const jwt = require("jsonwebtoken");
 // SWAGGER SETUP
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+
 const swaggerDefinition = {
   basePath: "/",
   securityDefinitions: {
@@ -121,32 +122,10 @@ app.use(bodyParser.json());
 
 // ROUTES FOR OUR API
 // =============================================================================
-const mfa = require("./routes/mfa");
-app.use("/mfa", mfa);
-const otp = require("./routes/otp_codes");
-app.use("/otp", otp);
-const password = require("./routes/password");
-app.use("/password", password);
-const requests = require("./routes/requests");
-app.use("/requests", requests);
-const serviceaccounts = require("./routes/service");
-app.use("/serviceaccounts", serviceaccounts);
-const teamroles = require("./routes/teamroles");
-app.use("/teamroles", teamroles);
-const userroles = require("./routes/userroles");
-app.use("/userroles", userroles);
-const users = require("./routes/users");
-app.use("/users", users);
-const postcodes = require("./routes/postcodes");
-app.use("/postcodes", postcodes);
-const pcninformation = require("./routes/pcninformation");
-app.use("/pcninformation", pcninformation);
-const demographics = require("./routes/demographics");
-app.use("/demographics", demographics);
-const patientlists = require("./routes/patientlists");
-app.use("/patientlists", patientlists);
-const shielding = require("./routes/shielding");
-app.use("/shielding", shielding);
+const { routeList } = require("./config/endpoints");
+routeList.forEach((route) => {
+  app.use("/api/" + route, require("./routes/" + route));
+});
 
 app.use(passport.initialize());
 app.use(passport.session());

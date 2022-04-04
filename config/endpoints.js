@@ -1,3 +1,5 @@
+export const routeList = ["mfa", "otp", "password", "requests", "serviceaccounts", "teamroles", "userroles", "users", "postcodes", "pcninformation", "demographics", "patientlists", "shielding", "userprofiles", "teamprofiles", "teammembers", "teamrequests", "searchusers", "searchs"];
+
 module.exports.SecureEndpoints = [
   {
     url: `/mfa/register`,
@@ -143,5 +145,155 @@ module.exports.SecureEndpoints = [
     url: `/shielding/getCitizens`,
     type: "JWT",
     method: "get",
+  },
+  {
+    url: `/searchs/searchTeams`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/searchusers/searchUserProfiles`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/searchusers/searchOrgUserProfiles`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teammembers/register`,
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: `/teammembers/getAll`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teammembers/getTeamMembersByCode`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teammembers/getTeamMembershipsByUsername`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teammembers/getTeamMembershipsByUsername`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teammembers/archive`,
+    type: "JWT",
+    method: "put",
+  },
+  {
+    url: `/teamprofiles/register`,
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: `/teamprofiles/getAll`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teamprofiles/getTeamByCode`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teamprofiles/getTeamsByOrgCode`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teamprofiles/getTeamsByPartialTeamName`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teamprofiles/getTeamsByPartialTeamNameAndOrgCode`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teamprofiles/archive`,
+    type: "JWT",
+    method: "put",
+  },
+  {
+    url: `/teamprofiles/update`,
+    type: "JWT",
+    method: "put",
+  },
+  {
+    url: `/teamrequests/register`,
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: `/teamrequests/archive`,
+    type: "JWT",
+    method: "put",
+  },
+  {
+    url: `/teamrequests/update`,
+    type: "JWT",
+    method: "put",
+  },
+  {
+    url: `/teamrequests/getByID`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teamrequests/getAll`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teamrequests/getRequestsByUsername`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teamrequests/getRequestsByTeamCode`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/teamrequests/getOutstandingRequests`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/userprofiles/register`,
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: `/userprofiles/getAll`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/userprofiles/getUserProfileByUsername`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/userprofiles/archive`,
+    type: "JWT",
+    method: "put",
+  },
+  {
+    url: `/userprofiles/update`,
+    type: "JWT",
+    method: "put",
   },
 ];
