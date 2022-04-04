@@ -99,4 +99,14 @@ module.exports.SecureEndpoints = [
     type: "JWT",
     method: "post",
   },
+  {
+    url: `/pcninformation/getData`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/postcodes/getAll`,
+    type: "JWT",
+    method: "get",
+  },
 ];
