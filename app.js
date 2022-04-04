@@ -137,6 +137,10 @@ const userroles = require("./routes/userroles");
 app.use("/userroles", userroles);
 const users = require("./routes/users");
 app.use("/users", users);
+const postcodes = require("./routes/postcodes");
+app.use("/postcodes", postcodes);
+const pcninformation = require("./routes/pcninformation");
+app.use("/pcninformation", pcninformation);
 
 app.use(passport.initialize());
 app.use(passport.session());
