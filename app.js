@@ -141,6 +141,12 @@ const postcodes = require("./routes/postcodes");
 app.use("/postcodes", postcodes);
 const pcninformation = require("./routes/pcninformation");
 app.use("/pcninformation", pcninformation);
+const demographics = require("./routes/demographics");
+app.use("/demographics", demographics);
+const patientlists = require("./routes/patientlists");
+app.use("/patientlists", patientlists);
+const shielding = require("./routes/shielding");
+app.use("/shielding", shielding);
 
 app.use(passport.initialize());
 app.use(passport.session());
