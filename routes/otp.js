@@ -22,7 +22,7 @@ const Authenticate = require("../models/authenticate");
  *      - JWT: []
  *     description: Validates a code
  *     tags:
- *      - OTPCodes
+ *      - MFA
  *     produces:
  *      - application/json
  *     parameters:

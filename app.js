@@ -16,7 +16,6 @@ const jwt = require("jsonwebtoken");
 // SWAGGER SETUP
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
-
 const swaggerDefinition = {
   basePath: "/",
   securityDefinitions: {
@@ -122,10 +121,25 @@ app.use(bodyParser.json());
 
 // ROUTES FOR OUR API
 // =============================================================================
-const { routeList } = require("./config/endpoints");
-routeList.forEach((route) => {
-  app.use("/api/" + route, require("./routes/" + route));
-});
+app.use("/mfa", require("./routes/mfa"));
+app.use("/otp", require("./routes/otp"));
+app.use("/password", require("./routes/password"));
+app.use("/requests", require("./routes/requests"));
+app.use("/serviceaccounts", require("./routes/serviceaccounts"));
+app.use("/teamroles", require("./routes/teamroles"));
+app.use("/userroles", require("./routes/userroles"));
+app.use("/users", require("./routes/users"));
+app.use("/postcodes", require("./routes/postcodes"));
+app.use("/pcninformation", require("./routes/pcninformation"));
+app.use("/demographics", require("./routes/demographics"));
+app.use("/patientlists", require("./routes/patientlists"));
+app.use("/shielding", require("./routes/shielding"));
+app.use("/userprofiles", require("./routes/userprofiles"));
+app.use("/teamprofiles", require("./routes/teamprofiles"));
+app.use("/teammembers", require("./routes/teammembers"));
+app.use("/teamrequests", require("./routes/teamrequests"));
+app.use("/searchusers", require("./routes/searchusers"));
+app.use("/searchs", require("./routes/searchs"));
 
 app.use(passport.initialize());
 app.use(passport.session());
