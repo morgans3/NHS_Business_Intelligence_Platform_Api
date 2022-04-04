@@ -109,4 +109,39 @@ module.exports.SecureEndpoints = [
     type: "JWT",
     method: "get",
   },
+  {
+    url: `/demographics/demographicsbynhsnumber`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/demographics/validateNHSNumber`,
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: `/demographics/findMyNHSNumber`,
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: `/patientlists/getPatients`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/patientlists/patientdetailsbynhsnumber`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/patientlists/getPatientsByCohort`,
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: `/shielding/getCitizens`,
+    type: "JWT",
+    method: "get",
+  },
 ];
