@@ -1,5 +1,3 @@
-export const routeList = ["mfa", "otp", "password", "requests", "serviceaccounts", "teamroles", "userroles", "users", "postcodes", "pcninformation", "demographics", "patientlists", "shielding", "userprofiles", "teamprofiles", "teammembers", "teamrequests", "searchusers", "searchs"];
-
 module.exports.SecureEndpoints = [
   {
     url: `/mfa/register`,
