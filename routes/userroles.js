@@ -2,18 +2,20 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const userroles = require("../models/userroles");
+
 const AWS = require("aws-sdk");
-const originCheck = require("../config/origin");
-const hallmonitor = require("../config/admincheck");
 const jwt = require("jsonwebtoken");
+
+const DIULibrary = require("diu-data-functions");
 const Authenticate = require("../models/authenticate");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
+const userroles = new DIULibrary.Models.UserRoleModel(AWS);
 
 /**
  * @swagger
  * tags:
  *   name: UserRoles
- *   description: Roles attached to User Profiles
+ *   description: (To be deprecated) Roles attached to User Profiles
  */
 
 /**
@@ -62,8 +64,8 @@ router.post(
     passport.authenticate("jwt", {
       session: false,
     }),
-    originCheck,
-    hallmonitor,
+    MiddlewareHelper.checkOrigin,
+    MiddlewareHelper.userHasCapability('Hall Monitor'),
   ],
   (req, res, next) => {
     if (req.body && req.body.username && req.body.roleassignedDT) {
@@ -77,6 +79,23 @@ router.post(
         }
         if (app.Items.length > 0) {
           var scannedItem = app.Items[0];
+          const date = new Date();
+          const archiveindex = scannedItem.username + "_" + date.toISOString().slice(0, 19).replace("T", "").replace(/:/g, "").replace(/-/g, "");
+          let archiveItem = {
+            username: { S: archiveindex },
+            roleassignedDT: { S: scannedItem.roleassignedDT },
+          };
+
+          if (scannedItem.role) archiveItem.role = AWS.DynamoDB.Converter.input(scannedItem.role);
+          if (scannedItem.assignedby) archiveItem.assignedby = { S: scannedItem.assignedby };
+          if (scannedItem.organisationid) archiveItem.organisationid = { S: scannedItem.organisationid };
+
+          userroles.updateArchive(archiveItem, function (error, data) {
+            if (error) {
+              console.log("Unable to archive old labtest: " + error);
+            }
+          });
+
           if (item.role) scannedItem.role = item.role;
           if (item.assignedby) scannedItem.assignedby = item.assignedby;
           if (item.organisationid) scannedItem.organisationid = item.organisationid;
@@ -164,8 +183,8 @@ router.post(
     passport.authenticate("jwt", {
       session: false,
     }),
-    originCheck,
-    hallmonitor,
+    MiddlewareHelper.checkOrigin,
+    MiddlewareHelper.userHasCapability('Hall Monitor'),
   ],
   (req, res, next) => {
     const username = req.body.username;
@@ -206,8 +225,8 @@ router.get(
     passport.authenticate("jwt", {
       session: false,
     }),
-    originCheck,
-    hallmonitor,
+    MiddlewareHelper.checkOrigin,
+    MiddlewareHelper.userHasCapability('Hall Monitor'),
   ],
   (req, res, next) => {
     userroles.getAll(function (err, result) {
@@ -253,7 +272,7 @@ router.get(
     session: false,
   }),
   (req, res, next) => {
-    const username = req.query.username;
+    const username = req.url.replace("/getItemsByUsername?username=", "");
     userroles.getItemsByUsername(username, function (err, result) {
       if (err) {
         res.send(err);

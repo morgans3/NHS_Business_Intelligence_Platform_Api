@@ -3,17 +3,19 @@
 (async () => {
   if (process.env.DEV) {
     require("dotenv").config();
-    const { getSecrets } = require("./helpers/awsSecretsManager");
+    const AWSHelper = require("diu-data-functions").Helpers.Aws;
     try {
-      const postgresCredentials = JSON.parse(await getSecrets("postgres"));
-      const jwtCredentials = JSON.parse(await getSecrets("jwt"));
-      const awsCredentials = JSON.parse(await getSecrets("awsdev"));
+      const postgresCredentials = JSON.parse(await AWSHelper.getSecrets("postgres"));
+      const jwtCredentials = JSON.parse(await AWSHelper.getSecrets("jwt"));
+      const awsCredentials = JSON.parse(await AWSHelper.getSecrets("awsdev"));
+      const adcredentials = JSON.parse(await AWSHelper.getSecrets("adcredentials"));
       process.env.POSTGRES_UN = postgresCredentials.username;
       process.env.POSTGRES_PW = postgresCredentials.password;
       process.env.JWT_SECRET = jwtCredentials.secret;
       process.env.JWT_SECRETKEY = jwtCredentials.secretkey;
       process.env.AWS_SECRETID = awsCredentials.secretid;
       process.env.AWS_SECRETKEY = awsCredentials.secretkey;
+      process.env.AD_CREDENTIALS = adcredentials;
     } catch (error) {
       console.error(error);
     }

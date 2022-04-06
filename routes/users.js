@@ -1,12 +1,18 @@
 // @ts-check
-
 const express = require("express");
 const router = express.Router();
-const User = require("../models/user");
-const Authenticate = require("../models/authenticate");
 const passport = require("passport");
-const credentials = require("../_credentials/credentials");
 const JWT = require("jsonwebtoken");
+const AWS = require("../config/database").AWS;
+const pool = require("../config/database").pool;
+
+const DIULibrary = require("diu-data-functions");
+const UserModel = new DIULibrary.Models.UserModel(AWS);
+const RoleModel = new DIULibrary.Models.RoleModel(pool);
+const Authenticate = require("../models/authenticate");
+const AuthenticateHelper = require("../helpers/authenticate");
+const credentials = require("../_credentials/credentials");
+const EmailHelper = DIULibrary.Helpers.Email;
 
 /**
  * @swagger
@@ -74,7 +80,7 @@ router.post("/register", (req, res, next) => {
     linemanager: { S: req.body.linemanager },
   };
   if (req.body.key === credentials.secretkey) {
-    User.addUser(newUser, req.body.password, (err, user) => {
+    UserModel.addUser(newUser, req.body.password, (err, user) => {
       if (err) {
         res.json({
           success: false,
@@ -101,7 +107,7 @@ router.post("/register", (req, res, next) => {
  *   post:
  *     description: Authenticates a User
  *     tags:
- *      - Users
+ *      - Login
  *     produces:
  *      - application/json
  *     parameters:
@@ -113,7 +119,6 @@ router.post("/register", (req, res, next) => {
  *       - name: password
  *         description: User's password.
  *         in: formData
- *         required: true
  *         type: string
  *       - name: organisation
  *         description: User's Organisation.
@@ -136,56 +141,37 @@ router.post("/authenticate", (req, res, next) => {
   const organisation = req.body.organisation;
   const authentication = req.body.authentication;
 
-  //Get authentication method
-  let getAuthenticationMethod = (fn) => {
-    //Authenticate with email?
-    if (username.includes("@")) {
-      Authenticate.loginEmail(authentication, username, password, organisation, (err, response) => {
-        fn(err, response);
-      });
-    } else {
-      Authenticate.loginUsername(authentication, username, password, organisation, (err, response) => {
-        fn(err, response);
-      });
-    }
-  };
-
   //Get JWT
-  getAuthenticationMethod((err, response) => {
+  AuthenticateHelper.login(
+    authentication, username, password, organisation, 
+  (err, user) => {
     if (err) {
-      res.status(401).json({ success: false, msg: err });
-      return null;
+      //Return error
+      res.status(401).json({ success: false, msg: err }); return null;
     } else {
-      //Decode token
-      const tokenDecoded = JWT.decode(response);
-
       //Upgrade token
-      Authenticate.upgradePassportwithOrganisation(tokenDecoded, false, (err, token) => {
+      Authenticate.upgradePassportwithOrganisation(JWT.decode(user.jwt), false, (err, token) => {
         if (err) console.log(err);
 
         //Check password expiry
-        // @ts-ignore
-        User.getUserByUsername(tokenDecoded.username, (err, data) => {
-          let password_expired = true;
-          let user = data.Items[0];
+        let password_expired = true;
 
-          //Check authentication method
-          if (authentication == "Demo") {
-            //Check password expiry
-            if (user.password_expires) {
-              //Date in future?
-              if (new Date(user.password_expires).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) {
-                password_expired = false;
-              }
+        //Check authentication method
+        if(authentication == "Demo") {
+          //Check password expiry 
+          if (user.password_expires) {
+            //Date in future? 
+            if (new Date(user.password_expires).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) {
+              password_expired = false;
             }
-          } else {
-            //Default to false
-            password_expired = false;
           }
+        } else {
+          //Default to false
+          password_expired = false;
+        }
 
-          //Return token
-          return res.json({ success: true, token: token, password_expired: password_expired });
-        });
+        //Return token
+        return res.json({ success: true, token: token, password_expired: password_expired });
       });
     }
   });
@@ -226,7 +212,7 @@ router.get(
  *      - JWT: []
  *     description: Checks User Credentials
  *     tags:
- *      - Users
+ *      - Validation
  *     produces:
  *      - application/json
  *     responses:
@@ -246,5 +232,136 @@ router.get(
     });
   }
 );
+
+/**
+ * @swagger
+ * /users/delete:
+ *   delete:
+ *     security:
+ *      - JWT: []
+ *     description: Delete a Nexus user
+ *     tags:
+ *      - Users
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *      - name: username
+ *        description: User's unique name.
+ *        in: formData
+ *        required: true
+ *        type: string
+ *      - name: organisation
+ *        description: User's Organisation.
+ *        in: formData
+ *        required: true
+ *        type: string
+ *     responses:
+ *       200:
+ *         description: Credentials valid
+ */
+router.delete( "/delete", passport.authenticate("jwt", {
+  session: false,
+}), (req, res, next) => {
+    UserModel.delete({
+      username: req.body.username,
+      organisation: req.body.organisation
+    }, (err, result) => {
+      //Return data
+      if (err) { res.status(500).json({ success: false, msg: err }); return; }
+      res.json({ success: true, msg: "User deleted!" });
+    });
+  }
+);
+
+
+/**
+ * @swagger
+ * /users/send-code:
+ *   post:
+ *     description: Send code to email address
+ *     tags:
+ *      - Email
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *       - name: email
+ *         description: Email address for which to  verify
+ *         in: formData
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Verification code sent
+ */
+router.post("/send-code", (req, res, next) => {
+  //Generate token and send email
+  const payload = req.body;
+  VerificationCodeModel.create({
+    organisation: "",
+    username: payload.email,
+    generated: new Date().toISOString(),
+  }, (saveErr, savedCode) => {
+    //Check for errors
+    if (saveErr) { res.json({ success: false, msg: "Failed: " + saveErr }); return; }
+
+    //Send code to email
+    EmailHelper.sendMail(
+      "Please enter this code where prompted on screen: " + savedCode.code,
+      "Verification Code for Nexus Intelligence", payload.email,
+      (err, response) => {
+        if (err) {
+          console.log(err);
+          res.json({ success: false, msg: "Failed: " + err });
+        } else {
+          res.json({ success: true, msg: "Code has been sent to the provided email address" });
+        }
+      });
+  });
+});
+
+/**
+ * @swagger
+ * /users/verify-code:
+ *   post:
+ *     description: Verify code sent to an email address
+ *     tags:
+ *      - Email
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *       - name: email
+ *         description: Email address for which to  verify
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: code
+ *         description: Code to use for verifying email
+ *         in: formData
+ *         required: false
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Verification code is/is not valid
+ */
+router.post("/verify-code", (req, res, next) => {
+  //Token provided?
+  const payload = req.body;
+  VerificationCodeModel.getCode(payload.code, payload.email, (codeErr, codeRes) => {
+    //Return error
+    if (codeErr) {
+      res.json({ success: false, msg: "Failed: " + codeErr });
+      return;
+    }
+
+    //Return response
+    if (codeRes && codeRes.Items.length > 0) {
+      //Dont allow re-use
+      //passwordModel.deleteCode(payload.code, payload.email, () => {
+      res.json({ success: true, msg: "Code is valid." });
+    } else {
+      res.json({ success: false, msg: "Code not valid." });
+    }
+  });
+});
 
 module.exports = router;

@@ -2,16 +2,17 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const teamroles = require("../models/teamroles");
 const AWS = require("aws-sdk");
-const originCheck = require("../config/origin");
-const hallmonitor = require("../config/admincheck");
+
+const DIULibrary = require("diu-data-functions");
+const teamroles = new DIULibrary.Models.TeamRoleModel(AWS);
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
  * tags:
  *   name: TeamRoles
- *   description: Roles attached to Team Profiles
+ *   description: (To be deprecated) Roles attached to Team Profiles
  */
 
 /**
@@ -58,8 +59,8 @@ router.post(
     passport.authenticate("jwt", {
       session: false,
     }),
-    originCheck,
-    hallmonitor,
+    MiddlewareHelper.checkOrigin,
+    MiddlewareHelper.userHasCapability('Hall Monitor'),
   ],
   (req, res, next) => {
     if (req.body && req.body.teamcode && req.body.roleassignedDT) {
@@ -72,7 +73,23 @@ router.post(
           });
         }
         if (app.Items.length > 0) {
-          let scannedItem = app.Items[0];
+          var scannedItem = app.Items[0];
+          const date = new Date();
+          const archiveindex = scannedItem.teamcode + "_" + date.toISOString().slice(0, 19).replace("T", "").replace(/:/g, "").replace(/-/g, "");
+          let archiveItem = {
+            teamcode: { S: archiveindex },
+            roleassignedDT: { S: scannedItem.roleassignedDT },
+          };
+
+          if (scannedItem.role) archiveItem.role = AWS.DynamoDB.Converter.input(scannedItem.role);
+          if (scannedItem.assignedby) archiveItem.assignedby = { S: scannedItem.assignedby };
+
+          teamroles.updateArchive(archiveItem, function (error, data) {
+            if (error) {
+              console.log("Unable to archive old labtest: " + error);
+            }
+          });
+
           if (item.role) scannedItem.role = item.role;
           if (item.assignedby) scannedItem.assignedby = item.assignedby;
 
@@ -158,8 +175,8 @@ router.post(
     passport.authenticate("jwt", {
       session: false,
     }),
-    originCheck,
-    hallmonitor,
+    MiddlewareHelper.checkOrigin,
+    MiddlewareHelper.userHasCapability('Hall Monitor'),
   ],
   (req, res, next) => {
     const teamcode = req.body.teamcode;
@@ -200,8 +217,8 @@ router.get(
     passport.authenticate("jwt", {
       session: false,
     }),
-    originCheck,
-    hallmonitor,
+    MiddlewareHelper.checkOrigin,
+    MiddlewareHelper.userHasCapability('Hall Monitor'),
   ],
   (req, res, next) => {
     teamroles.getAll(function (err, result) {
@@ -247,7 +264,7 @@ router.get(
     session: false,
   }),
   (req, res, next) => {
-    const teamcode = req.query.teamcode;
+    const teamcode = req.url.replace("/getItemsByTeamcode?teamcode=", "");
     teamroles.getItemsByTeamcode(teamcode, function (err, result) {
       if (err) {
         res.send(err);

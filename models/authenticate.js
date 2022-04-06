@@ -1,46 +1,190 @@
 // @ts-check
 
+var ActiveDirectory = require("activedirectory");
 const credentials = require("../_credentials/credentials");
+const Request = require("request");
 const jwt = require("jsonwebtoken");
-const User = require("../models/user");
-const UserRoles = require("../models/userroles");
-const TeamRoles = require("../models/teamroles");
-const Members = require("../models/teammembers");
-let token;
+const AWS = require("../config/database").AWS;
+const DIULibrary = require("diu-data-functions");
+const User = new DIULibrary.Models.UserModel(AWS);
+const UserRoles = new DIULibrary.Models.UserRoleModel(AWS);
+const TeamRoles = new DIULibrary.Models.TeamRoleModel(AWS);
+const HashHelper = DIULibrary.Helpers.Hash;
 
-module.exports.loginUsername = function (authentication, username, password, organisation, callback) {
-  switch (authentication) {
-    // Option to add in more authentication methods here (for example: Active Directory)
-    default:
-      User.getUserByUsername(username, (err, data) => {
+let returnUser, token, options, tokenA, tempUser;
+const access = process.env.AWSPROFILE || "Dev";
+
+const userfields = ["manager", "distinguishedName", "userPrincipalName", "sAMAccountName", "mail", "lockoutTime", "whenCreated", "pwdLastSet", "userAccountControl", "employeeID", "sn", "givenName", "initials", "cn", "displayName", "comment", "description", "linemanager", "objectSid"];
+const groupfields = ["distinguishedName", "objectCategory", "cn", "description"];
+
+// @ts-ignore
+const adLCSU = new ActiveDirectory({
+  url: "ldap://10.212.120.150",
+  baseDN: "dc=xlcsu,dc=nhs,dc=uk",
+  bindDN: credentials.lcsuauth,
+  bindCredentials: credentials.lcsupass,
+  attributes: {
+    user: userfields,
+    group: groupfields,
+  },
+  entryParser(entry, raw, callback) {
+    if (raw.hasOwnProperty("objectGUID")) {
+      entry.objectGUID = raw.objectGUID;
+    }
+    if (raw.hasOwnProperty("objectSid")) {
+      entry.objectSid = raw.objectSid;
+    }
+    callback(entry);
+  },
+});
+
+// @ts-ignore
+const adXMLCSU = new ActiveDirectory({
+  url: "ldap://10.212.120.50",
+  baseDN: "dc=xmlcsu,dc=nhs,dc=uk",
+  bindDN: credentials.xmlcsuauth,
+  bindCredentials: credentials.xmlcsupass,
+  attributes: {
+    user: userfields,
+    group: groupfields,
+  },
+  entryParser(entry, raw, callback) {
+    if (raw.hasOwnProperty("objectGUID")) {
+      entry.objectGUID = raw.objectGUID;
+    }
+    if (raw.hasOwnProperty("objectSid")) {
+      entry.objectSid = raw.objectSid;
+    }
+    callback(entry);
+  },
+});
+
+// @ts-ignore
+const adXFyldeCoast = new ActiveDirectory({
+  url: "ldap://10.164.32.24:389",
+  baseDN: "ou=ADUsers,dc=xfyldecoast,dc=nhs,dc=uk",
+  bindDN: credentials.ldapauth,
+  bindCredentials: credentials.ldappass,
+  attributes: {
+    user: userfields,
+    group: groupfields,
+  },
+  entryParser(entry, raw, callback) {
+    if (raw.hasOwnProperty("objectGUID")) {
+      entry.objectGUID = raw.objectGUID;
+    }
+    if (raw.hasOwnProperty("objectSid")) {
+      entry.objectSid = raw.objectSid;
+    }
+    callback(entry);
+  },
+});
+
+// @ts-ignore
+const adRegion = new ActiveDirectory({
+  url: "ldap://10.164.32.24:3268",
+  baseDN: "dc=nhs,dc=uk",
+  bindDN: credentials.ldapauth,
+  bindCredentials: credentials.ldappass,
+  attributes: {
+    user: userfields,
+    group: groupfields,
+  },
+  entryParser(entry, raw, callback) {
+    if (raw.hasOwnProperty("objectGUID")) {
+      entry.objectGUID = raw.objectGUID;
+    }
+    if (raw.hasOwnProperty("objectSid")) {
+      entry.objectSid = raw.objectSid;
+    }
+    callback(entry);
+  },
+});
+
+// @ts-ignore
+const adNWAS = new ActiveDirectory({
+  url: "ldap://10.238.1.132:3268",
+  baseDN: "dc=nhs,dc=uk",
+  bindDN: credentials.nwasldapauth,
+  bindCredentials: credentials.nwasldappass,
+  attributes: {
+    user: userfields,
+    group: groupfields,
+  },
+  entryParser(entry, raw, callback) {
+    if (raw.hasOwnProperty("objectGUID")) {
+      entry.objectGUID = raw.objectGUID;
+    }
+    if (raw.hasOwnProperty("objectSid")) {
+      entry.objectSid = raw.objectSid;
+    }
+    callback(entry);
+  },
+});
+
+const usernameADLogin = function (username, password, organisation, authentication, activedirectory, filter, callback) {
+  activedirectory.findUser(username, function (err, user) {
+    if (err) {
+      callback(true, JSON.stringify(err));
+      console.log(username + " ERROR: " + JSON.stringify(err));
+      return;
+    }
+    let filteredUsers = user;
+    if (filter && (!filteredUsers || filteredUsers.length == 0)) {
+      filteredUsers = user.filter((u) => u.distinguishedName.indexOf(filter) > -1);
+    }
+    if (!user) {
+      callback(true, "ERROR: " + "User: " + username + " has not been found.");
+      console.log(username + " ERROR: user not found");
+      return;
+    } else {
+      activedirectory.authenticate(user.userPrincipalName, password, function (err, auth) {
         if (err) {
-          callback(true, err);
+          callback(true, "ERROR: " + JSON.stringify(err));
+          console.log(username + " ERROR: " + JSON.stringify(err));
           return;
         }
-        var user;
-        if (data.Items) {
-          user = data.Items[0];
-        }
-        if (!user) {
-          callback(true, "User not found");
-          return;
-        }
-        User.comparePassword(password, user.password, (err, isMatch) => {
-          if (err) {
-            callback(true, err);
-            return;
+        if (auth) {
+          tempUser = {
+            _id: sidBufferToString(user.objectSid),
+            name: user.cn,
+            username: user.sAMAccountName,
+            email: user.mail,
+            organisation: organisation,
+            authentication: authentication,
+          };
+          tokenA = jwt.sign(tempUser, credentials.secret, {
+            expiresIn: 604800, //1 week
+          });
+          options = {
+            headers: {
+              authorization: "JWT " + tokenA,
+            },
+          };
+          let subdomain = "";
+          if (access === "Dev") {
+            subdomain = "dev.";
+          } else if (access === "Test") {
+            subdomain === "demo.";
           }
-          if (isMatch) {
-            const id = user._id || user.username + "_" + organisation;
-            getTeamMembershipsByUsername(user.username, (err, memberships) => {
-              if (err) {
-                console.error(err);
+          try {
+            Request.get("https://usergroup." + subdomain + "nexusintelligencenw.nhs.uk" + "/teammembers/getTeamMembershipsByUsername?username=" + user.sAMAccountName, options, (error, response, body) => {
+              if (error) {
+                callback(true, "Error checking memberships, reason: " + error);
+                console.log(username + " ERROR Memberships: " + JSON.stringify(error));
+                return;
               }
-              const returnUser = {
-                _id: id,
-                name: user.name,
-                username: user.username,
-                email: user.email,
+              let memberships = [];
+              try {
+                if (body) {
+                  memberships = JSON.parse(body);
+                }
+              } catch (ex) { }
+              returnUser = {
+                _id: sidBufferToString(user.objectSid),
+                name: user.cn,
+                username: user.sAMAccountName,
+                email: user.mail,
                 organisation: organisation,
                 authentication: authentication,
                 memberships: memberships,
@@ -51,51 +195,87 @@ module.exports.loginUsername = function (authentication, username, password, org
               callback(null, token);
               return;
             });
-          } else {
-            callback(true, "Wrong Password");
+          } catch (error) {
+            callback(true, error.toString());
+            console.log(username + " ERROR Memberships: " + JSON.stringify(error.toString()));
             return;
           }
-        });
+        } else {
+          callback(true, "Wrong Password");
+          console.log(username + " ERROR: wrong password");
+          return;
+        }
       });
-      break;
-  }
+    }
+  });
 };
 
-module.exports.loginEmail = function (authentication, email, password, organisation, callback) {
-  switch (authentication) {
-    default:
-      User.getUserByEmail(email, (err, data) => {
-        if (err) {
-          callback(true, err);
+const emailADLogin = function (username, password, organisation, authentication, activedirectory, filter, callback) {
+  const personquery = "(&(|(objectClass=user)(objectClass=person))(!(objectClass=computer))(!(objectClass=group)))";
+  const emailquery = "(mail=" + username + ")";
+  const fullquery = "(&" + emailquery + personquery + ")";
+  activedirectory.findUsers(fullquery, function (err, user) {
+    if (err) {
+      callback(true, JSON.stringify(err));
+      console.log(username + " ERROR: " + JSON.stringify(err));
+      return;
+    }
+    let filteredUsers = user;
+    if (filter && (!filteredUsers || filteredUsers.length == 0)) {
+      filteredUsers = user.filter((u) => u.distinguishedName.indexOf(filter) > -1);
+    }
+    if (!filteredUsers || filteredUsers.length == 0) {
+      callback(true, "User: " + username + " not found.");
+      console.log(username + " ERROR: user not found");
+      return;
+    } else {
+      activedirectory.authenticate(user[0].userPrincipalName, password, function (error, auth) {
+        if (error) {
+          callback(true, JSON.stringify(error));
+          console.log(username + " ERROR: " + JSON.stringify(error));
           return;
         }
-        if (data === null) {
-          callback(true, "Email not found");
-        }
-        var user;
-        if (data.Items) {
-          user = data.Items[0];
-        }
-        if (!user) {
-          callback(true, "Email not found");
-          return;
-        }
-        User.comparePassword(password, user.password, (err, isMatch) => {
-          if (err) {
-            callback(true, err);
-            return;
+        if (auth) {
+          let subdomain = "";
+          if (access === "Dev") {
+            subdomain = "dev.";
+          } else if (access === "Test") {
+            subdomain === "demo.";
           }
-          if (isMatch) {
-            const id = user._id || user.username + "_" + organisation;
-            getTeamMembershipsByUsername(user.username, (err, memberships) => {
-              if (err) {
-                console.error(err);
+          tempUser = {
+            _id: sidBufferToString(user[0].objectSid),
+            name: user[0].cn,
+            username: user[0].sAMAccountName,
+            email: user[0].mail,
+            organisation: organisation,
+            authentication: authentication,
+          };
+          tokenA = jwt.sign(tempUser, credentials.secret, {
+            expiresIn: 604800, //1 week
+          });
+          options = {
+            headers: {
+              authorization: "JWT " + tokenA,
+            },
+          };
+          try {
+            Request.get("https://usergroup." + subdomain + "nexusintelligencenw.nhs.uk" + "/teammembers/getTeamMembershipsByUsername?username=" + user[0].sAMAccountName, options, (error, response, body) => {
+              if (error) {
+                callback(true, "Error checking memberships, reason: " + error);
+                console.log(username + " ERROR Memberships: " + JSON.stringify(error));
+                return;
               }
-              const returnUser = {
-                _id: id,
-                name: user.name,
-                username: user.username,
-                email: user.email,
+              let memberships = [];
+              try {
+                if (body) {
+                  memberships = JSON.parse(body);
+                }
+              } catch (ex) { }
+              returnUser = {
+                _id: sidBufferToString(user[0].objectSid),
+                name: user[0].cn,
+                username: user[0].sAMAccountName,
+                email: user[0].mail,
                 organisation: organisation,
                 authentication: authentication,
                 memberships: memberships,
@@ -106,14 +286,19 @@ module.exports.loginEmail = function (authentication, email, password, organisat
               callback(null, token);
               return;
             });
-          } else {
-            callback(true, "Wrong Password");
+          } catch (error) {
+            callback(true, error.toString());
+            console.log(username + " ERROR Memberships: " + JSON.stringify(error.toString()));
             return;
           }
-        });
+        } else {
+          callback(true, "Wrong Password");
+          console.log(username + " ERROR: wrong password");
+          return;
+        }
       });
-      break;
-  }
+    }
+  });
 };
 
 module.exports.upgradePassport = function (previousToken, mfa, callback) {
@@ -246,38 +431,92 @@ module.exports.upgradePassportwithOrganisation = function (previousToken, mfa, c
   });
 };
 
-module.exports.authenticateDemo = function (user, callback) {
-  const id = user._id || user.username + "_Collaborative Partners";
-  getTeamMembershipsByUsername(user.username, (err, memberships) => {
-    if (err) {
-      console.error(err);
-    }
-    const returnUser = {
-      _id: id,
-      name: user.name,
-      username: user.username,
-      email: user.email,
-      organisation: "Collaborative Partners",
-      authentication: "demo",
-      memberships: memberships,
-    };
-    token = jwt.sign(returnUser, credentials.secret, {
-      expiresIn: 604800, //1 week
-    });
-    callback(null, token);
-  });
+let pad = function (s) {
+  if (s.length < 2) {
+    return `0${s}`;
+  } else {
+    return s;
+  }
 };
 
-function getTeamMembershipsByUsername(username, callback) {
-  Members.getteamsByMember(username, function (err, result) {
-    if (err) {
-      callback(err, []);
-    } else {
-      if (result.Items) {
-        callback(null, result.Items);
-      } else {
-        callback(null, []);
+let sidBufferToString = function (buf) {
+  let asc, end;
+  let i;
+  if (buf == null) {
+    return null;
+  }
+
+  let version = buf[0];
+  let subAuthorityCount = buf[1];
+  let identifierAuthority = parseInt(
+    (() => {
+      let result = [];
+      for (i = 2; i <= 7; i++) {
+        result.push(buf[i].toString(16));
       }
+      return result;
+    })().join(""),
+    16
+  );
+
+  let sidString = `S-${version}-${identifierAuthority}`;
+
+  for (i = 0, end = subAuthorityCount - 1, asc = 0 <= end; asc ? i <= end : i >= end; asc ? i++ : i--) {
+    let subAuthOffset = i * 4;
+    let tmp = pad(buf[11 + subAuthOffset].toString(16)) + pad(buf[10 + subAuthOffset].toString(16)) + pad(buf[9 + subAuthOffset].toString(16)) + pad(buf[8 + subAuthOffset].toString(16));
+    sidString += `-${parseInt(tmp, 16)}`;
+  }
+
+  return sidString;
+};
+
+module.exports.authenticateDemo = function (user, callback) {
+  tokenA = jwt.sign(JSON.parse(JSON.stringify(user)), credentials.secret, {
+    expiresIn: 604800, //1 week
+  });
+  options = {
+    headers: {
+      authorization: "JWT " + tokenA,
+    },
+  };
+  let subdomain = "";
+  if (access === "Dev") {
+    subdomain = "dev.";
+  } else if (access === "Test") {
+    subdomain === "demo.";
+  }
+  Request.get("https://usergroup." + subdomain + "nexusintelligencenw.nhs.uk" + "/teammembers/getTeamMembershipsByUsername?username=" + user.username, options, (error, response, body) => {
+    if (error) {
+      callback(true, "Error checking memberships, reason: " + error);
+      return;
+    }
+    let memberships = [];
+    try {
+      if (body) {
+        try {
+          if (body) {
+            memberships = JSON.parse(body);
+          }
+        } catch (ex) { }
+        const id = user._id || user.username + "_Collaborative Partners";
+        returnUser = {
+          _id: id,
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          organisation: "Collaborative Partners",
+          authentication: "Demo",
+          memberships: memberships,
+        };
+        token = jwt.sign(returnUser, credentials.secret, {
+          expiresIn: 604800, //1 week
+        });
+        callback(null, token);
+        return;
+      }
+    } catch (ex) {
+      callback(true, "Error checking memberships, reason: " + ex);
+      return;
     }
   });
-}
+};

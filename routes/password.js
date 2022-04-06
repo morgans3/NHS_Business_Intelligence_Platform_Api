@@ -1,17 +1,20 @@
 // @ts-check
-
+const passport = require("passport");
 const express = require("express");
 const router = express.Router();
-const verificationCodes = require("../models/verification_codes");
-const user = require("../models/user");
-const authenticate = require("../models/authenticate");
-const passport = require("passport");
+
+const AWS = require("../config/database").AWS;
+const Authenticate = require("../models/authenticate");
+const DIULibrary = require("diu-data-functions");
+const user = new DIULibrary.Models.UserModel(AWS);
+const verificationCodes = new DIULibrary.Models.VerificationCodeModel(AWS);
+const EmailHelper = DIULibrary.Helpers.Email;
 
 /**
  * @swagger
  * tags:
  *   name: Password
- *   description: Password Functions for BI Platform Applications
+ *   description: Password Functions for Nexus Intelligence Applications
  */
 
 /**
@@ -55,9 +58,18 @@ router.post("/update", (req, res, next) => {
   //Check params
   const payload = req.body;
   if (payload && payload.username && payload.authmethod && payload.newpassword) {
+    //Check organisation auth method
+    if (payload.authmethod !== "Demo") {
+      res.json({
+        success: false,
+        msg: "Please contact your IT Department if you wish to change your password.",
+      });
+      return;
+    }
+
     //Authenticate with jwt or authcode?
     if (payload.code) {
-      verificationCodes.getCode(payload.code, (err, result) => {
+      verificationCodes.getCode(payload.code, payload.username, (err, result) => {
         if (err) {
           console.error(err);
           res.json({
@@ -86,7 +98,7 @@ router.post("/update", (req, res, next) => {
                   });
                   return;
                 }
-                authenticate.authenticateDemo(updateRes, (boolErr, strToken) => {
+                Authenticate.authenticateDemo(updateRes, (boolErr, strToken) => {
                   if (boolErr) {
                     console.error(boolErr);
                     res.json({
@@ -137,6 +149,164 @@ router.post("/update", (req, res, next) => {
     res.status(400).json({
       success: false,
       msg: "Failed: Not provided with username and organisation",
+    });
+  }
+});
+
+
+/**
+ * @swagger
+ * /password/generate:
+ *   post:
+ *     description: Generates a verification code  (To be replaced by /users/send-code)
+ *     tags:
+ *      - Email
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *       - name: username
+ *         description: Username
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: authmethod
+ *         description: Authentication Method
+ *         in: formData
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Confirmation of Email Sent
+ */
+router.post("/generate", (req, res, next) => {
+  const payload = req.body;
+  if (payload && payload.username && payload.authmethod) {
+    if (payload.authmethod !== "Demo") {
+      res.json({
+        success: false,
+        msg: "Please contact your IT Department if you wish to change your password.",
+      });
+      return;
+    }
+
+    UserModel.getUserByUsername(payload.username, (err, result) => {
+      if (err) {
+        console.log(err);
+        res.json({
+          success: false,
+          msg: "Failed: " + err,
+        });
+        return;
+      }
+      if (result.Items && result.Items.length > 0) {
+        VerificationCodeModel.create({
+          username: payload.username,
+          organisation: "Collaborative Partners",
+          generated: new Date().toISOString(),
+        }, (saveErr, saveRes) => {
+          if (saveErr) {
+            console.log(saveErr);
+            res.json({
+              success: false,
+              msg: "Failed: " + saveErr,
+            });
+            return;
+          }
+
+          EmailHelper.sendMail("Please enter this code where prompted on screen: " + saveRes.code, "Verification Code for Nexus Intelligence", payload.username, (err, response) => {
+            if (err) {
+              console.log(err);
+              res.json({
+                success: false,
+                msg: "Failed: " + err,
+              });
+            } else {
+              res.json({
+                success: true,
+                msg: "Code has been sent to previously validated Email address",
+              });
+            }
+          });
+        });
+      } else {
+        res.json({
+          success: true,
+          msg: "Code has been sent to previously validated Email address",
+        });
+      }
+    });
+  } else {
+    res.status(400).json({
+      success: false,
+      msg: "Failed: Not provided with username and organisation",
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /password/verify:
+ *   post:
+ *     description: Checks a verification code (To be replaced by /users/verify-code)
+ *     tags:
+ *      - Email
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *       - name: code
+ *         description: Verification Code
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: username
+ *         description: Username
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: authmethod
+ *         description: Authentication Method
+ *         in: formData
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Confirmation code exists
+ */
+router.post("/verify", (req, res, next) => {
+  const payload = req.body;
+  if (payload && payload.username && payload.authmethod && payload.code) {
+    if (payload.authmethod !== "Demo") {
+      res.json({
+        success: false,
+        msg: "Please contact your IT Department if you wish to change your password.",
+      });
+      return;
+    }
+    VerificationCodeModel.getCode(payload.code, payload.username, (codeErr, codeRes) => {
+      if (codeErr) {
+        console.log(codeErr);
+        res.json({
+          success: false,
+          msg: "Failed: " + codeErr,
+        });
+        return;
+      }
+      if (codeRes && codeRes.Items.length > 0) {
+        res.json({
+          success: true,
+          msg: "Code has been validated",
+        });
+      } else {
+        res.json({
+          success: false,
+          msg: "Code not valid.",
+        });
+      }
+    });
+  } else {
+    res.status(400).json({
+      success: false,
+      msg: "Failed: Not provided with username, code and organisation",
     });
   }
 });

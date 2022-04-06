@@ -1,7 +1,7 @@
 //@ts-check
 
 const request = require("supertest");
-const { SecureEndpoints } = require("../config/endpoints");
+const { SecureEndpoints } = require("./endpoints");
 const testapp = require("../testapp");
 var app, nonToken;
 

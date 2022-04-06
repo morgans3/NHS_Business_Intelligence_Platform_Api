@@ -1,10 +1,10 @@
 // @ts-check
-
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const Users = require("../models/user");
 const organisations = require("../models/authenticate").organisations;
+const DIULibrary = require("diu-data-functions");
+const UserModel = new DIULibrary.Models.UserModel();
 
 /**
  * @swagger
@@ -42,7 +42,7 @@ router.get(
   (req, res, next) => {
     const search = req.query.searchterm;
     let searchresults = [];
-    Users.getUserByPartialUsername(search, function (err, users) {
+    UserModel.getUserByPartialUsername(search, function (err, users) {
       if (err) {
         console.log("ERROR: " + JSON.stringify(err));
         res.send({ status: 503, message: "Organisation service not available" });
@@ -107,7 +107,7 @@ router.get(
       case "Demo":
       case "Collaborative Partners":
       case "Admin":
-        Users.getUserByPartialUsername(search, function (err, users) {
+        UserModel.getUserByPartialUsername(search, function (err, users) {
           if (err) {
             console.log("ERROR: " + JSON.stringify(err));
             res.send({ status: 503, message: "Organisation service not available" });

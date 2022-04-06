@@ -144,7 +144,24 @@ router.post(
           if (err) {
             console.log(response);
           } else {
-            // TODO: Add in Email Verification
+            const options = {
+              headers: {
+                authorization: jwt,
+              },
+              url: "https://messaging.nexusintelligencenw.nhs.uk/emails/direct",
+              form: {
+                message: "A new device has been registered to secure your Nexus Intelligence account. If you are receiving this and you have not registered a new device please contact our support team immediately.",
+                email: email,
+                header: "New MFA Device Registered for Nexus Intelligence",
+              },
+            };
+            Request.post(options, (error, response, body) => {
+              if (error) {
+                console.log("Unable to send security email for: " + username + ". Reason: " + error.toString());
+              } else {
+                console.log("Security email sent for new MFA device for: " + username);
+              }
+            });
             res.json(response);
           }
         });
@@ -246,7 +263,24 @@ router.get(
       if (username && email) {
         MFA.unregister(username, (err, response) => {
           if (err) console.log(response);
-          // TODO: Add in Email Verification
+          const options = {
+            headers: {
+              authorization: jwt,
+            },
+            url: "https://messaging.nexusintelligencenw.nhs.uk/emails/direct",
+            form: {
+              message: "Your device that secures your Nexus Intelligence account has been unregistered. If you are receiving this and you have not unregistered your device please contact our support team immediately.",
+              email: email,
+              header: "MFA Device Unregistered for Nexus Intelligence",
+            },
+          };
+          Request.post(options, (error, response, body) => {
+            if (error) {
+              console.log("Unable to send device removal security email for: " + username + ". Reason: " + error.toString());
+            } else {
+              console.log("Security email sent for unregistering MFA device for: " + username);
+            }
+          });
           res.json(response);
         });
       }
