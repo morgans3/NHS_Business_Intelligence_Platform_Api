@@ -305,10 +305,11 @@ router.post("/send-code", (req, res, next) => {
     if (saveErr) { res.json({ success: false, msg: "Failed: " + saveErr }); return; }
 
     //Send code to email
-    EmailHelper.sendMail(
-      "Please enter this code where prompted on screen: " + savedCode.code,
-      "Verification Code for Nexus Intelligence", payload.email,
-      (err, response) => {
+    EmailHelper.sendMail({
+        to: payload.email,
+        subject:  "Verification Code for Nexus Intelligence",
+        message: "Please enter this code where prompted on screen: " + savedCode.code
+    }, (err, response) => {
         if (err) {
           console.log(err);
           res.json({ success: false, msg: "Failed: " + err });

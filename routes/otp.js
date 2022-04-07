@@ -127,7 +127,11 @@ router.get(
             `</p>
             <p>This code will only work once and is linked directly to your account.</p>
             <p>If you have received this without requesting it please contact our support team.</p>`;
-          EmailHelper.sendMail(content, "Temporary Access code for Nexus Intelligence", email, (err, response) => {
+          EmailHelper.sendMail({
+            to: email,
+            subject: "Temporary Access code for Nexus Intelligence",
+            message: content
+          }, (err, response) => {
             if (err) {
               console.log(err);
               res.json({

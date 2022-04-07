@@ -40,7 +40,11 @@ const EmailHelper = DIULibrary.Helpers.Email;
 router.post("/fault", server_authenticate, (req, res, next) => {
     const emailTo = EmailHelper.getDIUEmails();
     if (emailTo) {
-        EmailHelper.sendMail(req.body.message, "Fault Report", emailTo, (err, response) => {
+        EmailHelper.sendMail({
+            to: emailTo,
+            message: req.body.message, 
+            subject: "Fault Report"
+        }, (err, response) => {
             if (err) {
                 console.log(err);
                 res.json({
@@ -101,7 +105,11 @@ router.post(
     (req, res, next) => {
         const emailTo = EmailHelper.getEmailfromUsername(req.body.username);
         if (emailTo) {
-            EmailHelper.sendMail(req.body.message, req.body.header, emailTo, (err, response) => {
+            EmailHelper.sendMail({
+                to: emailTo,
+                message: req.body.message,
+                subject: req.body.header
+            }, (err, response) => {
                 if (err) {
                     console.log(err);
                     res.json({
@@ -176,7 +184,12 @@ router.post(
  *         description: Confirmation of Email Sent
  */
 router.post("/action", server_jwt_authenticate, (req, res, next) => {
-    EmailHelper.sendMailWithActions(req.body.actions, req.body.message, req.body.header, req.body.email, (err, response) => {
+    EmailHelper.sendMail({
+        to: req.body.email,
+        message: req.body.message,
+        subject: req.body.header,
+        action: req.body.actions
+    }, (err, response) => {
         if (err) {
             res.json({ success: false, msg: "Failed: " + err });
         } else {
@@ -227,7 +240,11 @@ router.post(
             let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
             const emailTo = decodedToken["email"];
             if (emailTo) {
-                EmailHelper.sendMail(req.body.message, req.body.header, emailTo, (err, response) => {
+                EmailHelper.sendMail({
+                    to: emailTo,
+                    message: req.body.message,
+                    subject: req.body.header,
+                }, (err, response) => {
                     if (err) {
                         console.log(err);
                         res.json({

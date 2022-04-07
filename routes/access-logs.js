@@ -10,7 +10,7 @@ const AccessLogModel = new DIULibrary.Models.AccessLog(AWS);
 /**
  * @swagger
  * tags:
- *   name: Access logs
+ *   name: AccessLogs
  *   description: Access log Methods
  */
 

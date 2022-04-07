@@ -11,6 +11,7 @@ const usersModel = new DIULibrary.Models.UserModel(AWS);
 const verificationCodesModel = new DIULibrary.Models.VerificationCodeModel(AWS);
 const formSubmissionsModel = new DIULibrary.Models.FormSubmissionModel(AWS);
 const MiddlewareHelper = DIULibrary.Helpers.Middleware;
+const EmailHelper = DIULibrary.Helpers.Email;
 const appInstallsModel = require("../models/installs");
 const MessagesHelper = require("../helpers/messages");
 
@@ -187,43 +188,35 @@ router.post("/account", (req, res, next) => {
         verificationCodesModel.deleteCode(formData.email_verification_code, formData.email);
 
         //Send sponsor an email
-        request.post({
-            headers: {
-                authorization: "4SGaT8_(4S47WS!47WS_17CT8((!1",
-            },
-            url: "https://messaging.nexusintelligencenw.nhs.uk/emails/action",
-            body: {
-                email: formSubmission.data.request_sponsor.email,
-                header: "COVID 19 Data Hub Access",
-                message: `
-                    <p>A member of your organisation has requested access to the COVID 19 Data Hub. Details of the request are below...</p>
-                    ${MessagesHelper.accountRequestTable(formSubmission)}
-                    <p>Please click below to authorise or deny this request...</p>
-                `,
-                actions: [
-                    {
-                        class: "primary",
-                        text: "Approve",
-                        type: "account_request_approve",
-                        type_params: { id: formSubmission.id }
-                    },
-                    {
-                        class: "warn",
-                        text: "Deny",
-                        type: "account_request_deny",
-                        type_params: { id: formSubmission.id }
-                    }
-                ]
-            },
-            json: true
-        }, (error, response, body) => {
-            if (error) {
-                console.log("Unable to send authorization request email to: " + formData.email + ". Reason: " + error.toString());
-                res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
-            } else {
-                res.status(200).json({ success: false, msg: "Request submitted successfully!" });
+        EmailHelper.sendMail({
+            to: formSubmission.data.request_sponsor.email,
+            subject: "COVID 19 Data Hub Access",
+            message: `<p>A member of your organisation has requested access to the COVID 19 Data Hub. Details of the request are below...</p>
+            ${MessagesHelper.accountRequestTable(formSubmission)}
+            <p>Please click below to authorise or deny this request...</p>`,
+            actions: [
+                {
+                    class: "primary",
+                    text: "Approve",
+                    type: "account_request_approve",
+                    type_params: { id: formSubmission.id }
+                },
+                {
+                    class: "warn",
+                    text: "Deny",
+                    type: "account_request_deny",
+                    type_params: { id: formSubmission.id }
+                }
+            ]
+        }, (error, response) => {
+                if (error) {
+                    console.log("Unable to send authorization request email to: " + formData.email + ". Reason: " + error.toString());
+                    res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
+                } else {
+                    res.status(200).json({ success: false, msg: "Request submitted successfully!" });
+                }
             }
-        });
+        );
     });
 });
 
@@ -348,49 +341,34 @@ router.post("/account/complete", (req, res, next) => {
             });
 
             //Send email to the DIU team
-            request.post({
-                headers: {
-                    authorization: "4SGaT8_(4S47WS!47WS_17CT8((!1",
-                },
-                url: "https://messaging.nexusintelligencenw.nhs.uk/emails/action",
-                body: {
-                    email: "stewart.morgan@nhs.net",
-                    header: "COVID 19 Data Hub Authorisation",
-                    message: `
-                        <p>${formSubmission.data.officer} has approved ${userAccessRequest.data.firstname} ${userAccessRequest.data.surname} for access to Nexus Intelligence. Details of the request are below...</p>
-                        ${MessagesHelper.accountRequestTable(userAccessRequest)}
-                    `,
-                    actions: []
-                },
-                json: true
-            }, (error, response, body) => {
-                if (error) {
-                    console.log("Unable to send authorization request email to: " + formData.email + ". Reason: " + error.toString());
+            EmailHelper.sendMail({
+                to: "stewart.morgan@nhs.net",
+                subject: "COVID 19 Data Hub Authorisation",
+                message: `<p>${formSubmission.data.officer} has approved ${userAccessRequest.data.firstname} ${userAccessRequest.data.surname} for access to Nexus Intelligence. Details of the request are below...</p>
+                ${MessagesHelper.accountRequestTable(userAccessRequest)}`
+            }, (err, response) => {
+                    if (err) {
+                        console.log("Unable to send authorization request email to: " + formData.email + ". Reason: " + error.toString());
+                    }
                 }
-            });
+            );
             
             //Send user access details
-            request.post({
-                headers: {
-                    authorization: "4SGaT8_(4S47WS!47WS_17CT8((!1",
-                },
-                url: "https://messaging.nexusintelligencenw.nhs.uk/emails/action",
-                body: {
-                    email: userAccessRequest.data.email,
-                    header: "COVID 19 Data Hub",
-                    message: `
-                        <p>Your access to Nexus Intelligence has been approved, you can now login using the below details...</p>
-                        <p><b>Username:</b> ${userAccount.username} <br><b>Password:</b> ${userAccount.password} <br><b>Organisation:</b> Collaborative Partners</p>
-                        <p>When you first login please change your password to keep your account secure.</p>
-                    `,
-                    actions: [{
+            EmailHelper.sendMail({
+                to: userAccessRequest.data.email,
+                subject: "COVID 19 Data Hub",
+                message: `
+                <p>Your access to Nexus Intelligence has been approved, you can now login using the below details...</p>
+                <p><b>Username:</b> ${userAccount.username} <br><b>Password:</b> ${userAccount.password} <br><b>Organisation:</b> Collaborative Partners</p>
+                <p>When you first login please change your password to keep your account secure.</p>`,
+                actions: [
+                    {
                         class: "primary",
                         text: "Login",
                         type: "home_page"
-                    }]
-                },
-                json: true
-            }, (error, response, body) => {
+                    }
+                ]
+            }, (error, response) => {
                 if (error) {
                     console.log("Unable to send approval notification to: " + formData.email + ". Reason: " + error.toString());
                     res.status(500).json({ success: false, msg: error }); return;
@@ -414,26 +392,20 @@ router.post("/account/complete", (req, res, next) => {
             });
 
             //Send user details
-            request.post({
-                headers: {
-                    authorization: "4SGaT8_(4S47WS!47WS_17CT8((!1",
-                },
-                url: "https://messaging.nexusintelligencenw.nhs.uk/emails/action",
-                body: {
-                    email: userAccessRequest.data.email,
-                    header: "COVID 19 Data Hub",
-                    message: `
-                        <p>Your access to Nexus Intelligence has not been approved.</p>
-                        <p><b>Reason:</b> ${formData.reason}</p>
-                    `,
-                    actions: [{
+            EmailHelper.sendMail({
+                to: userAccessRequest.data.email,
+                subject: "COVID 19 Data Hub",
+                message: `
+                <p>Your access to Nexus Intelligence has not been approved.</p>
+                <p><b>Reason:</b> ${formData.reason}</p>`,
+                actions: [
+                    {
                         class: "primary",
                         text: "Request again",
                         type: "account_request"
-                    }]
-                },
-                json: true
-            }, (error, response, body) => {
+                    }
+                ]
+            }, (error, response) => {
                 if (error) {
                     console.log("Unable to send approval notification to: " + formData.email + ". Reason: " + error.toString());
                     res.status(500).json({ success: false, msg: error }); return;

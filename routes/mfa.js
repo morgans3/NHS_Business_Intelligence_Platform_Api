@@ -8,6 +8,9 @@ const passport = require("passport");
 const JWT = require("jsonwebtoken");
 const Request = require("request");
 
+const DIULibrary = require("diu-data-functions");
+const EmailHelper = DIULibrary.Helpers.Email;
+
 /**
  * @swagger
  * tags:
@@ -144,18 +147,11 @@ router.post(
           if (err) {
             console.log(response);
           } else {
-            const options = {
-              headers: {
-                authorization: jwt,
-              },
-              url: "https://messaging.nexusintelligencenw.nhs.uk/emails/direct",
-              form: {
-                message: "A new device has been registered to secure your Nexus Intelligence account. If you are receiving this and you have not registered a new device please contact our support team immediately.",
-                email: email,
-                header: "New MFA Device Registered for Nexus Intelligence",
-              },
-            };
-            Request.post(options, (error, response, body) => {
+            EmailHelper.sendMail({
+              to: email,
+              subject: "New MFA Device Registered for Nexus Intelligence",
+              message: "A new device has been registered to secure your Nexus Intelligence account. If you are receiving this and you have not registered a new device please contact our support team immediately."
+            }, (error, response) => {
               if (error) {
                 console.log("Unable to send security email for: " + username + ". Reason: " + error.toString());
               } else {
@@ -263,18 +259,11 @@ router.get(
       if (username && email) {
         MFA.unregister(username, (err, response) => {
           if (err) console.log(response);
-          const options = {
-            headers: {
-              authorization: jwt,
-            },
-            url: "https://messaging.nexusintelligencenw.nhs.uk/emails/direct",
-            form: {
-              message: "Your device that secures your Nexus Intelligence account has been unregistered. If you are receiving this and you have not unregistered your device please contact our support team immediately.",
-              email: email,
-              header: "MFA Device Unregistered for Nexus Intelligence",
-            },
-          };
-          Request.post(options, (error, response, body) => {
+          EmailHelper.sendMail({
+            to: email,
+            subject: "New MFA Device Unregistered for Nexus Intelligence",
+            message: "Your device that secures your Nexus Intelligence account has been unregistered. If you are receiving this and you have not unregistered your device please contact our support team immediately."
+          }, (error, response) => {
             if (error) {
               console.log("Unable to send device removal security email for: " + username + ". Reason: " + error.toString());
             } else {

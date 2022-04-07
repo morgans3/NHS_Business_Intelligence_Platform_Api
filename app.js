@@ -44,7 +44,7 @@ app.use(bodyParser.json());
 const routes = [
   'mfa', 'otp', 'password', 'requests', 'serviceaccounts', 'teamroles', 'userroles', 
   'users', 'postcodes', 'pcninformation', 'demographics', 'patientlists', 'shielding', 'userprofiles',
-  'teamprofiles', 'teamrequests', 'searchusers', 'searchs', 'capabilities', 'roles', 'notifications', 'acknowledgements'
+  'teamprofiles', 'teamrequests', 'searchusers', 'searchs', 'capabilities', 'roles', 'notifications', 'acknowledgements',
   'virtualward', 'govuk', 'emails'
 ];
 

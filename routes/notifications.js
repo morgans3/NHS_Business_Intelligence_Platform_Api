@@ -124,7 +124,11 @@ router.post(
                 switch (req.body.method) {
                     case "Email":
                         const recipientList = EmailHelper.getEmailfromUsername(req.body.username);
-                        EmailHelper.sendMail(req.body.message, req.body.header, recipientList, (err, response) => {
+                        EmailHelper.sendMail({
+                            to: recipientList,
+                            subject: req.body.header,
+                            message: req.body.message
+                        }, (err, response) => {
                             if (err) {
                                 console.log(err);
                                 res.json({

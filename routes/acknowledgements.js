@@ -5,7 +5,7 @@ const passport = require("passport");
 const Acks = require("../models/acknowledgements");
 const uuid = require("uuid");
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: __dirname + "/../storage/uploads/" });
 const fs = require("fs");
 const config = require("../config/database");
 const aws = config.AWS;
@@ -535,17 +535,36 @@ router.post(
  *      - Acknowledgements
  *     produces:
  *      - application/json
+ *     consumes:
+ *      - application/json
  *     parameters:
- *       - name: documentinfo
- *         description: Document Info
- *         in: formData
- *         required: true
- *         type: string
- *       - name: maillist
- *         description: Mailing List
- *         in: formData
- *         required: true
- *         type: string
+ *      - in: body
+ *        name: user
+ *        description: The role link data
+ *        schema:
+ *          type: object
+ *          required:
+ *            - documentinfo
+ *            - maillist
+ *          properties:
+ *            documentinfo:
+ *              type: object
+ *              properties: 
+ *                uid:
+ *                  type: string
+ *                s3filename:
+ *                  type: string
+ *            maillist:
+ *              type: array
+ *              items:
+ *                type: object
+ *                properties:
+ *                  username:
+ *                    type: string
+ *                  org:
+ *                    type: string
+ *                  email:
+ *                    type: string
  *     responses:
  *       200:
  *         description: Confirmation of File Storage
@@ -570,7 +589,7 @@ router.post(
                     msg: "Failed to fetch document: " + fetchErr,
                 });
             } else {
-                var tempFilePath = "uploads/" + documentinfo.s3filename;
+                var tempFilePath = __dirname + "/../storage/uploads/" + documentinfo.s3filename;
                 fs.writeFileSync(tempFilePath, fetchResult.Body);
                 const attachment = {
                     path: tempFilePath,

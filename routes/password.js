@@ -213,7 +213,11 @@ router.post("/generate", (req, res, next) => {
             return;
           }
 
-          EmailHelper.sendMail("Please enter this code where prompted on screen: " + saveRes.code, "Verification Code for Nexus Intelligence", payload.username, (err, response) => {
+          EmailHelper.sendMail({
+            to: payload.username,
+            subject: "Verification Code for Nexus Intelligence",
+            message: "Please enter this code where prompted on screen: " + saveRes.code
+          }, (err, response) => {
             if (err) {
               console.log(err);
               res.json({
