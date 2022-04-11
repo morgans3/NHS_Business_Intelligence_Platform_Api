@@ -6,8 +6,8 @@ const router = express.Router();
 const AWS = require("../config/database").AWS;
 const Authenticate = require("../models/authenticate");
 const DIULibrary = require("diu-data-functions");
-const user = new DIULibrary.Models.UserModel(AWS);
-const verificationCodes = new DIULibrary.Models.VerificationCodeModel(AWS);
+const UserModel = new DIULibrary.Models.UserModel(AWS);
+const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel(AWS);
 const EmailHelper = DIULibrary.Helpers.Email;
 
 /**
@@ -69,7 +69,7 @@ router.post("/update", (req, res, next) => {
 
     //Authenticate with jwt or authcode?
     if (payload.code) {
-      verificationCodes.getCode(payload.code, payload.username, (err, result) => {
+      VerificationCodeModel.getCode(payload.code, payload.username, (err, result) => {
         if (err) {
           console.error(err);
           res.json({
@@ -80,7 +80,7 @@ router.post("/update", (req, res, next) => {
         }
         if (result.Items && result.Items.length > 0) {
           if (payload.username === result.Items[0].username) {
-            user.updateUser(payload.username, payload.newpassword, (updateErr, updateRes) => {
+            UserModel.updateUser(payload.username, payload.newpassword, (updateErr, updateRes) => {
               if (updateErr) {
                 console.error(updateErr);
                 res.json({
@@ -89,7 +89,7 @@ router.post("/update", (req, res, next) => {
                 });
                 return;
               }
-              verificationCodes.deleteCode(payload.code, payload.username, (delErr, delRes) => {
+              VerificationCodeModel.deleteCode(payload.code, payload.username, (delErr, delRes) => {
                 if (delErr) {
                   console.error(delErr);
                   res.json({
@@ -135,7 +135,7 @@ router.post("/update", (req, res, next) => {
           res.status(401).json({ success: false, msg: "Unauthenticated!" });
         } else {
           //Change user's password
-          user.updateUser(authorisedUser.username, payload.newpassword, (updateErr, updateRes) => {
+          UserModel.updateUser(authorisedUser.username, payload.newpassword, (updateErr, updateRes) => {
             if (updateErr) console.error(updateErr);
             res.json({
               success: updateErr ? false : true,

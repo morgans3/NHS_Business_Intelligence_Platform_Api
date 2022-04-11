@@ -122,185 +122,6 @@ const adNWAS = new ActiveDirectory({
   },
 });
 
-const usernameADLogin = function (username, password, organisation, authentication, activedirectory, filter, callback) {
-  activedirectory.findUser(username, function (err, user) {
-    if (err) {
-      callback(true, JSON.stringify(err));
-      console.log(username + " ERROR: " + JSON.stringify(err));
-      return;
-    }
-    let filteredUsers = user;
-    if (filter && (!filteredUsers || filteredUsers.length == 0)) {
-      filteredUsers = user.filter((u) => u.distinguishedName.indexOf(filter) > -1);
-    }
-    if (!user) {
-      callback(true, "ERROR: " + "User: " + username + " has not been found.");
-      console.log(username + " ERROR: user not found");
-      return;
-    } else {
-      activedirectory.authenticate(user.userPrincipalName, password, function (err, auth) {
-        if (err) {
-          callback(true, "ERROR: " + JSON.stringify(err));
-          console.log(username + " ERROR: " + JSON.stringify(err));
-          return;
-        }
-        if (auth) {
-          tempUser = {
-            _id: sidBufferToString(user.objectSid),
-            name: user.cn,
-            username: user.sAMAccountName,
-            email: user.mail,
-            organisation: organisation,
-            authentication: authentication,
-          };
-          tokenA = jwt.sign(tempUser, credentials.secret, {
-            expiresIn: 604800, //1 week
-          });
-          options = {
-            headers: {
-              authorization: "JWT " + tokenA,
-            },
-          };
-          let subdomain = "";
-          if (access === "Dev") {
-            subdomain = "dev.";
-          } else if (access === "Test") {
-            subdomain === "demo.";
-          }
-          try {
-            Request.get("https://usergroup." + subdomain + "nexusintelligencenw.nhs.uk" + "/teammembers/getTeamMembershipsByUsername?username=" + user.sAMAccountName, options, (error, response, body) => {
-              if (error) {
-                callback(true, "Error checking memberships, reason: " + error);
-                console.log(username + " ERROR Memberships: " + JSON.stringify(error));
-                return;
-              }
-              let memberships = [];
-              try {
-                if (body) {
-                  memberships = JSON.parse(body);
-                }
-              } catch (ex) { }
-              returnUser = {
-                _id: sidBufferToString(user.objectSid),
-                name: user.cn,
-                username: user.sAMAccountName,
-                email: user.mail,
-                organisation: organisation,
-                authentication: authentication,
-                memberships: memberships,
-              };
-              token = jwt.sign(returnUser, credentials.secret, {
-                expiresIn: 604800, //1 week
-              });
-              callback(null, token);
-              return;
-            });
-          } catch (error) {
-            callback(true, error.toString());
-            console.log(username + " ERROR Memberships: " + JSON.stringify(error.toString()));
-            return;
-          }
-        } else {
-          callback(true, "Wrong Password");
-          console.log(username + " ERROR: wrong password");
-          return;
-        }
-      });
-    }
-  });
-};
-
-const emailADLogin = function (username, password, organisation, authentication, activedirectory, filter, callback) {
-  const personquery = "(&(|(objectClass=user)(objectClass=person))(!(objectClass=computer))(!(objectClass=group)))";
-  const emailquery = "(mail=" + username + ")";
-  const fullquery = "(&" + emailquery + personquery + ")";
-  activedirectory.findUsers(fullquery, function (err, user) {
-    if (err) {
-      callback(true, JSON.stringify(err));
-      console.log(username + " ERROR: " + JSON.stringify(err));
-      return;
-    }
-    let filteredUsers = user;
-    if (filter && (!filteredUsers || filteredUsers.length == 0)) {
-      filteredUsers = user.filter((u) => u.distinguishedName.indexOf(filter) > -1);
-    }
-    if (!filteredUsers || filteredUsers.length == 0) {
-      callback(true, "User: " + username + " not found.");
-      console.log(username + " ERROR: user not found");
-      return;
-    } else {
-      activedirectory.authenticate(user[0].userPrincipalName, password, function (error, auth) {
-        if (error) {
-          callback(true, JSON.stringify(error));
-          console.log(username + " ERROR: " + JSON.stringify(error));
-          return;
-        }
-        if (auth) {
-          let subdomain = "";
-          if (access === "Dev") {
-            subdomain = "dev.";
-          } else if (access === "Test") {
-            subdomain === "demo.";
-          }
-          tempUser = {
-            _id: sidBufferToString(user[0].objectSid),
-            name: user[0].cn,
-            username: user[0].sAMAccountName,
-            email: user[0].mail,
-            organisation: organisation,
-            authentication: authentication,
-          };
-          tokenA = jwt.sign(tempUser, credentials.secret, {
-            expiresIn: 604800, //1 week
-          });
-          options = {
-            headers: {
-              authorization: "JWT " + tokenA,
-            },
-          };
-          try {
-            Request.get("https://usergroup." + subdomain + "nexusintelligencenw.nhs.uk" + "/teammembers/getTeamMembershipsByUsername?username=" + user[0].sAMAccountName, options, (error, response, body) => {
-              if (error) {
-                callback(true, "Error checking memberships, reason: " + error);
-                console.log(username + " ERROR Memberships: " + JSON.stringify(error));
-                return;
-              }
-              let memberships = [];
-              try {
-                if (body) {
-                  memberships = JSON.parse(body);
-                }
-              } catch (ex) { }
-              returnUser = {
-                _id: sidBufferToString(user[0].objectSid),
-                name: user[0].cn,
-                username: user[0].sAMAccountName,
-                email: user[0].mail,
-                organisation: organisation,
-                authentication: authentication,
-                memberships: memberships,
-              };
-              token = jwt.sign(returnUser, credentials.secret, {
-                expiresIn: 604800, //1 week
-              });
-              callback(null, token);
-              return;
-            });
-          } catch (error) {
-            callback(true, error.toString());
-            console.log(username + " ERROR Memberships: " + JSON.stringify(error.toString()));
-            return;
-          }
-        } else {
-          callback(true, "Wrong Password");
-          console.log(username + " ERROR: wrong password");
-          return;
-        }
-      });
-    }
-  });
-};
-
 module.exports.upgradePassport = function (previousToken, mfa, callback) {
   const myRoles = [];
   UserRoles.getItemsByUsername(previousToken.username, async (err, result) => {
@@ -431,45 +252,6 @@ module.exports.upgradePassportwithOrganisation = function (previousToken, mfa, c
   });
 };
 
-let pad = function (s) {
-  if (s.length < 2) {
-    return `0${s}`;
-  } else {
-    return s;
-  }
-};
-
-let sidBufferToString = function (buf) {
-  let asc, end;
-  let i;
-  if (buf == null) {
-    return null;
-  }
-
-  let version = buf[0];
-  let subAuthorityCount = buf[1];
-  let identifierAuthority = parseInt(
-    (() => {
-      let result = [];
-      for (i = 2; i <= 7; i++) {
-        result.push(buf[i].toString(16));
-      }
-      return result;
-    })().join(""),
-    16
-  );
-
-  let sidString = `S-${version}-${identifierAuthority}`;
-
-  for (i = 0, end = subAuthorityCount - 1, asc = 0 <= end; asc ? i <= end : i >= end; asc ? i++ : i--) {
-    let subAuthOffset = i * 4;
-    let tmp = pad(buf[11 + subAuthOffset].toString(16)) + pad(buf[10 + subAuthOffset].toString(16)) + pad(buf[9 + subAuthOffset].toString(16)) + pad(buf[8 + subAuthOffset].toString(16));
-    sidString += `-${parseInt(tmp, 16)}`;
-  }
-
-  return sidString;
-};
-
 module.exports.authenticateDemo = function (user, callback) {
   tokenA = jwt.sign(JSON.parse(JSON.stringify(user)), credentials.secret, {
     expiresIn: 604800, //1 week
@@ -520,3 +302,12 @@ module.exports.authenticateDemo = function (user, callback) {
     }
   });
 };
+
+module.exports.organisations = [
+  { name: "xfyldecoast", org: adXFyldeCoast, displayname: "Fylde Coast" },
+  { name: "xmlcsu", org: adXMLCSU, displayname: "ML CSU" },
+  { name: "lcsu", org: adLCSU, displayname: "West Lancs", filter: "West Lancashire" },
+  { name: "global", org: adRegion, displayname: "LSC Region" },
+  { name: "uhmbt", org: adRegion, displayname: "Morecambe Bay" },
+  { name: "nwas", org: adNWAS, displayname: "NWAS" },
+];

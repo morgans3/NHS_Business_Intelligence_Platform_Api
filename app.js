@@ -44,8 +44,8 @@ app.use(bodyParser.json());
 const routes = [
   'mfa', 'otp', 'password', 'requests', 'serviceaccounts', 'teamroles', 'userroles', 
   'users', 'postcodes', 'pcninformation', 'demographics', 'patientlists', 'shielding', 'userprofiles',
-  'teamprofiles', 'teamrequests', 'searchusers', 'searchs', 'capabilities', 'roles', 'notifications', 'acknowledgements',
-  'virtualward', 'govuk', 'emails'
+  'teamprofiles', 'teamrequests', 'teammembers', 'searchusers', 'searchs', 'capabilities', 'roles', 'notifications', 'acknowledgements',
+  'virtualward', 'govuk', 'emails', 'teams', 'roleprofiles', 'organisationmembers', 'networkprofiles', 'networkmembers'
 ];
 
 //ADD ENDPOINTS

@@ -3,7 +3,8 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const Teams = require("../models/teamprofiles");
+const DIULibrary = require("diu-data-functions");
+const TeamModel = new DIULibrary.Models.TeamModel();
 
 /**
  * @swagger
@@ -40,7 +41,9 @@ router.get(
   }),
   (req, res, next) => {
     const search = req.query.searchterm;
-    Teams.getTeamsByPartialTeamName(search, function (err, teams) {
+    TeamModel.get({
+      name: search
+    }, function (err, teams) {
       res.send(JSON.stringify(teams.Items));
     });
   }
