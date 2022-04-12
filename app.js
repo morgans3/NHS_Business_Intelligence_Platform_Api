@@ -42,10 +42,11 @@ app.use(bodyParser.json());
 
 // ROUTES FOR OUR API
 const routes = [
-  'mfa', 'otp', 'password', 'requests', 'serviceaccounts', 'teamroles', 'userroles', 
+  'mfa', 'otp', 'password', 'requests', 'serviceaccounts', 'confluence', 'docobooutbound', 'docobo',
   'users', 'postcodes', 'pcninformation', 'demographics', 'patientlists', 'shielding', 'userprofiles',
-  'teamprofiles', 'teamrequests', 'teammembers', 'searchusers', 'searchs', 'capabilities', 'roles', 'notifications', 'acknowledgements',
-  'virtualward', 'govuk', 'emails', 'teams', 'roleprofiles', 'organisationmembers', 'networkprofiles', 'networkmembers'
+  'teamprofiles', 'teamrequests', 'teammembers', 'searchusers', 'searchs', 'capabilities', 'roles', 'notifications',
+  'virtualward', 'teams', 'organisationmembers', 'niceevidence', 'gpinpatients',
+  'lpresviewer', 'opensource', 'trials'
 ];
 
 //ADD ENDPOINTS

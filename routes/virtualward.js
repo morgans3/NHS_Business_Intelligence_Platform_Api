@@ -4,7 +4,6 @@ const router = express.Router();
 const passport = require("passport");
 const virtualward = require("../models/virtualward");
 const JWT = require("jsonwebtoken");
-const govukreceipt = require("../models/govukreceipt");
 
 /**
  * @swagger
@@ -166,48 +165,6 @@ router.post(
                     success: true,
                     msg: "Item updated",
                 });
-            }
-        });
-    }
-);
-
-/**
- * @swagger
- * /virtualward/getAllServiceCountLogs:
- *   get:
- *     security:
- *      - JWT: []
- *     description: Gets a list of logs from the Notify Receipts
- *     tags:
- *      - VirtualWards
- *     produces:
- *      - application/json
- *     responses:
- *       200:
- *         description: Success
- *       400:
- *         description: Bad Request
- *       401:
- *         description: Unauthorised
- *       500:
- *         description: Server Error Processing
- */
-router.get(
-    "/getAllServiceCountLogs",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res, next) => {
-        res.type("application/json");
-        govukreceipt.getAllServiceCountLogs(function (err, result) {
-            if (err) {
-                res.status(400).send(
-                    JSON.stringify({
-                        reason: "Error: " + err,
-                    })
-                );
-            } else {
-                res.send(JSON.stringify(result));
             }
         });
     }

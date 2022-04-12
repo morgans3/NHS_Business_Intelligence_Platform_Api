@@ -11,5 +11,15 @@ module.exports = {
 
   //Mail
   EmailHost: process.env.EMAILHOST,
-  EmailPort: process.env.EMAILPORT
-};
+  EmailPort: process.env.EMAILPORT,
+  
+  //Services
+  confluence_key: process.env.CONFLUENCEKEY,
+  docobo: process.env.DOCOBO || {
+    outboundkey: "",
+    server: "",
+    serverprod: "",
+    outboundkeyprod: "",
+    inboundkey: ""
+  }
+}

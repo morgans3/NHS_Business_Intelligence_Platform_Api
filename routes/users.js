@@ -9,6 +9,7 @@ const pool = require("../config/database").pool;
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel(AWS);
 const RoleModel = new DIULibrary.Models.RoleModel(pool);
+const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
 const Authenticate = require("../models/authenticate");
 const AuthenticateHelper = require("../helpers/authenticate");
 const credentials = require("../_credentials/credentials");
