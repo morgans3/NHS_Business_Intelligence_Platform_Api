@@ -19,11 +19,9 @@ module.exports = {
   
   //Services
   confluence_key: process.env.CONFLUENCEKEY,
-  docobo: process.env.DOCOBO || {
-    outboundkey: "",
-    server: "",
-    serverprod: "",
-    outboundkeyprod: "",
-    inboundkey: ""
+  docobo: {
+    outboundkey: process.env.DOCOBO_OUTBOUNDKEY || "",
+    server: process.env.DOCOBO_SERVER || "",
+    inboundkey: process.env.DOCOBO_INBOUNDKEY || ""
   }
 }

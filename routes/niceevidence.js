@@ -20,7 +20,7 @@ function GetNICE(path, items, callback) {
   Request.get(
     {
       headers: {
-        "API-Key": process.env.NICE_API.key,
+        "API-Key": process.env.NICEAPI_KEY,
         Accept: "application/vnd.nice.syndication.search+json;version=1.0",
       },
       url: basePath + path + "&ps=" + items,

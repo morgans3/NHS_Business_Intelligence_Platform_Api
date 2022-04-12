@@ -13,118 +13,15 @@ const TeamModel = new DIULibrary.Models.TeamModel();
  *   description: Profiles of this type
  */
 
-/**
-
-/**
- * @swagger
- * /teamprofiles/register:
- *   post:
- *     security:
- *      - JWT: []
- *     description: Registers a new Profile
- *     tags:
- *      - TeamProfiles
- *     produces:
- *      - application/json
- *     parameters:
- *       - name: code
- *         description: team Code
- *         in: formData
- *         required: true
- *         type: string
- *       - name: name
- *         description: team Name
- *         in: formData
- *         required: true
- *         type: string
- *       - name: description
- *         description: team Description
- *         in: formData
- *         required: true
- *         type: string
- *       - name: organisationcode
- *         description: Organisation Code
- *         in: formData
- *         required: true
- *         type: string
- *       - name: responsiblepeople
- *         description: People who administer this Profile
- *         in: formData
- *         type: array
- *         items:
- *              type: string
- *     responses:
- *       200:
- *         description: Confirmation of new Profile Registration
- */
+//Register redirect
 router.post("/register", passport.authenticate("jwt", {
   session: false,
 }), (req, res) => { res.redirect(307, '/teams/create'); });
 
-/**
- * @swagger
- * /teamprofiles/getAll:
- *   get:
- *     security:
- *      - JWT: []
- *     description: Returns the entire collection
- *     tags:
- *      - TeamProfiles
- *     produces:
- *      - application/json
- *     responses:
- *       200:
- *         description: Full List
- */
+//Get redirect
 router.get("/getAll", (req, res) => { res.redirect(301, '/teams'); });
 
-/**
- * @swagger
- * /teamprofiles/update?profile_id={profile_id}:
- *   put:
- *     security:
- *      - JWT: []
- *     description: Updates a Profile
- *     tags:
- *      - TeamProfiles
- *     produces:
- *      - application/json
- *     parameters:
- *       - name: profile_id
- *         description: Profile's ID
- *         in: query
- *         required: true
- *         type: string
- *       - name: code
- *         description: team Code
- *         in: formData
- *         required: true
- *         type: string
- *       - name: name
- *         description: team Name
- *         in: formData
- *         required: true
- *         type: string
- *       - name: description
- *         description: team Description
- *         in: formData
- *         required: true
- *         type: string
- *       - name: organisationcode
- *         description: Organisation Code
- *         in: formData
- *         required: true
- *         type: string
- *       - name: responsiblepeople
- *         description: People who administer this Profile
- *         in: formData
- *         type: array
- *         items:
- *              type: string
- *     responses:
- *       200:
- *         description: Confirmation of App Registration
- */
+//Update redirect
 router.put("/update", passport.authenticate("jwt", {
   session: false,
 }), (req, res) => { res.redirect(307, '/teams/update?profile_id=' + req.query.profile_id); });
@@ -241,7 +138,7 @@ router.get(
   }),
   (req, res, next) => {
     const partialteam = req.query.partialteam;
-    TeamModel.get({
+    TeamModel.getByFilters({
       name: partialteam
     }, function (err, result) {
       if (err) {
@@ -291,7 +188,7 @@ router.get(
   (req, res, next) => {
     const orgcode = req.url.split("=")[1].replace("&partialteam", "");
     const partialteam = req.url.split("=")[2];
-    TeamModel.get({
+    TeamModel.getByFilters({
       name: partialteam,
       orgcode: orgcode
     }, function (err, result) {

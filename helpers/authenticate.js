@@ -10,52 +10,27 @@ const HashHelper = DIULibrary.Helpers.Hash;
 const StringHelper = DIULibrary.Helpers.String;
 const UserModel = new DIULibrary.Models.UserModel();
 const AccessLogModel = new DIULibrary.Models.AccessLog();
+const TeamMembersModel = require("../models/teammembers");
 const nexusAuthMethods = ['Demo', 'Nexus'];
 
 class Authenticate {
 
     static generateJWT(user, callback) {
-        //Create jwt
-        let jwtToken = jwt.sign(JSON.parse(JSON.stringify(user)), credentials.secret, {
-            expiresIn: 604800, //1 week
-        });
-
         //Get user's teams
-        request.get(`https://usergroup.${(access === "Dev" ? "dev" : (access === "Test" ? "demo" : ""))}.nexusintelligencenw.nhs.uk/teammembers/getTeamMembershipsByUsername?username=${user.username}`, {
-            headers: {
-                authorization: "JWT " + jwtToken,
-            }
-        }, (error, response, body) => {
-            if (error) {
-                callback(true, "Error checking memberships, reason: " + error);
-                return;
-            }
-
-            try {
-                if (body) {
-                    //Parse memberships
-                    user.memberships = [];
-                    try {
-                        user.memberships = body ? JSON.parse(body) : user.memberships;
-                    } catch (error) { }
-
-                    //Return JWT
-                    callback(false, jwt.sign({
-                        _id: user._id || user.username + "_" + user.organisation,
-                        name: user.name,
-                        username: user.username,
-                        email: user.email,
-                        organisation: user.organisation,
-                        authentication: user.authentication,
-                        memberships: user.memberships,
-                    }, credentials.secret, {
-                        expiresIn: 604800, //1 week
-                    }));
-                    return;
-                }
-            } catch (error) {
-                callback(true, "Error checking memberships, reason: " + error); return;
-            }
+        TeamMembersModel.getteamsByMember(user.username, (err, memberships) => {
+            //Add memberships and generate jwt
+            if(err) { callback(err, null); return; }
+            callback(false, jwt.sign({
+                _id: user._id || user.username + "_" + user.organisation,
+                name: user.name,
+                username: user.username,
+                email: user.email,
+                organisation: user.organisation,
+                authentication: user.authentication,
+                memberships: memberships.Items || [],
+            }, credentials.secret, {
+                expiresIn: 604800, //1 week
+            }));
         });
     }
 
@@ -258,7 +233,7 @@ class Authenticate {
             //Login with Nexus
             authenticatedUser = ((callback) => {
                 //Get user
-                UserModel.getUserByEmail(username, (err, data) => {
+                UserModel.getByEmail(username, organisation, (err, data) => {
                     //Failed to find user
                     if (err) { callback(err, null); return; }
 
@@ -279,7 +254,7 @@ class Authenticate {
                     //Check user password
                     HashHelper.check(password, user.password, (err, isMatch) => {
                         if (err) { callback(err, null); return; }
-
+                        
                         //Check for match
                         if (isMatch) {
                             callback(false, user);

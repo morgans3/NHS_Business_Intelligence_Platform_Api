@@ -25,6 +25,13 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *      - Docobo
  *     produces:
  *      - application/json
+ *     parameters:
+ *      - in: header
+ *        name: Authorization
+ *        description: API key
+ *        schema:
+ *          type: string
+ *        required: true
  *     responses:
  *       200:
  *         description: Full List
@@ -63,6 +70,12 @@ router.get("/acknowledgements/getAll", MiddlewareHelper.authenticateWithKey(
  *     produces:
  *      - application/json
  *     parameters:
+ *         - in: header
+ *           name: Authorization
+ *           description: API key
+ *           schema:
+ *             type: string
+ *           required: true
  *         - in: body
  *           name: acknowledgements
  *           description: File Uploader Acknowledgements.

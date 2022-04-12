@@ -147,6 +147,7 @@ router.post("/authenticate", (req, res, next) => {
   AuthenticateHelper.login(
     authentication, username, password, organisation, 
   (err, user) => {
+    console.log(err, user);
     if (err) {
       //Return error
       res.status(401).json({ success: false, msg: err }); return null;

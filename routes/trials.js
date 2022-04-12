@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const DIULibrary = require("diu-data-functions");
-const TrialModel = new DIULibrary.Models.ClinicalTrialModel();
+const ClinicalTrialModel = new DIULibrary.Models.ClinicalTrialModel();
 
 /**
  * @swagger

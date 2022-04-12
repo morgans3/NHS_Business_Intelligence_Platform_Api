@@ -8,7 +8,7 @@ const uuid = require('uuid');
 const aws = require("../config/database").AWS;
 const pool = require("../config/database").pool;
 const DIULibrary = require("diu-data-functions");
-const TeamModel = new DIULibrary.Models.TeamModel(aws);
+const TeamModel = new DIULibrary.Models.TeamModel();
 const CapabilityLinkModel = new DIULibrary.Models.CapabilityLinkModel(pool);
 const RoleLinkModel = new DIULibrary.Models.RoleLinkModel(pool);
 

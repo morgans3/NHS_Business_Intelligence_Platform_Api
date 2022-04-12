@@ -1,15 +1,16 @@
 
 const credentials = require("../_credentials/credentials");
+const activeDirectory = require("../config/active_directory");
 const jwt = require("jsonwebtoken");
-const User = require("../models/user");
-const UserRoles = require("../models/userroles");
-const TeamRoles = require("../models/teamroles");
+const DIULibrary = require("diu-data-functions");
+const UserRoleModel = new DIULibrary.Models.UserRoleModel();
+const TeamRoleModel = new DIULibrary.Models.TeamRoleModel();
 const Members = require("../models/teammembers");
 let token;
 
 module.exports.upgradePassport = function (previousToken, mfa, callback) {
   const myRoles = [];
-  UserRoles.getItemsByUsername(previousToken.username, async (err, result) => {
+  UserRoleModel.getItemsByUsername(previousToken.username, async (err, result) => {
     if (err) {
       callback(err, null);
     } else {
@@ -23,7 +24,7 @@ module.exports.upgradePassport = function (previousToken, mfa, callback) {
       if (previousToken.memberships.length > 0) {
         // Add Team Roles
         const teams = previousToken.memberships.map((x) => x.teamcode);
-        TeamRoles.getItemsByTeamcodes(teams, (err, result) => {
+        TeamRoleModel.getItemsByTeamcodes(teams, (err, result) => {
           if (err) {
             console.log(err);
           } else {
@@ -43,7 +44,7 @@ module.exports.upgradePassport = function (previousToken, mfa, callback) {
               authentication: previousToken.authentication,
               memberships: previousToken.memberships,
               mfa: mfa,
-              capabilties: myRoles,
+              capabilities: myRoles,
             };
             token = jwt.sign(upgrade, credentials.secret, {
               expiresIn: 86400, //1 day
@@ -61,7 +62,7 @@ module.exports.upgradePassport = function (previousToken, mfa, callback) {
           authentication: previousToken.authentication,
           memberships: previousToken.memberships,
           mfa: mfa,
-          capabilties: myRoles,
+          capabilities: myRoles,
         };
         token = jwt.sign(upgrade, credentials.secret, {
           expiresIn: 86400, //1 day
@@ -74,7 +75,7 @@ module.exports.upgradePassport = function (previousToken, mfa, callback) {
 
 module.exports.upgradePassportwithOrganisation = function (previousToken, mfa, callback) {
   const myRoles = [];
-  UserRoles.getItemsByUsernameAndOrgID(previousToken.username, previousToken._id, async (err, result) => {
+  UserRoleModel.getItemsByUsernameAndOrgID(previousToken.username, previousToken._id, async (err, result) => {
     if (err) {
       callback(err, null);
     } else {
@@ -88,7 +89,7 @@ module.exports.upgradePassportwithOrganisation = function (previousToken, mfa, c
       if (previousToken.memberships.length > 0) {
         // Add Team Roles
         const teams = previousToken.memberships.map((x) => x.teamcode);
-        TeamRoles.getItemsByTeamcodes(teams, (err, result) => {
+        TeamRoleModel.getItemsByTeamcodes(teams, (err, result) => {
           if (err) {
             console.log(err);
           } else {
@@ -108,7 +109,7 @@ module.exports.upgradePassportwithOrganisation = function (previousToken, mfa, c
               authentication: previousToken.authentication,
               memberships: previousToken.memberships,
               mfa: mfa,
-              capabilties: myRoles,
+              capabilities: myRoles,
             };
             token = jwt.sign(upgrade, credentials.secret, {
               expiresIn: 86400, //1 day
@@ -126,7 +127,7 @@ module.exports.upgradePassportwithOrganisation = function (previousToken, mfa, c
           authentication: previousToken.authentication,
           memberships: previousToken.memberships,
           mfa: mfa,
-          capabilties: myRoles,
+          capabilities: myRoles,
         };
         token = jwt.sign(upgrade, credentials.secret, {
           expiresIn: 86400, //1 day
@@ -174,10 +175,10 @@ function getTeamMembershipsByUsername(username, callback) {
 }
 
 module.exports.organisations = [
-  { name: "xfyldecoast", org: adXFyldeCoast, displayname: "Fylde Coast" },
-  { name: "xmlcsu", org: adXMLCSU, displayname: "ML CSU" },
-  { name: "lcsu", org: adLCSU, displayname: "West Lancs", filter: "West Lancashire" },
-  { name: "global", org: adRegion, displayname: "LSC Region" },
-  { name: "uhmbt", org: adRegion, displayname: "Morecambe Bay" },
-  { name: "nwas", org: adNWAS, displayname: "NWAS" },
+  { name: "xfyldecoast", org: activeDirectory.org_settings.xfyldecoast, displayname: "Fylde Coast" },
+  { name: "xmlcsu", org: activeDirectory.org_settings.xmlcsu, displayname: "ML CSU" },
+  { name: "lcsu", org: activeDirectory.org_settings.lcsu, displayname: "West Lancs", filter: "West Lancashire" },
+  { name: "global", org: activeDirectory.org_settings.xfyldecoast, displayname: "LSC Region" },
+  { name: "uhmbt", org: activeDirectory.org_settings.uhmbt, displayname: "Morecambe Bay" },
+  { name: "nwas", org: activeDirectory.org_settings.nwas, displayname: "NWAS" },
 ];

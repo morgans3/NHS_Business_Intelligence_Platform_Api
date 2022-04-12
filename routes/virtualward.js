@@ -51,34 +51,27 @@ router.get(
             limit = "1000";
         }
         res.type("application/json");
-        let jwt = req.header("authorization");
-        if (jwt) {
-            let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-            const userroles = decodedToken["roles"];
-            virtualward.getAll("virtualward_lightertouchpathway", limit, userroles, function (access, err, result) {
-                if (err) {
+        virtualward.getAll("virtualward_lightertouchpathway", limit, req.user.capabilities, function (access, err, result) {
+            if (err) {
+                res.status(400).send(
+                    JSON.stringify({
+                        reason: "Error: " + err,
+                    })
+                );
+            } else if (access) {
+                res.status(401).send(result);
+            } else {
+                if (result.length > 0) {
+                    res.send(JSON.stringify(result));
+                } else {
                     res.status(400).send(
                         JSON.stringify({
-                            reason: "Error: " + err,
+                            reason: "Unable to find patients, there may not exist patients who match this search or you may have insufficient permissions to view record.",
                         })
                     );
-                } else if (access) {
-                    res.status(401).send(result);
-                } else {
-                    if (result.length > 0) {
-                        res.send(JSON.stringify(result));
-                    } else {
-                        res.status(400).send(
-                            JSON.stringify({
-                                reason: "Unable to find patients, there may not exist patients who match this search or you may have insufficient permissions to view record.",
-                            })
-                        );
-                    }
                 }
-            });
-        } else {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-        }
+            }
+        });
     }
 );
 

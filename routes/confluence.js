@@ -31,7 +31,7 @@ const ConfluenceModel = new DIULibrary.Models.ConfluenceModel();
  *         description: Full list of guides
  */
 router.get("/content/search", (req, res, next) => {
-    confluenceModel.searchContent(req.query, (data) => {
+    ConfluenceModel.searchContent(req.query, (data) => {
         if (data) {
             res.json(data);
         } else {
@@ -59,7 +59,7 @@ router.get("/content/search", (req, res, next) => {
  *         description: Confluence document
  */
 router.get("/content/:id", (req, res, next) => {
-    confluenceModel.getContentById(req.params.id, (data) => {
+    ConfluenceModel.getContentById(req.params.id, (data) => {
         if (data) {
             res.json(data);
         } else {

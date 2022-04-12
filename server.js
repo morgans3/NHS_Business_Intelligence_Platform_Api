@@ -17,14 +17,21 @@
       process.env.AWS_SECRETID = awsCredentials.secretid;
       process.env.AWS_SECRETKEY = awsCredentials.secretkey;
 
-      // const emailCredentials = JSON.parse(await AWSHelper.getSecrets("email"));
-      // process.env.EMAIL_HOST = emailCredentials.host;
-      // process.env.EMAIL_PASSWORD = emailCredentials.password;
-      // process.env.EMAIL_USERNAME = emailCredentials.username;
+      const emailCredentials = JSON.parse(await AWSHelper.getSecrets("email"));
+      process.env.EMAIL_HOST = emailCredentials.host;
+      process.env.EMAIL_PASSWORD = emailCredentials.password;
+      process.env.EMAIL_USERNAME = emailCredentials.username;
 
-      process.env.NICE_API = JSON.parse(await AWSHelper.getSecrets("nice_api"))
+      const docoboCredentials = JSON.parse(await AWSHelper.getSecrets("docobo"));
+      process.env.DOCOBO_SERVER = docoboCredentials.server;
+      process.env.DOCOBO_INBOUNDKEY = docoboCredentials.inboundkey;
+      process.env.DOCOBO_OUTBOUNDKEY = docoboCredentials.outboundkey;
+      
+      //To-do: Fix...
       process.env.AD_CREDENTIALS = JSON.parse(await AWSHelper.getSecrets("adcredentials"));
-      process.env.DOCOBO = JSON.parse(await AWSHelper.getSecrets("docobo"));
+
+      process.env.NICEAPI_KEY = JSON.parse(await AWSHelper.getSecrets("nice_api")).key;
+      process.env.CONFLUENCE_KEY = JSON.parse(await AWSHelper.getSecrets("confluence_key")).apikey;
       process.env.TZ = "Europe/London";
     } catch (error) {
       console.error(error);
