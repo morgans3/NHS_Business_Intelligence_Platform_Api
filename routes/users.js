@@ -108,7 +108,7 @@ router.post("/register", (req, res, next) => {
  *   post:
  *     description: Authenticates a User
  *     tags:
- *      - Login
+ *      - Users
  *     produces:
  *      - application/json
  *     parameters:
@@ -120,6 +120,7 @@ router.post("/register", (req, res, next) => {
  *       - name: password
  *         description: User's password.
  *         in: formData
+ *         required: true
  *         type: string
  *       - name: organisation
  *         description: User's Organisation.
@@ -213,7 +214,7 @@ router.get(
  *      - JWT: []
  *     description: Checks User Credentials
  *     tags:
- *      - Validation
+ *      - Users
  *     produces:
  *      - application/json
  *     responses:

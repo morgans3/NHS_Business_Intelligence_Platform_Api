@@ -40,9 +40,8 @@ router.get(
     session: false,
   }),
   (req, res, next) => {
-    const search = req.query.searchterm;
-    TeamModel.get({
-      name: search
+    TeamModel.getTeamsByPartialTeamName({
+      name: req.query.searchterm
     }, function (err, teams) {
       res.send(JSON.stringify(teams.Items));
     });

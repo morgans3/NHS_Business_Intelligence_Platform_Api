@@ -17,6 +17,11 @@
       process.env.AWS_SECRETID = awsCredentials.secretid;
       process.env.AWS_SECRETKEY = awsCredentials.secretkey;
 
+      // const emailCredentials = JSON.parse(await AWSHelper.getSecrets("email"));
+      // process.env.EMAIL_HOST = emailCredentials.host;
+      // process.env.EMAIL_PASSWORD = emailCredentials.password;
+      // process.env.EMAIL_USERNAME = emailCredentials.username;
+
       process.env.NICE_API = JSON.parse(await AWSHelper.getSecrets("nice_api"))
       process.env.AD_CREDENTIALS = JSON.parse(await AWSHelper.getSecrets("adcredentials"));
       process.env.DOCOBO = JSON.parse(await AWSHelper.getSecrets("docobo"));

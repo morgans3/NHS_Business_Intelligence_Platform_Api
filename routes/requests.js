@@ -19,7 +19,7 @@ const MessagesHelper = require("../helpers/messages");
  * @swagger
  * tags:
  *   name: Requests
- *   description: Requests functionality for Nexus Intelligence Applications
+ *   description: Requests functionality for BI Platform Applications
  */
 
 /**
@@ -323,35 +323,7 @@ router.post("/account/complete", (req, res, next) => {
             usersModel.addUser(AWS.DynamoDB.Converter.marshall(userAccount), userAccount.password, (err, user) => {
                 //Return failed
                 if (err) { res.json({ success: false, msg: "Failed to register user" }); return; }
-
-                //Add app installations to user
-                userAccessRequest.data.app_access.forEach((app) => {
-                    appInstallsModel.create({
-                        _id: Math.floor(new Date().getTime() / 1000).toString(),
-                        approveddate: formSubmission.created_at,
-                        app_name: app,
-                        requestor: "Admin",
-                        requestdate: userAccessRequest.created_at,
-                        username: userAccount.username,
-                        requestapprover: "Admin"
-                    }, (error) => {
-                        if (error) { console.log(error); }
-                    });
-                });
             });
-
-            //Send email to the DIU team
-            EmailHelper.sendMail({
-                to: "stewart.morgan@nhs.net",
-                subject: "COVID 19 Data Hub Authorisation",
-                message: `<p>${formSubmission.data.officer} has approved ${userAccessRequest.data.firstname} ${userAccessRequest.data.surname} for access to Nexus Intelligence. Details of the request are below...</p>
-                ${MessagesHelper.accountRequestTable(userAccessRequest)}`
-            }, (err, response) => {
-                    if (err) {
-                        console.log("Unable to send authorization request email to: " + formData.email + ". Reason: " + error.toString());
-                    }
-                }
-            );
             
             //Send user access details
             EmailHelper.sendMail({

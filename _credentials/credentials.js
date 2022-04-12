@@ -10,8 +10,12 @@ module.exports = {
   aws_secret_key: process.env.AWS_SECRETKEY,
 
   //Mail
-  EmailHost: process.env.EMAILHOST,
-  EmailPort: process.env.EMAILPORT,
+  email: {
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    username: process.env.EMAIL_USERNAME,
+    password: process.env.EMAIL_PASSWORD
+  },
   
   //Services
   confluence_key: process.env.CONFLUENCEKEY,
