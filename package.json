@@ -50,6 +50,7 @@
     "notifications-node-client": "^5.1.1",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
+    "pg": "^8.7.3",
     "pg-types": "^3.0.1",
     "qrcode": "^1.4.4",
     "request": "^2.88.2",

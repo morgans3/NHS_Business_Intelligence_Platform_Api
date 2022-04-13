@@ -27,8 +27,15 @@
       process.env.DOCOBO_INBOUNDKEY = docoboCredentials.inboundkey;
       process.env.DOCOBO_OUTBOUNDKEY = docoboCredentials.outboundkey;
       
-      //To-do: Fix...
-      process.env.AD_CREDENTIALS = JSON.parse(await AWSHelper.getSecrets("adcredentials"));
+      const adCredentials = JSON.parse(await AWSHelper.getSecrets("adcredentials"));
+      process.env.AD_CREDENTIALS_LCSUAUTH = adCredentials.lcsuauth;
+      process.env.AD_CREDENTIALS_LCSUPASS = adCredentials.lcsupass;
+      process.env.AD_CREDENTIALS_XMLCSUAUTH = adCredentials.xmlcsuauth;
+      process.env.AD_CREDENTIALS_XMLCSUPASS = adCredentials.xmlcsupass;
+      process.env.AD_CREDENTIALS_LDAPAUTH = adCredentials.ldapauth;
+      process.env.AD_CREDENTIALS_LDAPPASS = adCredentials.ldappass;
+      process.env.AD_CREDENTIALS_NWASLDAPAUTH = adCredentials.nwasldapauth;
+      process.env.AD_CREDENTIALS_NWASLDAPPASS = adCredentials.nwasldappass;
 
       process.env.NICEAPI_KEY = JSON.parse(await AWSHelper.getSecrets("nice_api")).key;
       process.env.CONFLUENCE_KEY = JSON.parse(await AWSHelper.getSecrets("confluence_key")).apikey;

@@ -27,31 +27,31 @@ module.exports.org_settings = {
     lcsu: Object.assign({
         url: "ldap://10.212.120.150",
         baseDN: "dc=xlcsu,dc=nhs,dc=uk",
-        bindDN: process.env.AD_CREDENTIALS.lcsuauth,
-        bindCredentials: process.env.AD_CREDENTIALS.lcsupass
+        bindDN: process.env.AD_CREDENTIALS_LCSUAUTH,
+        bindCredentials: process.env.AD_CREDENTIALS_LCSUPASS
     }, baseOrgSettings),
     xmlcsu: Object.assign({
         url: "ldap://10.212.120.50",
         baseDN: "dc=xmlcsu,dc=nhs,dc=uk",
-        bindDN: process.env.AD_CREDENTIALS.xmlcsuauth,
-        bindCredentials: process.env.AD_CREDENTIALS.xmlcsupass
+        bindDN: process.env.AD_CREDENTIALS_XMLCSUAUTH,
+        bindCredentials: process.env.AD_CREDENTIALS_XMLCSUPASS
     }, baseOrgSettings),
     xfyldecoast: Object.assign({
         url: "ldap://10.164.32.24:389",
         baseDN: "ou=ADUsers,dc=xfyldecoast,dc=nhs,dc=uk",
-        bindDN: process.env.AD_CREDENTIALS.ldapauth,
-        bindCredentials: process.env.AD_CREDENTIALS.ldappass
+        bindDN: process.env.AD_CREDENTIALS_LDAPAUTH,
+        bindCredentials: process.env.AD_CREDENTIALS_LDAPPASS
     }, baseOrgSettings),
     uhmbt: Object.assign({
         url: "ldap://10.164.32.24:3268",
         baseDN: "dc=nhs,dc=uk",
-        bindDN: process.env.AD_CREDENTIALS.ldapauth,
-        bindCredentials: process.env.AD_CREDENTIALS.ldappass
+        bindDN: process.env.AD_CREDENTIALS_LDAPAUTH,
+        bindCredentials: process.env.AD_CREDENTIALS_LDAPPASS
     }, baseOrgSettings),
     nwas: Object.assign({
         url: "ldap://10.238.1.132:3268",
         baseDN: "dc=nhs,dc=uk",
-        bindDN: process.env.AD_CREDENTIALS.nwasldapauth,
-        bindCredentials: process.env.AD_CREDENTIALS.nwasldappass
+        bindDN: process.env.AD_CREDENTIALS_NWASLDAPAUTH,
+        bindCredentials: process.env.AD_CREDENTIALS_NWASLDAPPASS
     }, baseOrgSettings)
 }
