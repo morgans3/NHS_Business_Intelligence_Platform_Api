@@ -6,9 +6,8 @@ const router = express.Router();
 const AWS = require("../config/database").AWS;
 const Authenticate = require("../models/authenticate");
 const DIULibrary = require("diu-data-functions");
-const UserModel = new DIULibrary.Models.UserModel(AWS);
-const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel(AWS);
-const EmailHelper = DIULibrary.Helpers.Email;
+const UserModel = new DIULibrary.Models.UserModel();
+const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
 
 /**
  * @swagger

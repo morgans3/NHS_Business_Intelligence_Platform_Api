@@ -2,15 +2,10 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const JWT = require("jsonwebtoken");
-const uuid = require('uuid');
+const uuid = require("uuid");
 
-const aws = require("../config/database").AWS;
-const pool = require("../config/database").pool;
 const DIULibrary = require("diu-data-functions");
 const TeamModel = new DIULibrary.Models.TeamModel();
-const CapabilityLinkModel = new DIULibrary.Models.CapabilityLinkModel(pool);
-const RoleLinkModel = new DIULibrary.Models.RoleLinkModel(pool);
 
 /**
  * @swagger
@@ -34,18 +29,22 @@ const RoleLinkModel = new DIULibrary.Models.RoleLinkModel(pool);
  *       200:
  *         description: A list of all teams
  */
-router.get("/", passport.authenticate("jwt", {
+router.get(
+  "/",
+  passport.authenticate("jwt", {
     session: false,
-}), (req, res, next) => {
+  }),
+  (req, res, next) => {
     TeamModel.get((err, result) => {
-        //Return data
-        if (err) {
-            res.json({ success: false, msg: err });
-        } else {
-            res.json(result.Items);
-        }
+      //Return data
+      if (err) {
+        res.json({ success: false, msg: err });
+      } else {
+        res.json(result.Items);
+      }
     });
-});
+  }
+);
 
 /**
  * @swagger
@@ -89,29 +88,33 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: The newly created team
  */
-router.post("/create", passport.authenticate("jwt", {
+router.post(
+  "/create",
+  passport.authenticate("jwt", {
     session: false,
-}), async (req, res, next) => {
+  }),
+  async (req, res, next) => {
     //Get params
     const payload = req.body;
     const team = {
-        _id: uuid.v1(),
-        code: payload.code,
-        description: payload.description,
-        name: payload.name,
-        organisationcode: payload.organisationcode,
-        responsiblepeople: payload.responsiblepeople ? payload.responsiblepeople.split(",") : []
+      _id: uuid.v1(),
+      code: payload.code,
+      description: payload.description,
+      name: payload.name,
+      organisationcode: payload.organisationcode,
+      responsiblepeople: payload.responsiblepeople ? payload.responsiblepeople.split(",") : [],
     };
 
     //Persist in database
     TeamModel.create(team, (err, result) => {
-        if (err) {
-            res.json({ success: false, msg: "Failed to create " + err });
-        } else {
-            res.json({ success: true, msg: "Team created successfully!", data: team });
-        }
+      if (err) {
+        res.json({ success: false, msg: "Failed to create " + err });
+      } else {
+        res.json({ success: true, msg: "Team created successfully!", data: team });
+      }
     });
-});
+  }
+);
 
 /**
  * @swagger
@@ -175,9 +178,13 @@ router.post("/create", passport.authenticate("jwt", {
  *       200:
  *         description: The updated team
  */
-router.all("/update", passport.authenticate("jwt", { //Router set to all for teamprofile update redirect
+router.all(
+  "/update",
+  passport.authenticate("jwt", {
+    //Router set to all for teamprofile update redirect
     session: false,
-}), async (req, res, next) => {
+  }),
+  async (req, res, next) => {
     //Get params
     let payload = req.body;
 
@@ -185,22 +192,27 @@ router.all("/update", passport.authenticate("jwt", { //Router set to all for tea
     payload.id = req.query.profile_id;
 
     //Update team
-    TeamModel.update({
+    TeamModel.update(
+      {
         _id: payload.id,
-        code: payload.code
-    }, {
+        code: payload.code,
+      },
+      {
         description: payload.description,
         name: payload.name,
         organisationcode: payload.organisationcode,
-        responsiblepeople: payload.responsiblepeople || []
-    }, (err, team) => {
+        responsiblepeople: payload.responsiblepeople || [],
+      },
+      (err, team) => {
         if (err) {
-            res.json({ success: false, msg: "Failed to update " + err });
+          res.json({ success: false, msg: "Failed to update " + err });
         } else {
-            res.json({ success: true, msg: "Team updated successfully!", data: team });
+          res.json({ success: true, msg: "Team updated successfully!", data: team });
         }
-    });
-});
+      }
+    );
+  }
+);
 
 /**
  * @swagger
@@ -228,20 +240,27 @@ router.all("/update", passport.authenticate("jwt", { //Router set to all for tea
  *       200:
  *         description: Team deletion status
  */
-router.delete("/:id/delete", passport.authenticate("jwt", {
+router.delete(
+  "/:id/delete",
+  passport.authenticate("jwt", {
     session: false,
-}), (req, res, next) => {
+  }),
+  (req, res, next) => {
     //Get all capabilities
-    TeamModel.delete({
+    TeamModel.delete(
+      {
         _id: req.body.id,
-        code: req.body.code
-    }, (err, result) => {
+        code: req.body.code,
+      },
+      (err, result) => {
         if (err) {
-            res.json({ success: false, msg: err });
+          res.json({ success: false, msg: err });
         } else {
-            res.json({ success: true, msg: "Team deleted successfully!" });
+          res.json({ success: true, msg: "Team deleted successfully!" });
         }
-    });
-});
+      }
+    );
+  }
+);
 
 module.exports = router;

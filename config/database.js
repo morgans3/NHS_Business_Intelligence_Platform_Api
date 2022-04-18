@@ -23,7 +23,6 @@ module.exports.settings = {
   pgport: pgport,
   postgres_un: credentials.postgres_un,
   postgres_pw: credentials.postgres_pw,
-  AWS_BUCKET_NAME: "nexus-intelligence-acknowledgements-" + access.toLowerCase(),
 };
 
 const config = this.settings;

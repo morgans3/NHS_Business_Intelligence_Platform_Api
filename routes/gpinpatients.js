@@ -39,9 +39,9 @@ router.post(
     const token = req.headers.authorization.replace("JWT ", "");
     const rawusername = jwt.decode(token)["username"] || "test";
     const auth = jwt.decode(token)["authentication"] || "unknown";
-    if (auth === "xfyldecoast") {
+    const key = process.env.BTHAUTHKEY;
+    if (auth === "xfyldecoast" && key) {
       const username = rawusername;
-      const key = "SECRET_HERE";
       process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
       Request.post(
         {

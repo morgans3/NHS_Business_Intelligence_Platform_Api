@@ -3,13 +3,11 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const JWT = require("jsonwebtoken");
-const credentials = require("../_credentials/credentials");
-const pool = require("../config/database").pool;
 
 const DIULibrary = require("diu-data-functions");
-const CapabilitiesModel = new DIULibrary.Models.CapabilityModel(pool);
-const CapabilityLinkModel = new DIULibrary.Models.CapabilityLinkModel(pool);
-const RoleModel = new DIULibrary.Models.RoleModel(pool);
+const CapabilitiesModel = new DIULibrary.Models.CapabilityModel();
+const CapabilityLinkModel = new DIULibrary.Models.CapabilityLinkModel();
+const RoleModel = new DIULibrary.Models.RoleModel();
 
 /**
  * @swagger
@@ -33,19 +31,23 @@ const RoleModel = new DIULibrary.Models.RoleModel(pool);
  *       200:
  *         description: A list of available capabilties
  */
-router.get("/", passport.authenticate("jwt", {
+router.get(
+  "/",
+  passport.authenticate("jwt", {
     session: false,
-}), (req, res, next) => {
+  }),
+  (req, res, next) => {
     //Get all capabilities
     CapabilitiesModel.get((err, result) => {
-        //Return data
-        if(err) { 
-            res.json({ success: false, msg: err }); 
-        } else {
-            res.json(result);
-        }
+      //Return data
+      if (err) {
+        res.json({ success: false, msg: err });
+      } else {
+        res.json(result);
+      }
     });
-});
+  }
+);
 
 /**
  * @swagger
@@ -91,7 +93,12 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.post("/register", (req, res, next) => {
+router.post(
+  "/register",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
     let newCapability = {
       name: req.body.name,
       description: req.body.description,
@@ -100,19 +107,20 @@ router.post("/register", (req, res, next) => {
       tags: req.body.tags,
     };
     CapabilitiesModel.create(newCapability, (err, user) => {
-        if (err) {
-            res.json({
-                success: false,
-                msg: "Error: " + err,
-            });
-        } else {
-            res.json({
-                success: true,
-                msg: "Capability registered",
-            });
-        }
+      if (err) {
+        res.json({
+          success: false,
+          msg: "Error: " + err,
+        });
+      } else {
+        res.json({
+          success: true,
+          msg: "Capability registered",
+        });
+      }
     });
-});
+  }
+);
 
 /**
  * @swagger
@@ -163,7 +171,12 @@ router.post("/register", (req, res, next) => {
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.post("/update", (req, res, next) => {
+router.post(
+  "/update",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
     let newCapability = {
       name: req.body.name,
       description: req.body.description,
@@ -171,36 +184,37 @@ router.post("/update", (req, res, next) => {
       authoriser: req.body.authoriser,
       tags: req.body.tags,
     };
-    CapabilitiesModel.getByPrimaryKey(req.body.id, function(err,data){
-        if(err){
-            res.json({
+    CapabilitiesModel.getByPrimaryKey(req.body.id, function (err, data) {
+      if (err) {
+        res.json({
+          success: false,
+          msg: "Error: " + err,
+        });
+      } else {
+        if (data.length > 0) {
+          CapabilitiesModel.updateByPrimaryKey(req.body.id, newCapability, (err, user) => {
+            if (err) {
+              res.json({
                 success: false,
                 msg: "Error: " + err,
-            });
-        } else {
-            if(data.length > 0){
-                CapabilitiesModel.updateByPrimaryKey(req.body.id, newCapability, (err, user) => {
-                    if (err) {
-                        res.json({
-                            success: false,
-                            msg: "Error: " + err,
-                        });
-                    } else {
-                        res.json({
-                            success: true,
-                            msg: "Capability updated",
-                        });
-                    }
-                });
+              });
             } else {
-                res.json({
-                    success: false,
-                    msg: "Error: Unable to find item with the primary key entered.",
-                });
+              res.json({
+                success: true,
+                msg: "Capability updated",
+              });
             }
+          });
+        } else {
+          res.json({
+            success: false,
+            msg: "Error: Unable to find item with the primary key entered.",
+          });
         }
+      }
     });
-});
+  }
+);
 
 /**
  * @swagger
@@ -223,37 +237,43 @@ router.post("/update", (req, res, next) => {
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.delete("/removeByID", (req, res, next) => {
-    CapabilitiesModel.getByPrimaryKey(req.body.id, function(err,data){
-        if(err){
-            res.json({
+router.delete(
+  "/removeByID",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    CapabilitiesModel.getByPrimaryKey(req.body.id, function (err, data) {
+      if (err) {
+        res.json({
+          success: false,
+          msg: "Error: " + err,
+        });
+      } else {
+        if (data.length > 0) {
+          CapabilitiesModel.deleteByPrimaryKey(req.body.id, (err, user) => {
+            if (err) {
+              res.json({
                 success: false,
                 msg: "Error: " + err,
-            });
-        } else {
-            if(data.length > 0){
-                CapabilitiesModel.deleteByPrimaryKey(req.body.id, (err, user) => {
-                    if (err) {
-                        res.json({
-                            success: false,
-                            msg: "Error: " + err,
-                        });
-                    } else {
-                        res.json({
-                            success: true,
-                            msg: "Capability deleted",
-                        });
-                    }
-                });
+              });
             } else {
-                res.json({
-                    success: false,
-                    msg: "Error: Unable to find item with the primary key entered.",
-                });
+              res.json({
+                success: true,
+                msg: "Capability deleted",
+              });
             }
+          });
+        } else {
+          res.json({
+            success: false,
+            msg: "Error: Unable to find item with the primary key entered.",
+          });
         }
+      }
     });
-});
+  }
+);
 
 /**
  * @swagger
@@ -276,25 +296,31 @@ router.delete("/removeByID", (req, res, next) => {
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.get("/getByID", (req, res, next) => {
+router.get(
+  "/getByID",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
     CapabilitiesModel.getByPrimaryKey(req.query.id, function (err, data) {
-        if (err) {
-            res.json({
-                success: false,
-                msg: "Error: " + err,
-            });
+      if (err) {
+        res.json({
+          success: false,
+          msg: "Error: " + err,
+        });
+      } else {
+        if (data.length > 0) {
+          res.json(data[0]);
         } else {
-            if (data.length > 0) {
-                res.json(data[0]);
-            } else {
-                res.json({
-                    success: false,
-                    msg: "Error: Unable to find item with the primary key entered.",
-                });
-            }
+          res.json({
+            success: false,
+            msg: "Error: Unable to find item with the primary key entered.",
+          });
         }
+      }
     });
-});
+  }
+);
 
 /**
  * @swagger
@@ -317,25 +343,31 @@ router.get("/getByID", (req, res, next) => {
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.get("/getByTag", (req, res, next) => {
+router.get(
+  "/getByTag",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
     CapabilitiesModel.getByTag(req.query.tags, function (err, data) {
-        if (err) {
-            res.json({
-                success: false,
-                msg: "Error: " + err,
-            });
+      if (err) {
+        res.json({
+          success: false,
+          msg: "Error: " + err,
+        });
+      } else {
+        if (data.length > 0) {
+          res.json(data);
         } else {
-            if (data.length > 0) {
-                res.json(data);
-            } else {
-                res.json({
-                    success: false,
-                    msg: "Error: Unable to find items with the tag assigned.",
-                });
-            }
+          res.json({
+            success: false,
+            msg: "Error: Unable to find items with the tag assigned.",
+          });
         }
+      }
     });
-});
+  }
+);
 
 /**
  * @swagger
@@ -361,32 +393,38 @@ router.get("/getByTag", (req, res, next) => {
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.get("/getByTagsAnd", (req, res, next) => {
+router.get(
+  "/getByTagsAnd",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
     if (req.query.tags) {
-        CapabilitiesModel.getByTagsAnd(req.query.tags, function (err, data) {
-            if (err) {
-                res.json({
-                    success: false,
-                    msg: "Error: " + err,
-                });
-            } else {
-                if (data.length > 0) {
-                    res.json(data);
-                } else {
-                    res.json({
-                        success: false,
-                        msg: "Error: Unable to find items with all of the tags assigned.",
-                    });
-                }
-            }
-        });
-    } else {
-        res.json({
+      CapabilitiesModel.getByTagsAnd(req.query.tags, function (err, data) {
+        if (err) {
+          res.json({
             success: false,
-            msg: "Error: You must provide at least 1 tag.",
-        });
+            msg: "Error: " + err,
+          });
+        } else {
+          if (data.length > 0) {
+            res.json(data);
+          } else {
+            res.json({
+              success: false,
+              msg: "Error: Unable to find items with all of the tags assigned.",
+            });
+          }
+        }
+      });
+    } else {
+      res.json({
+        success: false,
+        msg: "Error: You must provide at least 1 tag.",
+      });
     }
-});
+  }
+);
 
 /**
  * @swagger
@@ -412,32 +450,38 @@ router.get("/getByTagsAnd", (req, res, next) => {
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.get("/getByTagsOr", (req, res, next) => {
+router.get(
+  "/getByTagsOr",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
     if (req.query.tags) {
-        CapabilitiesModel.getByTagsOr(req.query.tags, function (err, data) {
-            if (err) {
-                res.json({
-                    success: false,
-                    msg: "Error: " + err,
-                });
-            } else {
-                if (data.length > 0) {
-                    res.json(data);
-                } else {
-                    res.json({
-                        success: false,
-                        msg: "Error: Unable to find any items with at least one of the tags assigned.",
-                    });
-                }
-            }
-        });
-    } else {
-        res.json({
+      CapabilitiesModel.getByTagsOr(req.query.tags, function (err, data) {
+        if (err) {
+          res.json({
             success: false,
-            msg: "Error: You must provide at least 1 tag.",
-        });
+            msg: "Error: " + err,
+          });
+        } else {
+          if (data.length > 0) {
+            res.json(data);
+          } else {
+            res.json({
+              success: false,
+              msg: "Error: Unable to find any items with at least one of the tags assigned.",
+            });
+          }
+        }
+      });
+    } else {
+      res.json({
+        success: false,
+        msg: "Error: You must provide at least 1 tag.",
+      });
     }
-});
+  }
+);
 
 /**
  * @swagger
@@ -471,26 +515,37 @@ router.get("/getByTagsOr", (req, res, next) => {
  *       200:
  *         description: Success status
  */
-router.post("/links/sync", passport.authenticate("jwt", {
+router.post(
+  "/links/sync",
+  passport.authenticate("jwt", {
     session: false,
-}), (req, res, next) => {
+  }),
+  (req, res, next) => {
     //Get params
-    const payload = req.body
+    const payload = req.body;
 
     //Read jwt
-    let user = JWT.decode(req.header("authorization").replace("JWT ", ""));
+    const user = JWT.decode(req.header("authorization").replace("JWT ", ""));
 
     //Create role links
-    CapabilityLinkModel.link(payload.capabilities, {
+    CapabilityLinkModel.link(
+      payload.capabilities,
+      {
         id: payload.link_id,
         type: payload.link_type,
-        approved_by: user.email
-    }, (err, result) => {
+        approved_by: user["email"],
+      },
+      (err, result) => {
         //Return data
-        if (err) { res.json({ success: false, msg: err }); return; }
+        if (err) {
+          res.json({ success: false, msg: err });
+          return;
+        }
         res.json({ success: true, msg: "Capability links synced!" });
-    });
-});
+      }
+    );
+  }
+);
 
 /**
  * @swagger
@@ -523,27 +578,37 @@ router.post("/links/sync", passport.authenticate("jwt", {
  *       200:
  *         description: Success status
  */
-router.post("/links/create", passport.authenticate("jwt", {
+router.post(
+  "/links/create",
+  passport.authenticate("jwt", {
     session: false,
-}), (req, res, next) => {
+  }),
+  (req, res, next) => {
     //Get params
-    const payload = req.body
+    const payload = req.body;
 
     //Read jwt
-    let user = JWT.decode(req.header("authorization").replace("JWT ", ""));
+    const user = JWT.decode(req.header("authorization").replace("JWT ", ""));
 
     //Create role links
-    CapabilityLinkModel.create({
+    CapabilityLinkModel.create(
+      {
         capability_id: payload.capability_id,
         link_id: payload.link_id,
         link_type: payload.link_type,
-        approved_by: user.email
-    }, (err, result) => {
+        approved_by: user["email"],
+      },
+      (err, result) => {
         //Return data
-        if (err) { res.status(500).json({ success: false, msg: err }); return; }
+        if (err) {
+          res.status(500).json({ success: false, msg: err });
+          return;
+        }
         res.json({ success: true, msg: "Capability link created!" });
-    });
-});
+      }
+    );
+  }
+);
 
 /**
  * @swagger
@@ -576,22 +641,26 @@ router.post("/links/create", passport.authenticate("jwt", {
  *       200:
  *         description: Success status
  */
-router.delete("/links/delete", passport.authenticate("jwt", {
+router.delete(
+  "/links/delete",
+  passport.authenticate("jwt", {
     session: false,
-}), (req, res, next) => {
+  }),
+  (req, res, next) => {
     //Get params
-    const payload = req.body
-
-    //Read jwt
-    let user = JWT.decode(req.header("authorization").replace("JWT ", ""));
+    const payload = req.body;
 
     //Create role links
     CapabilityLinkModel.deleteByLinkable(payload.capability_id, payload.link_type, payload.link_id, (err, result) => {
-        //Return data
-        if (err) { res.status(500).json({ success: false, msg: err }); return; }
-        res.json({ success: true, msg: "Capability link deleted!" });
+      //Return data
+      if (err) {
+        res.status(500).json({ success: false, msg: err });
+        return;
+      }
+      res.json({ success: true, msg: "Capability link deleted!" });
     });
-});
+  }
+);
 
 /**
  * @swagger
@@ -614,47 +683,55 @@ router.delete("/links/delete", passport.authenticate("jwt", {
  *       200:
  *         description: Confirmation of Account Registration
  */
- router.get("/getByRoleName", (req, res, next) => {
-    let roleName = req.query.roleName
+router.get(
+  "/getByRoleName",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    let roleName = req.query.roleName;
     if (roleName) {
-        RoleModel.getByName(roleName, function (err, data) {
-            if (err) {
-                res.json({ success: false, msg: "Error: " + err });
-            } else {
-                if (data.length > 0) {
-                    let arrRoleID = data.map((a) => { return a.id});
-                    CapabilitiesModel.getByLinkIds('role', arrRoleID, function (err, capabilitiesData) {
-                        if(err){
-                            res.json({
-                                success: false,
-                                msg: "Error: " + err,
-                            });
-                        } else {
-                            if (capabilitiesData.length > 0) {
-                                res.json(capabilitiesData);
-                            } else {
-                                res.json({
-                                    success: false,
-                                    msg: "Error: Unable to find any capabilities assigned to this role.",
-                                });
-                            }
-                        }
-                    });
+      RoleModel.getByName(roleName, function (err, data) {
+        if (err) {
+          res.json({ success: false, msg: "Error: " + err });
+        } else {
+          if (data.length > 0) {
+            let arrRoleID = data.map((a) => {
+              return a.id;
+            });
+            CapabilitiesModel.getByLinkIds("role", arrRoleID, function (err, capabilitiesData) {
+              if (err) {
+                res.json({
+                  success: false,
+                  msg: "Error: " + err,
+                });
+              } else {
+                if (capabilitiesData.length > 0) {
+                  res.json(capabilitiesData);
                 } else {
-                    res.json({
-                        success: false,
-                        msg: "Error: Unable to find any roles with this name.",
-                    });
+                  res.json({
+                    success: false,
+                    msg: "Error: Unable to find any capabilities assigned to this role.",
+                  });
                 }
-            }
-        });
+              }
+            });
+          } else {
+            res.json({
+              success: false,
+              msg: "Error: Unable to find any roles with this name.",
+            });
+          }
+        }
+      });
     } else {
-        res.json({
-            success: false,
-            msg: "Error: You must provide a role name.",
-        });
+      res.json({
+        success: false,
+        msg: "Error: You must provide a role name.",
+      });
     }
-});
+  }
+);
 
 /**
  * @swagger
@@ -679,33 +756,44 @@ router.delete("/links/delete", passport.authenticate("jwt", {
  *       200:
  *         description: Confirmation of Account Registration
  */
- router.get("/getByTeamIDs", (req, res, next) => {
-    let teamIDs = req.query.teamname.split(',');
-    if (teamIDs) {
-        CapabilitiesModel.getByLinkIds('team', teamIDs, function (err, capabilitiesData) {
-            if(err){
-                res.json({
-                    success: false,
-                    msg: "Error: " + err,
-                });
-            } else {
-                if (capabilitiesData.length > 0) {
-                    res.json(capabilitiesData);
-                } else {
-                    res.json({
-                        success: false,
-                        msg: "Error: Unable to find any capabilities assigned to the teams provided.",
-                    });
-                }
-            }
-        });
-    } else {
-        res.json({
-            success: false,
-            msg: "Error: You must provide a username.",
-        });
+router.get(
+  "/getByTeamIDs",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    const teamname = req.query.teamname;
+    if (!teamname) {
+      res.status(400).json({ success: false, msg: "Error: You must provide a teamname." });
+      return;
     }
-});
+    let teamIDs = teamname.toString().split(",");
+    if (teamIDs) {
+      CapabilitiesModel.getByLinkIds("team", teamIDs, function (err, capabilitiesData) {
+        if (err) {
+          res.json({
+            success: false,
+            msg: "Error: " + err,
+          });
+        } else {
+          if (capabilitiesData.length > 0) {
+            res.json(capabilitiesData);
+          } else {
+            res.json({
+              success: false,
+              msg: "Error: Unable to find any capabilities assigned to the teams provided.",
+            });
+          }
+        }
+      });
+    } else {
+      res.json({
+        success: false,
+        msg: "Error: You must provide a teamname.",
+      });
+    }
+  }
+);
 
 /**
  * @swagger
@@ -735,27 +823,33 @@ router.delete("/links/delete", passport.authenticate("jwt", {
  *       200:
  *         description: Confirmation of Account Registration
  */
- router.post("/getAllCapabilitesWithTeamAndUsername", (req, res, next) => {
+router.post(
+  "/getAllCapabilitesWithTeamAndUsername",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
     let username = req.body.username;
-    let teamname = req.body.teamname.split(',');
+    let teamname = req.body.teamname.split(",");
     if (username && teamname) {
-        //Get all team roles
-        CapabilitiesModel.getAllCapabilitiesFromTeamArrayAndUserID(teamname,username, function (err, capabilitiesData) {
-            if(err){
-                res.json({
-                    success: false,
-                    msg: "Error: " + err,
-                });
-            } else {
-                res.json(capabilitiesData);
-            }
-        });
-    } else {
-        res.json({
+      //Get all team roles
+      CapabilitiesModel.getAllCapabilitiesFromTeamArrayAndUserID(teamname, username, function (err, capabilitiesData) {
+        if (err) {
+          res.json({
             success: false,
-            msg: "Error: You must provide a username.",
-        });
+            msg: "Error: " + err,
+          });
+        } else {
+          res.json(capabilitiesData);
+        }
+      });
+    } else {
+      res.json({
+        success: false,
+        msg: "Error: You must provide a username.",
+      });
     }
-});
+  }
+);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 class MessagesHelper {
-    static accountRequestTable(form) {
-        return `
+  static accountRequestTable(form) {
+    return `
             <table style="width: 100%">
                 <tr>
                     <td colspan="2" style="padding-bottom: 10px;"><b>User details</b></td>
@@ -27,7 +27,7 @@ class MessagesHelper {
                 </tr>
                 <tr>
                     <td>Related community hub: ${form.data.pid_access.related_ch == "" ? "n/a" : form.data.pid_access.related_ch}</td>
-                    <td>Related multi-discplinary team: ${form.data.pid_access.related_mdt.length ? form.data.pid_access.related_mdt.join(', ') : "n/a"}</td>
+                    <td>Related multi-discplinary team: ${form.data.pid_access.related_mdt.length ? form.data.pid_access.related_mdt.join(", ") : "n/a"}</td>
                 </tr>
                 <tr>
                     <td colspan="2">Citizen local authority/district council: ${form.data.pid_access.citizen_council == "" ? "n/a" : form.data.pid_access.citizen_council}</td>
@@ -37,10 +37,10 @@ class MessagesHelper {
                     <td colspan="2" style="padding: 10px 0px;"><b>Apps requested</b></td>
                 </tr>
                 <tr>
-                    <td colspan="2">${form.data.app_access.join(', ')}</td>
+                    <td colspan="2">${form.data.app_access.join(", ")}</td>
                 </tr>
             </table>`;
-    }
+  }
 }
 
-module.exports  = MessagesHelper;
+module.exports = MessagesHelper;

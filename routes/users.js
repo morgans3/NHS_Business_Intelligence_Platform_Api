@@ -3,12 +3,9 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const JWT = require("jsonwebtoken");
-const AWS = require("../config/database").AWS;
-const pool = require("../config/database").pool;
 
 const DIULibrary = require("diu-data-functions");
-const UserModel = new DIULibrary.Models.UserModel(AWS);
-const RoleModel = new DIULibrary.Models.RoleModel(pool);
+const UserModel = new DIULibrary.Models.UserModel();
 const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
 const Authenticate = require("../models/authenticate");
 const AuthenticateHelper = require("../helpers/authenticate");
@@ -144,13 +141,12 @@ router.post("/authenticate", (req, res, next) => {
   const authentication = req.body.authentication;
 
   //Get JWT
-  AuthenticateHelper.login(
-    authentication, username, password, organisation, 
-  (err, user) => {
+  AuthenticateHelper.login(authentication, username, password, organisation, (err, user) => {
     console.log(err, user);
     if (err) {
       //Return error
-      res.status(401).json({ success: false, msg: err }); return null;
+      res.status(401).json({ success: false, msg: err });
+      return null;
     } else {
       //Upgrade token
       Authenticate.upgradePassportwithOrganisation(JWT.decode(user.jwt), false, (err, token) => {
@@ -160,10 +156,10 @@ router.post("/authenticate", (req, res, next) => {
         let password_expired = true;
 
         //Check authentication method
-        if(authentication == "Demo") {
-          //Check password expiry 
+        if (authentication == "Demo") {
+          //Check password expiry
           if (user.password_expires) {
-            //Date in future? 
+            //Date in future?
             if (new Date(user.password_expires).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) {
               password_expired = false;
             }
@@ -262,20 +258,28 @@ router.get(
  *       200:
  *         description: Credentials valid
  */
-router.delete( "/delete", passport.authenticate("jwt", {
-  session: false,
-}), (req, res, next) => {
-    UserModel.delete({
-      username: req.body.username,
-      organisation: req.body.organisation
-    }, (err, result) => {
-      //Return data
-      if (err) { res.status(500).json({ success: false, msg: err }); return; }
-      res.json({ success: true, msg: "User deleted!" });
-    });
+router.delete(
+  "/delete",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    UserModel.delete(
+      {
+        username: req.body.username,
+        organisation: req.body.organisation,
+      },
+      (err, result) => {
+        //Return data
+        if (err) {
+          res.status(500).json({ success: false, msg: err });
+          return;
+        }
+        res.json({ success: true, msg: "User deleted!" });
+      }
+    );
   }
 );
-
 
 /**
  * @swagger
@@ -299,28 +303,37 @@ router.delete( "/delete", passport.authenticate("jwt", {
 router.post("/send-code", (req, res, next) => {
   //Generate token and send email
   const payload = req.body;
-  VerificationCodeModel.create({
-    organisation: "",
-    username: payload.email,
-    generated: new Date().toISOString(),
-  }, (saveErr, savedCode) => {
-    //Check for errors
-    if (saveErr) { res.json({ success: false, msg: "Failed: " + saveErr }); return; }
+  VerificationCodeModel.create(
+    {
+      organisation: "",
+      username: payload.email,
+      generated: new Date().toISOString(),
+    },
+    (saveErr, savedCode) => {
+      //Check for errors
+      if (saveErr) {
+        res.json({ success: false, msg: "Failed: " + saveErr });
+        return;
+      }
 
-    //Send code to email
-    EmailHelper.sendMail({
-        to: payload.email,
-        subject:  "Verification Code for Nexus Intelligence",
-        message: "Please enter this code where prompted on screen: " + savedCode.code
-    }, (err, response) => {
-        if (err) {
-          console.log(err);
-          res.json({ success: false, msg: "Failed: " + err });
-        } else {
-          res.json({ success: true, msg: "Code has been sent to the provided email address" });
+      //Send code to email
+      EmailHelper.sendMail(
+        {
+          to: payload.email,
+          subject: "Verification Code for Nexus Intelligence",
+          message: "Please enter this code where prompted on screen: " + savedCode.code,
+        },
+        (err, response) => {
+          if (err) {
+            console.log(err);
+            res.json({ success: false, msg: "Failed: " + err });
+          } else {
+            res.json({ success: true, msg: "Code has been sent to the provided email address" });
+          }
         }
-      });
-  });
+      );
+    }
+  );
 });
 
 /**
