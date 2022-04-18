@@ -33,7 +33,7 @@ router.get(
     session: false,
   }),
   (req, res, next) => {
-    const pcgeoquery = `SELECT * FROM public.mosaicpcn`;
+    const pcgeoquery = `SELECT * FROM public.public.mosaicpcn`;
     pool.query(pcgeoquery, (error, results) => {
       if (error) {
         res.json("Error: " + error);

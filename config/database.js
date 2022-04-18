@@ -1,5 +1,4 @@
 // @ts-check
-
 const region = process.env.AWSREGION || "eu-west-2";
 const access = process.env.AWSPROFILE || "Dev";
 const pgdb = process.env.PGDATABASE || "localhost";

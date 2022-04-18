@@ -1,16 +1,18 @@
-// @ts-check
 const uuid = require("uuid");
 const express = require("express");
 const router = express.Router();
 const AWS = require("../config/database").AWS;
 const passport = require("passport");
-const email = require("../models/emails");
 
-const usersModel = require("../models/user");
-const verificationCodesModel = require("../models/verification_codes");
-const formSubmissionsModel = require("../models/form_submissions");
-const messagesHelper = require("../helpers/messages");
-const hallmonitor = require("../config/admincheck");
+const DIULibrary = require("diu-data-functions");
+const usersModel = new DIULibrary.Models.UserModel(AWS);
+const verificationCodesModel = new DIULibrary.Models.VerificationCodeModel(AWS);
+const formSubmissionsModel = new DIULibrary.Models.FormSubmissionModel(AWS);
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
+const EmailHelper = DIULibrary.Helpers.Email;
+const MessagesHelper = require("../helpers/messages");
+
+const issuer = process.env.SITE_URL || "NHS BI Platform";
 
 /**
  * @swagger
@@ -49,15 +51,18 @@ router.get(
     passport.authenticate("jwt", {
       session: false,
     }),
-    hallmonitor,
+    MiddlewareHelper.userHasCapability("Hall Monitor"),
   ],
   (req, res, next) => {
-    console.log(req.body, req.query);
     formSubmissionsModel.get(req.query, (error, data) => {
+      console.log(error, data);
+      //Check for save error
       if (error) {
         res.status(500).json({ success: false, msg: error });
         return;
       }
+
+      //Return list
       res.json(data);
     });
   }
@@ -193,33 +198,37 @@ router.post("/account", (req, res, next) => {
     verificationCodesModel.deleteCode(formData.email_verification_code, formData.email);
 
     //Send sponsor an email
-    const message = `
-    <p>A member of your organisation has requested access to the COVID 19 Data Hub. Details of the request are below...</p>
-    ${messagesHelper.generateAccountRequestTable(formSubmission)}
-    <p>Please click below to authorise or deny this request...</p>`;
-
-    const actions = [
+    EmailHelper.sendMail(
       {
-        class: "primary",
-        text: "Approve",
-        type: "account_request_approve",
-        type_params: { id: formSubmission.id },
+        to: formSubmission.data.request_sponsor.email,
+        subject: "COVID 19 Data Hub Access",
+        message: `<p>A member of your organisation has requested access to the COVID 19 Data Hub. Details of the request are below...</p>
+            ${MessagesHelper.accountRequestTable(formSubmission)}
+            <p>Please click below to authorise or deny this request...</p>`,
+        actions: [
+          {
+            class: "primary",
+            text: "Approve",
+            type: "account_request_approve",
+            type_params: { id: formSubmission.id },
+          },
+          {
+            class: "warn",
+            text: "Deny",
+            type: "account_request_deny",
+            type_params: { id: formSubmission.id },
+          },
+        ],
       },
-      {
-        class: "warn",
-        text: "Deny",
-        type: "account_request_deny",
-        type_params: { id: formSubmission.id },
-      },
-    ];
-    email.emailActions(formData.email, message, "COVID 19 Data Hub Access", actions, (error, response, body) => {
-      if (error) {
-        console.log("Unable to send authorization request email to: " + formData.email + ". Reason: " + error.toString());
-        res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
-      } else {
-        res.status(200).json({ success: false, msg: "Request submitted successfully!" });
+      (error, response) => {
+        if (error) {
+          console.log("Unable to send authorization request email to: " + formData.email + ". Reason: " + error.toString());
+          res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
+        } else {
+          res.status(200).json({ success: false, msg: "Request submitted successfully!" });
+        }
       }
-    });
+    );
   });
 });
 
@@ -329,37 +338,42 @@ router.post("/account/complete", (req, res, next) => {
           organisation: "Collaborative Partners",
           linemanager: formSubmission.officer,
         };
-        usersModel.addUser(AWS.DynamoDB.Converter.marshall(userAccount), userAccount.password, (errAddUser, user) => {
+        usersModel.addUser(AWS.DynamoDB.Converter.marshall(userAccount), userAccount.password, (err, user) => {
           //Return failed
-          if (errAddUser) {
+          if (err) {
             res.json({ success: false, msg: "Failed to register user" });
             return;
           }
         });
 
-        const message = `
-        <p>Your access to the BI Platform has been approved, you can now login using the below details...</p>
-        <p><b>Username:</b> ${userAccount.username} <br><b>Password:</b> ${userAccount.password} <br><b>Organisation:</b> Collaborative Partners</p>
-        <p>When you first login please change your password to keep your account secure.</p>`;
-
-        const actions = [
+        //Send user access details
+        EmailHelper.sendMail(
           {
-            class: "primary",
-            text: "Login",
-            type: "home_page",
+            to: userAccessRequest.data.email,
+            subject: "NHS BI Platform Access",
+            message: `
+                <p>Your access to ${issuer.replace("api.", "")} has been approved, you can now login using the below details...</p>
+                <p><b>Username:</b> ${userAccount.username} <br><b>Password:</b> ${userAccount.password} <br><b>Organisation:</b> Collaborative Partners</p>
+                <p>When you first login please change your password to keep your account secure.</p>`,
+            actions: [
+              {
+                class: "primary",
+                text: "Login",
+                type: "home_page",
+              },
+            ],
           },
-        ];
-
-        email.emailActions(userAccessRequest.data.email, message, "COVID 19 Data Hub Access", actions, (error, response, body) => {
-          if (error) {
-            console.log("Unable to send approval notification to: " + userAccessRequest.data.email + ". Reason: " + error.toString());
-            res.status(500).json({ success: false, msg: error });
-            return;
-          } else {
-            res.json({ success: false, msg: "Request has been approved!" });
-            return;
+          (error, response) => {
+            if (error) {
+              console.log("Unable to send approval notification to: " + formData.email + ". Reason: " + error.toString());
+              res.status(500).json({ success: false, msg: error });
+              return;
+            } else {
+              res.json({ success: false, msg: "Request has been approved!" });
+              return;
+            }
           }
-        });
+        );
       } else {
         //Record form submission
         formSubmissionsModel.create(
@@ -376,6 +390,34 @@ router.post("/account/complete", (req, res, next) => {
           (error) => {
             if (error) {
               res.status(500).json({ success: false, msg: error });
+              return;
+            }
+          }
+        );
+
+        //Send user details
+        EmailHelper.sendMail(
+          {
+            to: userAccessRequest.data.email,
+            subject: "COVID 19 Data Hub",
+            message: `
+                <p>Your access to ${issuer.replace("api.", "")} has not been approved.</p>
+                <p><b>Reason:</b> ${formData.reason}</p>`,
+            actions: [
+              {
+                class: "primary",
+                text: "Request again",
+                type: "account_request",
+              },
+            ],
+          },
+          (error, response) => {
+            if (error) {
+              console.log("Unable to send approval notification to: " + formData.email + ". Reason: " + error.toString());
+              res.status(500).json({ success: false, msg: error });
+              return;
+            } else {
+              res.json({ success: false, msg: "Response has been recorded" });
               return;
             }
           }

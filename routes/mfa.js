@@ -6,7 +6,11 @@ const MFA = require("../models/mfa");
 const Authenticate = require("../models/authenticate");
 const passport = require("passport");
 const JWT = require("jsonwebtoken");
-const Request = require("request");
+
+const DIULibrary = require("diu-data-functions");
+const EmailHelper = DIULibrary.Helpers.Email;
+
+const issuer = process.env.SITE_URL || "NHS BI Platform";
 
 /**
  * @swagger
@@ -144,7 +148,20 @@ router.post(
           if (err) {
             console.log(response);
           } else {
-            // TODO: Add in Email Verification
+            EmailHelper.sendMail(
+              {
+                to: email,
+                subject: "New MFA Device Registered for: " + issuer.replace("api.", ""),
+                message: "A new device has been registered to secure your " + issuer.replace("api.", "") + " account. If you are receiving this and you have not registered a new device please contact our support team immediately.",
+              },
+              (error, response) => {
+                if (error) {
+                  console.log("Unable to send security email for: " + username + ". Reason: " + error.toString());
+                } else {
+                  console.log("Security email sent for new MFA device for: " + username);
+                }
+              }
+            );
             res.json(response);
           }
         });
@@ -246,7 +263,20 @@ router.get(
       if (username && email) {
         MFA.unregister(username, (err, response) => {
           if (err) console.log(response);
-          // TODO: Add in Email Verification
+          EmailHelper.sendMail(
+            {
+              to: email,
+              subject: "New MFA Device Unregistered for: " + issuer.replace("api.", ""),
+              message: "Your device that secures your " + issuer.replace("api.", "") + " account has been unregistered. If you are receiving this and you have not unregistered your device please contact our support team immediately.",
+            },
+            (error, response) => {
+              if (error) {
+                console.log("Unable to send device removal security email for: " + username + ". Reason: " + error.toString());
+              } else {
+                console.log("Security email sent for unregistering MFA device for: " + username);
+              }
+            }
+          );
           res.json(response);
         });
       }

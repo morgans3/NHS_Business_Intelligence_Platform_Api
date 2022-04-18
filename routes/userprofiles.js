@@ -4,9 +4,11 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const Profiles = require("../models/userprofiles");
-const Users = require("../models/user");
 const organisations = require("../models/authenticate").organisations;
 const JWT = require("jsonwebtoken");
+
+const DIULibrary = require("diu-data-functions");
+const UserModel = new DIULibrary.Models.UserModel();
 
 /**
  * @swagger
@@ -182,7 +184,7 @@ router.get(
         return;
       }
       if (result.Items.length > 0) {
-        Users.getUserByUsername(username, function (err2, result2) {
+        UserModel.getUserByUsername(username, function (err2, result2) {
           if (err2) {
             res.send(err2);
           } else {

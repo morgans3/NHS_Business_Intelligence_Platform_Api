@@ -12,6 +12,19 @@ For serverless API endpoints please review the code in: <https://github.com/morg
 - Typescript v2.7 or later installed
 - Node.js v10.13.0 or later installed
 
+## Required Parameters
+
+- PGDATABASE
+- PGPORT (default `5432`)
+- POSTGRES_UN
+- POSTGRES_PW
+- AWSPROFILE
+- JWT_SECRET
+- JWT_SECRETKEY
+- AWS_SECRETID
+- AWS_SECRETKEY
+- SITE_URL (default `NHS BI Platform`)
+
 ## Deployment
 
 This code will deploy as a docker container. For a method of automating the deployment of this server, along with the rest of our BI platform, please refer to: <https://github.com/morgans3/NHS_Business_Intelligence_Platform>
