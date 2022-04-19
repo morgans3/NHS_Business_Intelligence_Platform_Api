@@ -5,6 +5,7 @@ const passport = require("passport");
 const organisations = require("../models/authenticate").organisations;
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
+const StringHelper = DIULibrary.Helpers.String;
 
 /**
  * @swagger
@@ -145,7 +146,7 @@ router.get(
                 let responseAD = [];
                 user.forEach((staff) => {
                   responseAD.push({
-                    _id: sidBufferToString(staff.objectSid),
+                    _id: StringHelper.sidBufferToString(staff.objectSid),
                     name: staff.cn,
                     email: staff.mail,
                     username: staff.sAMAccountName,
@@ -164,44 +165,5 @@ router.get(
     }
   }
 );
-
-let pad = function (s) {
-  if (s.length < 2) {
-    return `0${s}`;
-  } else {
-    return s;
-  }
-};
-
-let sidBufferToString = function (buf) {
-  let asc, end;
-  let i;
-  if (buf == null) {
-    return null;
-  }
-
-  let version = buf[0];
-  let subAuthorityCount = buf[1];
-  let identifierAuthority = parseInt(
-    (() => {
-      let result = [];
-      for (i = 2; i <= 7; i++) {
-        result.push(buf[i].toString(16));
-      }
-      return result;
-    })().join(""),
-    16
-  );
-
-  let sidString = `S-${version}-${identifierAuthority}`;
-
-  for (i = 0, end = subAuthorityCount - 1, asc = 0 <= end; asc ? i <= end : i >= end; asc ? i++ : i--) {
-    let subAuthOffset = i * 4;
-    let tmp = pad(buf[11 + subAuthOffset].toString(16)) + pad(buf[10 + subAuthOffset].toString(16)) + pad(buf[9 + subAuthOffset].toString(16)) + pad(buf[8 + subAuthOffset].toString(16));
-    sidString += `-${parseInt(tmp, 16)}`;
-  }
-
-  return sidString;
-};
 
 module.exports = router;
