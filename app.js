@@ -12,7 +12,6 @@ const APILogging = require("diu-api-logging").Methods.Logging.APILogging;
 // SETUP PROCESS VARIABLES
 
 const configure = require("./configureAPI");
-console.log(configure);
 
 // SWAGGER SETUP
 const swaggerUi = require("swagger-ui-express");
