@@ -11,7 +11,7 @@ const APILogging = require("diu-api-logging").Methods.Logging.APILogging;
 
 // SETUP PROCESS VARIABLES
 
-const configure = require("./configureAPI");
+const configure = require("./configureAPI"); // configure not used but configure step needs to run
 
 // SWAGGER SETUP
 const swaggerUi = require("swagger-ui-express");
@@ -45,7 +45,7 @@ app.use(
 app.use(bodyParser.json());
 
 // ROUTES FOR OUR API
-const routes = ["mfa", "otp", "password", "requests", "serviceaccounts", "confluence", "docobooutbound", "docobo", "users", "postcodes", "pcninformation", "demographics", "patientlists", "shielding", "userprofiles", "teamprofiles", "teamrequests", "teammembers", "searchusers", "searchs", "capabilities", "roles", "virtualward", "teams", "niceevidence", "gpinpatients", "lpresviewer", "opensource", "trials"];
+const routes = ["mfa", "otp", "password", "requests", "serviceaccounts", "confluence", "docobooutbound", "docobo", "users", "postcodes", "pcninformation", "demographics", "patientlists", "shielding", "userprofiles", "teamprofiles", "teamrequests", "teammembers", "searchusers", "searchs", "capabilities", "roles", "virtualward", "teams", "niceevidence", "gpinpatients", "lpresviewer", "opensource", "trials", "wards", "grandindex", "orgboundaries", "isochrone", "gppractices", "outbreak"];
 
 //ADD ENDPOINTS
 app.use("/", require("./routes/generic"));
