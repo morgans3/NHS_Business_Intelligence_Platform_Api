@@ -1,26 +1,59 @@
 // @ts-check
-
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const pool = require("../config/database").pool;
+const { settings } = require("../config/database");
+const PostgresI = require("diu-data-functions").Methods.Postgresql;
+const PGConstruct = PostgresI.init(settings);
 
 /**
  * @swagger
  * tags:
- *   name: Pcninformation
- *   description: Pcn information
+ *   name: PCNInformation
+ *   description: Collections of PCN Information
  */
 
 /**
  * @swagger
- *  /pcninformation/getData:
+ * /pcninformation/getTopoJSON:
  *   get:
  *     security:
  *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
- *      - Pcninformation
+ *      - PCNInformation
+ *     produces:
+ *      - application/json
+ *     responses:
+ *       200:
+ *         description: Full List
+ */
+router.get(
+  "/getTopoJSON",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    const params = {
+      tablename: "public.icps",
+      st_asgeojson: "ST_Simplify (lg.geom, 0.0001, TRUE)",
+      as_properties: `(select row_to_json(_) AS properties from (select lg.icp AS "ICP") as _) --row_to_json((organisation_code, name), true) AS properties`,
+    };
+    PostgresI.getGeoJson(PGConstruct, params, (response) => {
+      res.json(response);
+    });
+  }
+);
+
+/**
+ * @swagger
+ * /pcninformation/getData:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns the entire collection
+ *     tags:
+ *      - PCNInformation
  *     produces:
  *      - application/json
  *     responses:
@@ -33,16 +66,40 @@ router.get(
     session: false,
   }),
   (req, res, next) => {
-    const pcgeoquery = `SELECT * FROM public.public.mosaicpcn`;
-    pool.query(pcgeoquery, (error, results) => {
-      if (error) {
-        res.json("Error: " + error);
-      }
-      if (results.rows) {
-        res.status(200).json(results.rows);
-      } else {
-        res.status(200).json([]);
-      }
+    PostgresI.getAll(PGConstruct, `public.mosaicpcn`, (response) => {
+      res.json(response);
+    });
+  }
+);
+
+/**
+ * @swagger
+ * /pcninformation/getHexGeojson:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns the entire collection
+ *     tags:
+ *      - PCNInformation
+ *     produces:
+ *      - application/json
+ *     responses:
+ *       200:
+ *         description: Full List
+ */
+router.get(
+  "/getHexGeojson",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    const params = {
+      tablename: "public.pcn_hex_geo",
+      st_asgeojson: "lg.geom",
+      as_properties: "(select row_to_json(_) AS properties from (select id, pcn) as _)",
+    };
+    PostgresI.getGeoJson(PGConstruct, params, (response) => {
+      res.json(response);
     });
   }
 );

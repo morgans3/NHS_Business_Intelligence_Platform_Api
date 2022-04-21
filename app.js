@@ -41,7 +41,7 @@ app.use(
 app.use(bodyParser.json());
 
 // ROUTES FOR OUR API
-const routes = ["mfa", "otp", "password", "requests", "serviceaccounts", "confluence", "docobooutbound", "docobo", "users", "postcodes", "pcninformation", "demographics", "patientlists", "shielding", "userprofiles", "teamprofiles", "teamrequests", "teammembers", "searchusers", "searchs", "capabilities", "roles", "virtualward", "teams", "niceevidence", "gpinpatients", "lpresviewer", "opensource", "trials"];
+const routes = ["mfa", "otp", "password", "requests", "serviceaccounts", "confluence", "docobooutbound", "docobo", "users", "postcodes", "pcninformation", "demographics", "patientlists", "shielding", "userprofiles", "teamprofiles", "teamrequests", "teammembers", "searchusers", "searchs", "capabilities", "roles", "virtualward", "teams", "niceevidence", "gpinpatients", "lpresviewer", "opensource", "trials", "wards", "grandindex", "orgboundaries", "isochrone", "gppractices", "outbreak"];
 
 //ADD ENDPOINTS
 app.use("/", require("./routes/generic"));

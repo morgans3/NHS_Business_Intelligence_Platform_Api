@@ -569,4 +569,44 @@ module.exports.SecureEndpoints = [
     type: null,
     method: "post",
   },
+  {
+    url: "/grandindex/getAll",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/gppractices/getAll",
+    type: null,
+    method: "get",
+  },
+  {
+    url: "/wards/getAll",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/pcninformation/getHexGeojson",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/pcninformation/getTopoJSON",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/orgboundaries/getTopoJSON",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/isochrone/getHousesWithinIsochrone",
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: "/outbreak/mapinfo",
+    type: "JWT",
+    method: "get",
+  },
 ];
