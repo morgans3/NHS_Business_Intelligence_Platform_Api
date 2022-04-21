@@ -66,7 +66,7 @@ router.post(
     };
     if (req.body.rolecode) newMember["rolecode"] = { S: req.body.rolecode };
     if (req.body.enddate) newMember["enddate"] = { S: req.body.enddate };
-    Members.addteamMember(newMember, (err, method) => {
+    Members.addteamMember(newMember, (err, data) => {
       if (err) {
         res.json({
           success: false,
@@ -76,6 +76,7 @@ router.post(
         res.json({
           success: true,
           msg: "Registered",
+          data: data
         });
       }
     });

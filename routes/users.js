@@ -21,6 +21,82 @@ const EmailHelper = DIULibrary.Helpers.Email;
 
 /**
  * @swagger
+ * /users:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns the entire collection
+ *     tags:
+ *      - Users
+ *     produces:
+ *      - application/json
+ *     responses:
+ *       200:
+ *         description: Full List
+ */
+ router.get(
+  "/",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    if(req.query.organisation) {
+      UserModel.getByOrgAndName(req.query, (err, result) => {
+        res.send(err ? { success: false, msg: err } : result);
+      });
+    } else {
+      UserModel.get(req.query, (err, result) => {
+        res.send(err ? { success: false, msg: err } : result);
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns a user by their id (username#organisation)
+ *     tags:
+ *      - Users
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *      - name: id
+ *        description: Username#Organisation
+ *        type: string
+ *        in: path
+ *     responses:
+ *       200:
+ *         description: Full List
+ */
+ router.get(
+  "/:id",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    UserModel.getByKeys({
+      username: req.params.id.split('#')[0],
+      organisation: req.params.id.split('#')[1]
+    }, (err, result) => {
+      //Error?
+      if (err) { res.status(500).json({ success: false, msg: "Request failed" }); } 
+
+      //Found user?
+      if(result.Items.length == 0) {
+        res.status(404).json({ success: false, msg: "Failed to retreive user!" }); 
+      } else {
+        res.json(result.Items[0]); 
+      }
+    });
+  }
+);
+
+/**
+ * @swagger
  * /users/register:
  *   post:
  *     description: Registers a User

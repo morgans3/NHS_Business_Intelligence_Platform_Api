@@ -35,7 +35,9 @@ module.exports.getAll = function (callback) {
 module.exports.addteamMember = function (newMember, callback) {
   var assignRandomint = Generic.getDateTime() + Math.floor(Math.random() * 1e4).toString();
   newMember._id = { S: assignRandomint };
-  DynamoDB.addItem(AWS, tablename, newMember, callback);
+  DynamoDB.addItem(AWS, tablename, newMember, (err, res) => {
+    callback(err, newMember);
+  });
 };
 
 module.exports.update = function (newData, callback) {

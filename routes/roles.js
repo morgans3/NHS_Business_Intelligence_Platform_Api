@@ -32,7 +32,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *       200:
  *         description: A list of available roles
  */
-router.get("/", passport.authenticate("jwt", { session: false }), MiddlewareHelper.userHasCapability("Admin"), (req, res, next) => {
+router.get("/", passport.authenticate("jwt", { session: false }), (req, res, next) => {
   RoleModel.get((err, result) => {
     //Return data
     if (err) {
