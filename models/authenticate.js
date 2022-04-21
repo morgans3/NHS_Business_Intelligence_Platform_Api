@@ -1,6 +1,5 @@
 
 const credentials = require("../_credentials/credentials");
-const activeDirectory = require("../config/active_directory");
 const jwt = require("jsonwebtoken");
 const DIULibrary = require("diu-data-functions");
 const UserRoleModel = new DIULibrary.Models.UserRoleModel();
@@ -173,12 +172,3 @@ function getTeamMembershipsByUsername(username, callback) {
     }
   });
 }
-
-module.exports.organisations = [
-  { name: "xfyldecoast", org: activeDirectory.org_settings.xfyldecoast, displayname: "Fylde Coast" },
-  { name: "xmlcsu", org: activeDirectory.org_settings.xmlcsu, displayname: "ML CSU" },
-  { name: "lcsu", org: activeDirectory.org_settings.lcsu, displayname: "West Lancs", filter: "West Lancashire" },
-  { name: "global", org: activeDirectory.org_settings.xfyldecoast, displayname: "LSC Region" },
-  { name: "uhmbt", org: activeDirectory.org_settings.uhmbt, displayname: "Morecambe Bay" },
-  { name: "nwas", org: activeDirectory.org_settings.nwas, displayname: "NWAS" },
-];

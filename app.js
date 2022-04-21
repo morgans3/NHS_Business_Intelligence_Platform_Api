@@ -9,10 +9,6 @@ const AWSSettings = require("./config/database").settings;
 const apiname = process.env.API_NAME || "API";
 const APILogging = require("diu-api-logging").Methods.Logging.APILogging;
 
-// SETUP PROCESS VARIABLES
-
-const configure = require("./configureAPI");
-
 // SWAGGER SETUP
 const swaggerUi = require("swagger-ui-express");
 const swaggerJSDoc = require("swagger-jsdoc");

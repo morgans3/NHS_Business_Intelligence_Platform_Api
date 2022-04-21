@@ -4,11 +4,12 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const Profiles = require("../models/userprofiles");
-const organisations = require("../models/authenticate").organisations;
 const JWT = require("jsonwebtoken");
 
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
+const OrganisationModel = new DIULibrary.Models.OrganisationModel();
+const ActiveDirectoryModel = new DIULibrary.Models.ActiveDirectoryModel();
 
 /**
  * @swagger
@@ -168,118 +169,133 @@ router.get(
     session: false,
   }),
   (req, res, next) => {
-    const username = req.query.username;
+    //Parse request
     let org = "global";
-    let jwt = req.header("authorization");
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+    const username = req.query.username;
+    if (req.header("authorization")) {
+      let decodedToken = JWT.decode(req.header("authorization").replace("JWT ", ""));
       if (decodedToken["authentication"] === "nwas") {
         org = decodedToken["authentication"];
       }
     }
-    const requestorOrg = organisations.find((x) => x.name === org);
-    Profiles.getUserProfileByUsername(username, function (err, result) {
-      if (err) {
-        res.send(err);
-        return;
-      }
-      if (result.Items.length > 0) {
-        UserModel.getUserByUsername(username, function (err2, result2) {
-          if (err2) {
-            res.send(err2);
-          } else {
-            if (result2.Items.length === 0) {
-              // @ts-ignore
-              requestorOrg.org.findUser(username, function (err, user) {
-                if (err) {
-                  return res.json({
-                    success: false,
-                    err: JSON.stringify(err),
-                    msg: "User not found",
-                  });
-                }
 
-                if (!user) {
-                  // check if referral org (AD)
-                  return res.json({
-                    success: false,
-                    msg: "User: " + username + " not found.",
+    //Find organisation details
+    OrganisationModel.get({ authmethod: org }, (err, data) => {
+      //Error?
+      if(err) { res.status(500).send({ success: false, message: err }); return; }
+
+      //Organisation exists?
+      if(data.Items.length == 0) {
+        res.send({ status: 404, message: "Organisation not found" }); return; 
+      }
+      
+      //Query via active directory
+      let organisation = data.Items[0];
+      ActiveDirectoryModel.getInstance(organisation.authmethod, (err, activeDirectory) => {
+        Profiles.getUserProfileByUsername(username, function (err, result) {
+          if (err) {
+            res.send(err);
+            return;
+          }
+          if (result.Items.length > 0) {
+            UserModel.getUserByUsername(username, function (err2, result2) {
+              if (err2) {
+                res.send(err2);
+              } else {
+                if (result2.Items.length === 0) {
+                  // @ts-ignore
+                  activeDirectory.findUser(username, function (err, user) {
+                    if (err) {
+                      return res.json({
+                        success: false,
+                        err: JSON.stringify(err),
+                        msg: "User not found",
+                      });
+                    }
+
+                    if (!user) {
+                      // check if referral org (AD)
+                      return res.json({
+                        success: false,
+                        msg: "User: " + username + " not found.",
+                      });
+                    } else {
+                      const orguser = {
+                        _id: result.Items[0]._id,
+                        name: user.cn,
+                        username: user.sAMAccountName,
+                        email: user.mail,
+                        organisation: organisation.name,
+                        photobase64: result.Items[0].photobase64,
+                        contactnumber: result.Items[0].contactnumber,
+                        preferredcontactmethod: result.Items[0].preferredcontactmethod,
+                        mobiledeviceids: result.Items[0].mobiledeviceids,
+                        emailpreference: result.Items[0].emailpreference,
+                        impreference: result.Items[0].impreference,
+                        im_id: result.Items[0].im_id,
+                      };
+                      res.send(orguser);
+                    }
                   });
                 } else {
-                  const orguser = {
+                  let founduser = result2.Items[0];
+                  const fulluser = {
                     _id: result.Items[0]._id,
-                    name: user.cn,
-                    username: user.sAMAccountName,
-                    email: user.mail,
-                    organisation: requestorOrg.displayname,
+                    name: founduser.name,
+                    username: username,
+                    email: founduser.email,
+                    organisation: founduser.organisation,
                     photobase64: result.Items[0].photobase64,
                     contactnumber: result.Items[0].contactnumber,
                     preferredcontactmethod: result.Items[0].preferredcontactmethod,
                     mobiledeviceids: result.Items[0].mobiledeviceids,
                     emailpreference: result.Items[0].emailpreference,
+                    linemanager: founduser.linemanager,
                     impreference: result.Items[0].impreference,
                     im_id: result.Items[0].im_id,
                   };
-                  res.send(orguser);
+                  res.send(fulluser);
                 }
-              });
-            } else {
-              let founduser = result2.Items[0];
-              const fulluser = {
-                _id: result.Items[0]._id,
-                name: founduser.name,
-                username: username,
-                email: founduser.email,
-                organisation: founduser.organisation,
-                photobase64: result.Items[0].photobase64,
-                contactnumber: result.Items[0].contactnumber,
-                preferredcontactmethod: result.Items[0].preferredcontactmethod,
-                mobiledeviceids: result.Items[0].mobiledeviceids,
-                emailpreference: result.Items[0].emailpreference,
-                linemanager: founduser.linemanager,
-                impreference: result.Items[0].impreference,
-                im_id: result.Items[0].im_id,
-              };
-              res.send(fulluser);
-            }
-          }
-        });
-      } else {
-        // @ts-ignore
-        requestorOrg.org.findUser(username, function (err, user) {
-          if (err) {
-            return res.json({
-              success: false,
-              err: JSON.stringify(err),
-              msg: "User not found",
-            });
-          }
-
-          if (!user) {
-            // check if referral org (AD)
-            return res.json({
-              success: false,
-              msg: "User: " + username + " not found.",
+              }
             });
           } else {
-            const ADuser = {
-              _id: user.employeeID,
-              name: user.cn,
-              username: user.sAMAccountName,
-              email: user.mail,
-              organisation: requestorOrg.displayname,
-              photobase64: null,
-              contactnumber: null,
-              preferredcontactmethod: null,
-              mobiledeviceids: null,
-              emailpreference: null,
-              impreference: null,
-              im_id: null,
-            };
-            res.send(ADuser);
+            // @ts-ignore
+            activeDirectory.findUser(username, function (err, user) {
+              if (err) {
+                return res.json({
+                  success: false,
+                  err: JSON.stringify(err),
+                  msg: "User not found",
+                });
+              }
+
+              if (!user) {
+                // check if referral org (AD)
+                return res.json({
+                  success: false,
+                  msg: "User: " + username + " not found.",
+                });
+              } else {
+                const ADuser = {
+                  _id: user.employeeID,
+                  name: user.cn,
+                  username: user.sAMAccountName,
+                  email: user.mail,
+                  organisation: organisation.name,
+                  photobase64: null,
+                  contactnumber: null,
+                  preferredcontactmethod: null,
+                  mobiledeviceids: null,
+                  emailpreference: null,
+                  impreference: null,
+                  im_id: null,
+                };
+                res.send(ADuser);
+              }
+            });
           }
         });
-      }
+      });
     });
   }
 );
