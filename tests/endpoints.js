@@ -609,4 +609,29 @@ module.exports.SecureEndpoints = [
     type: "JWT",
     method: "get",
   },
+  // {
+  //   url: "/payloads/{id}",
+  //   type: "JWT",
+  //   method: "get",
+  // },
+  {
+    url: "/warddetails/getAll",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/mosaic/getAll",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/mosaic/getCodefromPostCode",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/pointsofinterest/getAll",
+    type: "JWT",
+    method: "get",
+  },
 ];
