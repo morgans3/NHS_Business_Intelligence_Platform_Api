@@ -634,4 +634,99 @@ module.exports.SecureEndpoints = [
     type: "JWT",
     method: "get",
   },
+  {
+    url: "/payloads/getAll",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/organisations/remove",
+    type: "JWT",
+    method: "delete",
+  },
+  {
+    url: "/organisations/register",
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: "/organisations/update",
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: "/organisations/getAll",
+    type: null,
+    method: "get",
+  },
+  {
+    url: "/newsfeeds/remove",
+    type: "JWT",
+    method: "delete",
+  },
+  {
+    url: "/newsfeeds/register",
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: "/newsfeeds/update",
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: "/newsfeeds/getAll",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/newsfeeds/getByID",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/systemalerts/getAll",
+    type: null,
+    method: "get",
+  },
+  {
+    url: "/systemalerts/getActive",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/systemalerts/register",
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: "/systemalerts/update",
+    type: "JWT",
+    method: "put",
+  },
+  {
+    url: "/apps/getAll",
+    type: null,
+    method: "get",
+  },
+  {
+    url: "/apps/getByName",
+    type: "JWT",
+    method: "get",
+  },
+  {
+    url: "/apps/register",
+    type: "JWT",
+    method: "post",
+  },
+  {
+    url: "/apps/update",
+    type: "JWT",
+    method: "put",
+  },
+  {
+    url: "/apps/archive",
+    type: "JWT",
+    method: "put",
+  },
 ];
