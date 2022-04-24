@@ -38,7 +38,7 @@ router.get(
       if (err) {
         res.status(500).json({ success: false, msg: err });
       } else {
-        res.json(result.items);
+        res.json(result.Items);
       }
     });
   }
