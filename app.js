@@ -85,6 +85,10 @@ const routes = [
   "warddetails",
   "pointsofinterest",
   "mosaic",
+  "organisations",
+  "newsfeeds",
+  "systemalerts",
+  "apps",
 ];
 
 //ADD ENDPOINTS

@@ -6,6 +6,7 @@ const AWS = require("../config/database").AWS;
 const passport = require("passport");
 
 const DynamoDBData = require("diu-data-functions").Methods.DynamoDBData;
+const tablename = "atomic_payload";
 
 /**
  * @swagger
@@ -41,11 +42,46 @@ router.get(
     session: false,
   }),
   (req, res, next) => {
-    DynamoDBData.getItemByKey(AWS, "atomic_payload", "id", req.params.id, (err, result) => {
+    DynamoDBData.getItemByKey(AWS, tablename, "id", req.params.id, (err, result) => {
       if (err) {
         res.status(500).json({ success: false, msg: err });
       } else {
         res.json(result.Items);
+      }
+    });
+  }
+);
+
+/**
+ * @swagger
+ * /payloads/getAll:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns the entire collection
+ *     tags:
+ *      - Payloads
+ *     produces:
+ *      - application/json
+ *     responses:
+ *       200:
+ *         description: Full List
+ */
+router.get(
+  "/getAll",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    DynamoDBData.getAll(AWS, tablename, (err, result) => {
+      if (err) {
+        res.send(err);
+      } else {
+        if (result.Items) {
+          res.send(JSON.stringify(result.Items));
+        } else {
+          res.send("[]");
+        }
       }
     });
   }
