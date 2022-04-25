@@ -1,5 +1,5 @@
 # Dependency directories
 node_modules
 coverage/*
-test-report-directory
+test-report-directory/*
 storage/uploads/*

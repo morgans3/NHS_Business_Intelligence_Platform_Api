@@ -38,7 +38,7 @@
     "body-parser": "~1.19.0",
     "cors": "~2.8.5",
     "diu-api-logging": "^1.0.11",
-    "diu-data-functions": "^1.2.3",
+    "diu-data-functions": "^1.2.4",
     "express": "~4.17.1",
     "express-winston": "^4.0.5",
     "js-sha512": "^0.8.0",
@@ -66,6 +66,7 @@
   "devDependencies": {
     "@aws-sdk/client-secrets-manager": "^3.1.0",
     "@types/jest": "^26.0.19",
+    "@types/passport": "^1.0.7",
     "dotenv": "^8.6.0",
     "jest": "^26.6.3",
     "jest-junit": "^12.0.0",

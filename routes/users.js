@@ -10,6 +10,7 @@ const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
 const Authenticate = require("../models/authenticate");
 const AuthenticateHelper = require("../helpers/authenticate");
 const credentials = require("../_credentials/credentials");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const EmailHelper = DIULibrary.Helpers.Email;
 
 /**
@@ -54,6 +55,33 @@ const EmailHelper = DIULibrary.Helpers.Email;
 
 /**
  * @swagger
+ * /users/profile:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns User Profile
+ *     tags:
+ *      - Users
+ *     produces:
+ *      - application/json
+ *     responses:
+ *       200:
+ *         description: User Profile
+ */
+ router.get(
+  "/profile",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    res.json({
+      user: req.user,
+    });
+  }
+);
+
+/**
+ * @swagger
  * /users/{id}:
  *   get:
  *     security:
@@ -77,17 +105,25 @@ const EmailHelper = DIULibrary.Helpers.Email;
   passport.authenticate("jwt", {
     session: false,
   }),
+  MiddlewareHelper.validate(
+    "params", 
+    {
+      id: { type: "string", pattern: "[A-z. 0-9]{1,50}#[A-z. ]{1,50}" }
+    }, { 
+      pattern: "The user id should be in the format of 'username#organisation'"
+    }
+  ), 
   (req, res, next) => {
     UserModel.getByKeys({
       username: req.params.id.split('#')[0],
       organisation: req.params.id.split('#')[1]
     }, (err, result) => {
       //Error?
-      if (err) { res.status(500).json({ success: false, msg: "Request failed" }); } 
+      if (err) { res.status(500).json({ success: false, msg: err.message }); return; } 
 
       //Found user?
       if(result.Items.length == 0) {
-        res.status(404).json({ success: false, msg: "Failed to retreive user!" }); 
+        res.status(404).json({ success: false, msg: "User not found!" }); 
       } else {
         res.json(result.Items[0]); 
       }
@@ -251,33 +287,6 @@ router.post("/authenticate", (req, res, next) => {
     }
   });
 });
-
-/**
- * @swagger
- * /users/profile:
- *   get:
- *     security:
- *      - JWT: []
- *     description: Returns User Profile
- *     tags:
- *      - Users
- *     produces:
- *      - application/json
- *     responses:
- *       200:
- *         description: User Profile
- */
-router.get(
-  "/profile",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    res.json({
-      user: req.user,
-    });
-  }
-);
 
 /**
  * @swagger
