@@ -85,6 +85,7 @@ const routes = [
   "newsfeeds",
   "systemalerts",
   "apps",
+  "dashboards",
 ];
 
 //ADD ENDPOINTS
