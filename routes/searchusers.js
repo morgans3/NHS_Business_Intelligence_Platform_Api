@@ -2,9 +2,10 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const organisations = require("../models/authenticate").organisations;
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
+const OrganisationModel = new DIULibrary.Models.OrganisationModel();
+const ActiveDirectoryModel = new DIULibrary.Models.ActiveDirectoryModel();
 const StringHelper = DIULibrary.Helpers.String;
 
 /**
@@ -132,35 +133,44 @@ router.get(
         });
         break;
       default:
-        const org = organisations.find((x) => x.name === organisation);
-        if (!org) {
-          res.send({ status: 404, message: "Organisation not found" });
-        } else {
-          // @ts-ignore
-          org.org.findUsers(fullquery, function (err, user) {
-            if (err) {
-              console.log("ERROR: " + JSON.stringify(err));
-              res.send({ status: 503, message: "Organisation service not available" });
-            } else {
-              if (user && user.length > 0) {
-                let responseAD = [];
-                user.forEach((staff) => {
-                  responseAD.push({
-                    _id: StringHelper.sidBufferToString(staff.objectSid),
-                    name: staff.cn,
-                    email: staff.mail,
-                    username: staff.sAMAccountName,
+        OrganisationModel.get({ name: organisation }, (err, data) => {
+          //Organisation exists?
+          if(data.Items.length == 0) {
+            res.send({ status: 404, message: "Organisation not found" }); return; 
+          }
+          
+          //Query via active directory
+          let organisation = data.Items[0];
+          ActiveDirectoryModel.getInstance(organisation.authmethod, (err, activeDirectory) => {
+            //Handle error type?
+            if(err) { res.send({ status: 500, message: err }); return; }
+
+            //Find users
+            activeDirectory.findUsers(fullquery, function (err, user) {
+              if (err) {
+                console.log("ERROR: " + JSON.stringify(err));
+                res.send({ status: 503, message: "Organisation service not available" });
+              } else {
+                if (user && user.length > 0) {
+                  let responseAD = [];
+                  user.forEach((staff) => {
+                    responseAD.push({
+                      _id: StringHelper.sidBufferToString(staff.objectSid),
+                      name: staff.cn,
+                      email: staff.mail,
+                      username: staff.sAMAccountName,
+                    });
                   });
-                });
-                searchresults.push({
-                  name: org.name,
-                  results: responseAD,
-                });
+                  searchresults.push({
+                    name: organisation.name,
+                    results: responseAD,
+                  });
+                }
+                res.send(searchresults);
               }
-              res.send(searchresults);
-            }
+            });
           });
-        }
+        });
         break;
     }
   }
