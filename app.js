@@ -8,6 +8,7 @@ const app = express();
 const AWSSettings = require("./config/database").settings;
 const apiname = process.env.API_NAME || "API";
 const APILogging = require("diu-api-logging").Methods.Logging.APILogging;
+const siteURL = process.env.SITE_URL ? "https://api." + process.env.SITE_URL : "http://localhost:8079";
 
 // SWAGGER SETUP
 const swaggerUi = require("swagger-ui-express");
@@ -24,6 +25,9 @@ const swaggerdocs = swaggerJSDoc({
     },
   },
   apis: ["./routes/*.js"],
+});
+app.get("/swagggerjson", (req, res) => {
+  res.send(swaggerdocs);
 });
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerdocs));
 
