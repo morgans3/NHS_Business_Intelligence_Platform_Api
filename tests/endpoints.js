@@ -120,7 +120,7 @@ module.exports.SecureEndpoints = [
     method: "post",
   },
   {
-    url: `/docobo/acknowledgements/getAll`,
+    url: `/docobo/acknowledgements/`,
     type: "JWT",
     method: "get",
   },
@@ -260,7 +260,7 @@ module.exports.SecureEndpoints = [
     method: "get",
   },
   {
-    url: `/postcodes/getAll`,
+    url: `/postcodes/`,
     type: "JWT",
     method: "get",
   },
@@ -305,7 +305,7 @@ module.exports.SecureEndpoints = [
     method: "get",
   },
   {
-    url: `/teamrequests/getAll`,
+    url: `/teamrequests/`,
     type: "JWT",
     method: "get",
   },
@@ -405,7 +405,7 @@ module.exports.SecureEndpoints = [
     method: "post",
   },
   {
-    url: `/teammembers/getAll`,
+    url: `/teammembers/`,
     type: "JWT",
     method: "get",
   },
@@ -435,7 +435,7 @@ module.exports.SecureEndpoints = [
   //   method: "post",
   // },
   // {
-  //   url: `/teamprofiles/getAll`,
+  //   url: `/teamprofiles/`,
   //   type: "JWT",
   //   method: "get",
   // },
@@ -490,7 +490,7 @@ module.exports.SecureEndpoints = [
   //     method: "delete",
   // },
   {
-    url: `/trials/getAll`,
+    url: `/trials/`,
     type: "JWT",
     method: "get",
   },
@@ -505,7 +505,7 @@ module.exports.SecureEndpoints = [
     method: "post",
   },
   {
-    url: `/userprofiles/getAll`,
+    url: `/userprofiles/`,
     type: "JWT",
     method: "get",
   },
@@ -550,9 +550,10 @@ module.exports.SecureEndpoints = [
     method: "delete",
   },
   {
-    url: `/virtualward/getAll`,
+    url: `/virtualward/`,
     type: "JWT",
     method: "get",
+    queryString: "?limit={limit}",
   },
   {
     url: `/virtualward/update`,
@@ -570,17 +571,17 @@ module.exports.SecureEndpoints = [
     method: "post",
   },
   {
-    url: "/grandindex/getAll",
+    url: "/grandindex/",
     type: "JWT",
     method: "get",
   },
   {
-    url: "/gppractices/getAll",
+    url: "/gppractices/",
     type: null,
     method: "get",
   },
   {
-    url: "/wards/getAll",
+    url: "/wards/",
     type: "JWT",
     method: "get",
   },
@@ -615,12 +616,12 @@ module.exports.SecureEndpoints = [
   //   method: "get",
   // },
   {
-    url: "/warddetails/getAll",
+    url: "/warddetails/",
     type: "JWT",
     method: "get",
   },
   {
-    url: "/mosaic/getAll",
+    url: "/mosaic/",
     type: "JWT",
     method: "get",
   },
@@ -630,12 +631,12 @@ module.exports.SecureEndpoints = [
     method: "get",
   },
   {
-    url: "/pointsofinterest/getAll",
+    url: "/pointsofinterest/",
     type: "JWT",
     method: "get",
   },
   {
-    url: "/payloads/getAll",
+    url: "/payloads/",
     type: "JWT",
     method: "get",
   },
@@ -655,7 +656,7 @@ module.exports.SecureEndpoints = [
     method: "post",
   },
   {
-    url: "/organisations/getAll",
+    url: "/organisations/",
     type: null,
     method: "get",
   },
@@ -675,7 +676,7 @@ module.exports.SecureEndpoints = [
     method: "post",
   },
   {
-    url: "/newsfeeds/getAll",
+    url: "/newsfeeds/",
     type: "JWT",
     method: "get",
   },
@@ -685,7 +686,7 @@ module.exports.SecureEndpoints = [
     method: "get",
   },
   {
-    url: "/systemalerts/getAll",
+    url: "/systemalerts/",
     type: null,
     method: "get",
   },
@@ -705,7 +706,7 @@ module.exports.SecureEndpoints = [
     method: "put",
   },
   {
-    url: "/apps/getAll",
+    url: "/apps/",
     type: null,
     method: "get",
   },

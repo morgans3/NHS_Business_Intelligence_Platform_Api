@@ -225,7 +225,7 @@ router.put(
 
 /**
  * @swagger
- * /apps/getAll:
+ * /apps/:
  *   get:
  *     security:
  *      - JWT: []
@@ -238,7 +238,7 @@ router.put(
  *       200:
  *         description: Full List
  */
-router.get("/getAll", (req, res, next) => {
+router.get("/", (req, res, next) => {
   App.getAll(function (err, result) {
     if (err) {
       res.send(err);

@@ -14,7 +14,7 @@ const pool = require("../config/database").pool;
 
 /**
  * @swagger
- *  /postcodes/getAll:
+ *  /postcodes/:
  *   get:
  *     security:
  *      - JWT: []
@@ -28,7 +28,7 @@ const pool = require("../config/database").pool;
  *         description: Full List
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),

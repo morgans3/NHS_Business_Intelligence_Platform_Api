@@ -54,7 +54,7 @@ router.get(
 
 /**
  * @swagger
- * /payloads/getAll:
+ * /payloads/:
  *   get:
  *     security:
  *      - JWT: []
@@ -68,7 +68,7 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),
