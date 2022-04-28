@@ -76,7 +76,7 @@ router.post(
         res.json({
           success: true,
           msg: "Registered",
-          data: data
+          data: data,
         });
       }
     });
@@ -85,7 +85,7 @@ router.post(
 
 /**
  * @swagger
- * /teammembers/getAll:
+ * /teammembers/:
  *   get:
  *     security:
  *      - JWT: []
@@ -99,7 +99,7 @@ router.post(
  *         description: Full List
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),

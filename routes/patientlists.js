@@ -15,7 +15,7 @@ const { sanitiseQueryLimit } = require("../helpers/routes");
 
 /**
  * @swagger
- * /patientlists/getPatients?Limit={limit}:
+ * /patientlists/?Limit={limit}:
  *   get:
  *     security:
  *      - JWT: []
@@ -40,7 +40,7 @@ const { sanitiseQueryLimit } = require("../helpers/routes");
  *         description: Server Error Processing
  */
 router.get(
-  "/getPatients",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),

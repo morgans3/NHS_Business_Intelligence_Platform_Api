@@ -1,12 +1,12 @@
 // @ts-check
 // Self invocation to allow for top-level async
 (async () => {
-  if (process.env.DEV) {
+  if (process.env.DEV || true) {
     require("dotenv").config();
     const AWSHelper = require("diu-data-functions").Helpers.Aws;
     try {
       //Configure apis
-      await (require("./config/app")).configureApis();
+      await require("./config/app").configureApis();
 
       //Configure postgres
       const postgresCredentials = JSON.parse(await AWSHelper.getSecrets("postgres"));

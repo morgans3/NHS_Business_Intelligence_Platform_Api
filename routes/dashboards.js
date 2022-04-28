@@ -225,7 +225,7 @@ router.put(
 
 /**
  * @swagger
- * /dashboards/getAll:
+ * /dashboards/:
  *   get:
  *     security:
  *      - JWT: []
@@ -238,7 +238,7 @@ router.put(
  *       200:
  *         description: Full List
  */
-router.get("/getAll", (req, res, next) => {
+router.get("/", (req, res, next) => {
   Dashboards.getAll(function (err, result) {
     if (err) {
       res.send(err);

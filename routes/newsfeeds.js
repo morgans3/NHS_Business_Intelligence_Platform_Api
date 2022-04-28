@@ -170,7 +170,7 @@ router.get(
 
 /**
  * @swagger
- * /newsfeeds/getAll:
+ * /newsfeeds/:
  *   get:
  *     security:
  *      - JWT: []
@@ -184,7 +184,7 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),

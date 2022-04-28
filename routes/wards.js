@@ -16,7 +16,7 @@ const PGConstruct = PostgresI.init(settings);
 
 /**
  * @swagger
- * /wards/getAll:
+ * /wards/:
  *   get:
  *     security:
  *      - JWT: []
@@ -30,7 +30,7 @@ const PGConstruct = PostgresI.init(settings);
  *         description: Full List
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),

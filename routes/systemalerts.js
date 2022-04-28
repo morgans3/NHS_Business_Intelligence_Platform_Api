@@ -13,7 +13,7 @@ const SystemAlerts = require("../models/systemalerts");
 
 /**
  * @swagger
- * /systemalerts/getAll:
+ * /systemalerts/:
  *   get:
  *     security:
  *      - JWT: []
@@ -26,7 +26,7 @@ const SystemAlerts = require("../models/systemalerts");
  *       200:
  *         description: Full List
  */
-router.get("/getAll", (req, res, next) => {
+router.get("/", (req, res, next) => {
   SystemAlerts.getAll(function (err, result) {
     if (err) {
       res.send(err);

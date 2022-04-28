@@ -361,7 +361,7 @@ router.get(
 
 /**
  * @swagger
- * /teamrequests/getAll:
+ * /teamrequests/:
  *   get:
  *     security:
  *      - JWT: []
@@ -375,7 +375,7 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),
