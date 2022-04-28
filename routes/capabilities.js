@@ -277,7 +277,7 @@ router.delete(
 
 /**
  * @swagger
- * /capabilities/getByID:
+ * /capabilities/{id}:
  *   get:
  *     description: Get a capability by passing the ID
  *     security:
@@ -297,11 +297,12 @@ router.delete(
  *         description: Confirmation of Account Registration
  */
 router.get(
-  "/getByID",
+  "/:id",
   passport.authenticate("jwt", {
     session: false,
   }),
   (req, res, next) => {
+    console.log(req);
     CapabilitiesModel.getByPrimaryKey(req.query.id, function (err, data) {
       if (err) {
         res.json({
