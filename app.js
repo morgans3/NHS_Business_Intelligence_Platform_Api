@@ -58,10 +58,10 @@ const routes = [
   "postcodes",
   "pcninformation",
   "demographics",
+  "patienthistory",
   "patientlists",
   "shielding",
   "userprofiles",
-  "teamprofiles",
   "teamrequests",
   "teammembers",
   "searchusers",
@@ -69,6 +69,7 @@ const routes = [
   "capabilities",
   "roles",
   "virtualward",
+  "virtualward_decision",
   "teams",
   "niceevidence",
   "gpinpatients",
@@ -90,6 +91,8 @@ const routes = [
   "systemalerts",
   "apps",
   "dashboards",
+  "govuk",
+  "cohorts"
 ];
 
 //ADD ENDPOINTS

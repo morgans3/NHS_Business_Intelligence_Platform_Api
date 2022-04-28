@@ -9,7 +9,7 @@ const Members = require("../models/teammembers");
 /**
  * @swagger
  * tags:
- *   name: Requests
+ *   name: TeamRequests
  *   description: Team Requests on the Nexus Intelligence Platform
  */
 
@@ -21,7 +21,7 @@ const Members = require("../models/teammembers");
  *      - JWT: []
  *     description: Registers a Team Request
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -165,7 +165,7 @@ router.post(
  *      - JWT: []
  *     description: Updates an Team Request
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -266,7 +266,7 @@ router.put(
  *      - JWT: []
  *     description: Archives a Request
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -325,7 +325,7 @@ router.put(
  *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -367,7 +367,7 @@ router.get(
  *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     responses:
@@ -402,7 +402,7 @@ router.get(
  *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -444,7 +444,7 @@ router.get(
  *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -486,7 +486,7 @@ router.get(
  *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     responses:
