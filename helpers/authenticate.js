@@ -3,7 +3,7 @@ const credentials = require("../_credentials/credentials");
 
 const DIULibrary = require("diu-data-functions");
 const HashHelper = DIULibrary.Helpers.Hash;
-const StringHelper = DIULibrary.Helpers.String;
+const StringHelper = DIULibrary.Helpers.StringMethods;
 const UserModel = new DIULibrary.Models.UserModel();
 const AccessLogModel = new DIULibrary.Models.AccessLog();
 const ActiveDirectoryModel = new DIULibrary.Models.ActiveDirectoryModel();

@@ -6,7 +6,7 @@ const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
 const OrganisationModel = new DIULibrary.Models.OrganisationModel();
 const ActiveDirectoryModel = new DIULibrary.Models.ActiveDirectoryModel();
-const StringHelper = DIULibrary.Helpers.String;
+const StringHelper = DIULibrary.Helpers.StringMethods;
 
 /**
  * @swagger
