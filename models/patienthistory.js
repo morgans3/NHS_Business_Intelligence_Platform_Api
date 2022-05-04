@@ -37,8 +37,8 @@ module.exports.getPersonsPopulationHistoryByNHSNumber = function (nhsnumber, rol
   if (rolecheck === "" || rolecheck === "error") {
     callback(true, null, { reason: "Access denied. Insufficient permissions to view any patients details." });
   } else {
-    const query = `SELECT * FROM public.population_history AS M WHERE ` + rolecheck + ` "nhs_number" = '` + nhsnumber + `'`;
-    pool.query(query, (error, results) => {
+    const query = `SELECT * FROM public.population_history AS M WHERE ` + rolecheck + ` "nhs_number" = $1`;
+    pool.query(query, [nhsnumber], (error, results) => {
       if (error) {
         console.log("Error: " + error);
         callback(null, error, null);
@@ -57,8 +57,8 @@ module.exports.getPersonsDistrictHistoryByNHSNumber = function (nhsnumber, roles
   if (rolecheck === "" || rolecheck === "error") {
     callback(true, null, { reason: "Access denied. Insufficient permissions to view any patients details." });
   } else {
-    const query = `SELECT * FROM public.district_history AS M WHERE ` + rolecheck + ` "nhs_number" = '` + nhsnumber + `'`;
-    pool.query(query, (error, results) => {
+    const query = `SELECT * FROM public.district_history AS M WHERE ` + rolecheck + ` "nhs_number" = $1`;
+    pool.query(query, [nhsnumber], (error, results) => {
       if (error) {
         console.log("Error: " + error);
         callback(null, error, null);
