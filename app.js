@@ -22,9 +22,9 @@ const swaggerdocs = swaggerJSDoc({
         name: "Authorization",
         in: "header",
       },
-    },
+    }
   },
-  apis: ["./routes/*.js"],
+  apis: ["./routes/*.js", "./routes/*/*.js"],
 });
 app.get("/swagggerjson", (req, res) => {
   res.send(swaggerdocs);
@@ -82,7 +82,6 @@ const routes = [
   "isochrone",
   "gppractices",
   "outbreak",
-  "payloads",
   "warddetails",
   "pointsofinterest",
   "mosaic",
@@ -92,7 +91,11 @@ const routes = [
   "apps",
   "dashboards",
   "govuk",
-  "cohorts"
+  "cohorts",
+  "cvicohorts",
+  "atomic/payloads",
+  "atomic/formdata",
+  "spi_incidentmethods"
 ];
 
 //ADD ENDPOINTS
