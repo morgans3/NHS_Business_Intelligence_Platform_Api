@@ -22,7 +22,7 @@ const swaggerdocs = swaggerJSDoc({
         name: "Authorization",
         in: "header",
       },
-    }
+    },
   },
   apis: ["./routes/*.js", "./routes/*/*.js"],
 });
@@ -35,6 +35,13 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerdocs));
 app.use(APILogging(apiname, AWSSettings));
 
 // SETTINGS FOR OUR API
+// set up rate limiter: maximum of fifty requests per minute
+const RateLimit = require("express-rate-limit");
+const limiter = new RateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 50,
+});
+app.use(limiter);
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
@@ -95,7 +102,7 @@ const routes = [
   "cvicohorts",
   "atomic/payloads",
   "atomic/formdata",
-  "spi_incidentmethods"
+  "spi_incidentmethods",
 ];
 
 //ADD ENDPOINTS
