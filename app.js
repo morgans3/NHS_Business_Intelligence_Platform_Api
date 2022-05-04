@@ -9,6 +9,7 @@ const AWSSettings = require("./config/database").settings;
 const apiname = process.env.API_NAME || "API";
 const APILogging = require("diu-api-logging").Methods.Logging.APILogging;
 const siteURL = process.env.SITE_URL ? "https://api." + process.env.SITE_URL : "http://localhost:8079";
+const rateLimit = require("express-rate-limit");
 
 // SWAGGER SETUP
 const swaggerUi = require("swagger-ui-express");
@@ -35,9 +36,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerdocs));
 app.use(APILogging(apiname, AWSSettings));
 
 // SETTINGS FOR OUR API
-// set up rate limiter: maximum of fifty requests per minute
-const RateLimit = require("express-rate-limit");
-const limiter = new RateLimit({
+const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
   max: 50,
 });
