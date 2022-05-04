@@ -28,7 +28,7 @@ const TeamMemberModel = new DIULibrary.Models.TeamMemberModel();
  *       200:
  *         description: Full List
  */
- router.get(
+router.get(
   "/",
   passport.authenticate("jwt", {
     session: false,
@@ -152,7 +152,7 @@ router.post(
  *       200:
  *         description: Confirmation of Member Registration
  */
- router.post(
+router.post(
   "/update",
   passport.authenticate("jwt", {
     session: false,
@@ -164,16 +164,20 @@ router.post(
     if (req.body.enddate) member["enddate"] = req.body.enddate;
 
     //Persist in database
-    TeamMemberModel.update({
-      _id: req.body.id,
-      teamcode: req.body.teamcode,
-    }, member, (err, result) => {
-      if (err) {
-        res.json({ success: false, msg: "Failed to update " + err });
-      } else {
-        res.json({ success: true, msg: "Team member updated successfully!", data: member });
+    TeamMemberModel.update(
+      {
+        _id: req.body.id,
+        teamcode: req.body.teamcode,
+      },
+      member,
+      (err, result) => {
+        if (err) {
+          res.json({ success: false, msg: "Failed to update " + err });
+        } else {
+          res.json({ success: true, msg: "Team member updated successfully!", data: member });
+        }
       }
-    });
+    );
   }
 );
 
@@ -207,7 +211,7 @@ router.get(
     const code = req.query.code;
     TeamMemberModel.getByTeamCode(code, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -249,7 +253,7 @@ router.get(
     const username = req.query.username;
     TeamMemberModel.getByUsername(username, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -288,20 +292,25 @@ router.put(
     session: false,
   }),
   (req, res) => {
-    TeamMemberModel.getByKeys({ _id:  req.query.id }, (err, result) => {
-      if (err) { res.json({ success: false, msg: "Failed to find item: " + err }); }
+    TeamMemberModel.getByKeys({ _id: req.query.id }, (err, result) => {
+      if (err) {
+        res.json({ success: false, msg: "Failed to find item: " + err });
+      }
       if (result.Items && result.Items.length > 0) {
         let member = result.Items[0];
-        TeamMemberModel.delete({
-          _id: member._id,
-          teamcode: member.teamcode
-        }, (err) => {
-          if (err) {
-            res.json({ success: false, msg: "Failed to archive: " + err });
-          } else {
-            res.json({ success: true, msg: "Archived" });
+        TeamMemberModel.delete(
+          {
+            _id: member._id,
+            teamcode: member.teamcode,
+          },
+          (err) => {
+            if (err) {
+              res.json({ success: false, msg: "Failed to archive: " + err });
+            } else {
+              res.json({ success: true, msg: "Archived" });
+            }
           }
-        });
+        );
       } else {
         res.json({ success: false, msg: "Can not find item in database." });
       }
@@ -329,20 +338,23 @@ router.put(
  *       200:
  *         description: Teammember object
  */
- router.get(
+router.get(
   "/:id",
   passport.authenticate("jwt", {
     session: false,
   }),
   (req, res, next) => {
     TeamMemberModel.getByKeys({ _id: req.params.id }, (err, result) => {
-      if(err) { res.status(500).send({ success: false, msg: err }); return; }
+      if (err) {
+        res.status(500).send({ success: false, msg: err });
+        return;
+      }
 
       //Found item?
-      if(result.Items.length == 0) {
-        res.status(404).json({ success: false, msg: "Team member not found!" }); 
+      if (result.Items.length == 0) {
+        res.status(404).json({ success: false, msg: "Team member not found!" });
       } else {
-        res.json(result.Items[0]); 
+        res.json(result.Items[0]);
       }
     });
   }

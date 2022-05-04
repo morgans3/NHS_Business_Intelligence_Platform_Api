@@ -241,7 +241,7 @@ router.put(
 router.get("/", (req, res, next) => {
   App.getAll(function (err, result) {
     if (err) {
-      res.send(err);
+      res.send({ success: false, msg: err });
     } else {
       if (result.Items) {
         res.send(JSON.stringify(result.Items));
@@ -282,7 +282,7 @@ router.get(
     const id = req.query.app_name;
     App.getAppByName(id, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));

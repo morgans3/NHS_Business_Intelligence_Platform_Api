@@ -35,7 +35,7 @@ router.get(
   (req, res, next) => {
     GrandIndex.getAll(function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.rows) {
           res.send(JSON.stringify(result.rows));

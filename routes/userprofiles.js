@@ -133,7 +133,7 @@ router.get(
   (req, res, next) => {
     Profiles.getAll(function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -201,7 +201,7 @@ router.get(
       ActiveDirectoryModel.getInstance(organisation.authmethod, (err, activeDirectory) => {
         Profiles.getUserProfileByUsername(username, function (err, result) {
           if (err) {
-            res.send(err);
+            res.send({ success: false, msg: err });
             return;
           }
           if (result.Items.length > 0) {

@@ -214,7 +214,6 @@ router.all(
   }
 );
 
-
 /**
  * @swagger
  * /teams/getTeamByCode?code={code}:
@@ -236,7 +235,7 @@ router.all(
  *       200:
  *         description: Full List
  */
- router.get(
+router.get(
   "/getTeamByCode",
   passport.authenticate("jwt", {
     session: false,
@@ -245,7 +244,7 @@ router.all(
     const code = req.query.code;
     TeamModel.getByCode(code, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -287,7 +286,7 @@ router.get(
     const orgcode = req.query.orgcode;
     TeamModel.getByOrg(orgcode, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -327,19 +326,22 @@ router.get(
   }),
   (req, res, next) => {
     const partialteam = req.query.partialteam;
-    TeamModel.getByFilters({
-      name: partialteam
-    }, function (err, result) {
-      if (err) {
-        res.send(err);
-      } else {
-        if (result.Items) {
-          res.send(JSON.stringify(result.Items));
+    TeamModel.getByFilters(
+      {
+        name: partialteam,
+      },
+      function (err, result) {
+        if (err) {
+          res.send({ success: false, msg: err });
         } else {
-          res.send(JSON.stringify([]));
+          if (result.Items) {
+            res.send(JSON.stringify(result.Items));
+          } else {
+            res.send(JSON.stringify([]));
+          }
         }
       }
-    });
+    );
   }
 );
 
@@ -377,20 +379,23 @@ router.get(
   (req, res, next) => {
     const orgcode = req.url.split("=")[1].replace("&partialteam", "");
     const partialteam = req.url.split("=")[2];
-    TeamModel.getByFilters({
-      name: partialteam,
-      orgcode: orgcode
-    }, function (err, result) {
-      if (err) {
-        res.send(err);
-      } else {
-        if (result.Items) {
-          res.send(JSON.stringify(result.Items));
+    TeamModel.getByFilters(
+      {
+        name: partialteam,
+        orgcode: orgcode,
+      },
+      function (err, result) {
+        if (err) {
+          res.send({ success: false, msg: err });
         } else {
-          res.send(JSON.stringify([]));
+          if (result.Items) {
+            res.send(JSON.stringify(result.Items));
+          } else {
+            res.send(JSON.stringify([]));
+          }
         }
       }
-    });
+    );
   }
 );
 
@@ -424,17 +429,21 @@ router.put(
     const id = req.query.profile_id;
     TeamModel.getByKeys({ _id: id }, (err, result) => {
       //Output error
-      if (err) { res.json({ success: false, msg: "Failed to archive: " + err }); }
+      if (err) {
+        res.json({ success: false, msg: "Failed to archive: " + err });
+      }
 
       //Item exists?
       if (result.Items.length > 0) {
         //Delete item
         TeamModel.delete({ _id: id }, (err) => {
-          if (err) { res.json({ success: false, msg: "Failed to remove: " + err}); }
+          if (err) {
+            res.json({ success: false, msg: "Failed to remove: " + err });
+          }
           res.json({ success: true, msg: "Profile removed" });
         });
       } else {
-        res.json({ success: false,msg: "Can not find item in database" });
+        res.json({ success: false, msg: "Can not find item in database" });
       }
     });
   }

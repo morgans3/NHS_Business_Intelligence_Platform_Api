@@ -36,7 +36,7 @@ router.get(
   (req, res, next) => {
     ClinicalTrialModel.get(function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.rows) {
           res.send(JSON.stringify(result.rows));
@@ -90,7 +90,7 @@ router.post(
     const min_date = req.body.min_date;
     ClinicalTrialModel.getSearchTop1000(query, phases, min_date, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.rows) {
           res.send(JSON.stringify(result.rows));

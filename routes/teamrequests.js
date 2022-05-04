@@ -347,7 +347,7 @@ router.get(
     const id = req.query.request_id;
     Requests.getRequestById(id, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -382,7 +382,7 @@ router.get(
   (req, res, next) => {
     Requests.getAll(function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -424,7 +424,7 @@ router.get(
     const username = req.query.username;
     Requests.getRequestsByUsername(username, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -466,7 +466,7 @@ router.get(
     const code = req.query.code;
     Requests.getRequestsByTeamCode(code, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -501,7 +501,7 @@ router.get(
   (req, res, next) => {
     Requests.getOutstandingRequests(function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));

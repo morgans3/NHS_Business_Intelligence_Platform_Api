@@ -41,14 +41,14 @@ const Views = require("../models/opensourceviews");
 router.post(
   "/getByPage",
   passport.authenticate("jwt", {
-    session: false
+    session: false,
   }),
   (req, res, next) => {
     const page = req.body.page;
     const limit = parseInt(req.body.limit) | 100;
-    Views.getByPage(page, limit, function(err, result) {
+    Views.getByPage(page, limit, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -89,21 +89,15 @@ router.post(
 router.post("/addView", (req, res, next) => {
   const page = req.body.page;
   const forwarded = req.headers["x-forwarded-for"] || "";
-  const ipaddress =
-    forwarded
-      .toString()
-      .split(",")
-      .pop() ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress;
+  const ipaddress = forwarded.toString().split(",").pop() || req.connection.remoteAddress || req.socket.remoteAddress;
   const parent = req.body.parent;
   const newView = {
     page: { S: page },
     datetime: { S: new Date().toUTCString() },
     ipaddress: { S: ipaddress },
-    parent: { S: parent }
+    parent: { S: parent },
   };
-  Views.addView(newView, function(err, result) {
+  Views.addView(newView, function (err, result) {
     if (err) {
       res.send({ status: 503, msg: err });
     } else {
