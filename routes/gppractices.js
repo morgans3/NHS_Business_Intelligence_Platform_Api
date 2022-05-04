@@ -14,7 +14,7 @@ const PGConstruct = PostgresI.init(settings);
 
 /**
  * @swagger
- * /gppractices/getAll:
+ * /gppractices/:
  *   get:
  *     security:
  *      - JWT: []
@@ -28,7 +28,7 @@ const PGConstruct = PostgresI.init(settings);
  *         description: Full List
  */
 
-router.get("/getAll", (req, res, next) => {
+router.get("/", (req, res, next) => {
   const params = {
     tablename: "public.gps",
     st_asgeojson: "ST_Simplify (lg.geom, 0.0001, TRUE)",
@@ -37,7 +37,8 @@ router.get("/getAll", (req, res, next) => {
         ST_X(lg.geom) AS "Long",
         ST_Y(lg.geom) AS "Lat") as _)
   --row_to_json((organisation_code, name), true) AS properties`,
-    whereclause: "WHERE lg.ccg in ('00Q', '00R', '00X', '01A', '01E', '01K', '02G', '02M') AND (LEFT(lg.organisation_code,1) != 'Y') OR lg.organisation_code='Y01008'",
+    whereclause:
+      "WHERE lg.ccg in ('00Q', '00R', '00X', '01A', '01E', '01K', '02G', '02M') AND (LEFT(lg.organisation_code,1) != 'Y') OR lg.organisation_code='Y01008'",
   };
   PostgresI.getGeoJson(PGConstruct, params, (response) => {
     res.json(response);

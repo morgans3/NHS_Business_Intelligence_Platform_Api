@@ -14,7 +14,7 @@ const GrandIndex = require("../models/grandindex");
 
 /**
  * @swagger
- * /grandindex/getAll:
+ * /grandindex/:
  *   get:
  *     security:
  *      - JWT: []
@@ -28,14 +28,14 @@ const GrandIndex = require("../models/grandindex");
  *         description: Full List
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
-    session: false
+    session: false,
   }),
   (req, res, next) => {
-    GrandIndex.getAll(function(err, result) {
+    GrandIndex.getAll(function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.rows) {
           res.send(JSON.stringify(result.rows));

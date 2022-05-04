@@ -24,7 +24,7 @@ const swaggerdocs = swaggerJSDoc({
       },
     },
   },
-  apis: ["./routes/*.js"],
+  apis: ["./routes/*.js", "./routes/*/*.js"],
 });
 app.get("/swagggerjson", (req, res) => {
   res.send(swaggerdocs);
@@ -35,6 +35,13 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerdocs));
 app.use(APILogging(apiname, AWSSettings));
 
 // SETTINGS FOR OUR API
+// set up rate limiter: maximum of fifty requests per minute
+const RateLimit = require("express-rate-limit");
+const limiter = new RateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 50,
+});
+app.use(limiter);
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
@@ -58,10 +65,10 @@ const routes = [
   "postcodes",
   "pcninformation",
   "demographics",
+  "patienthistory",
   "patientlists",
   "shielding",
   "userprofiles",
-  "teamprofiles",
   "teamrequests",
   "teammembers",
   "searchusers",
@@ -69,6 +76,7 @@ const routes = [
   "capabilities",
   "roles",
   "virtualward",
+  "virtualward_decision",
   "teams",
   "niceevidence",
   "gpinpatients",
@@ -81,7 +89,6 @@ const routes = [
   "isochrone",
   "gppractices",
   "outbreak",
-  "payloads",
   "warddetails",
   "pointsofinterest",
   "mosaic",
@@ -90,6 +97,12 @@ const routes = [
   "systemalerts",
   "apps",
   "dashboards",
+  "govuk",
+  "cohorts",
+  "cvicohorts",
+  "atomic/payloads",
+  "atomic/formdata",
+  "spi_incidentmethods",
 ];
 
 //ADD ENDPOINTS

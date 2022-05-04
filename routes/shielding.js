@@ -15,7 +15,7 @@ const { sanitiseQueryLimit } = require("../helpers/routes");
 
 /**
  * @swagger
- * /shielding/getCitizens?Limit={limit}:
+ * /shielding/?Limit={limit}:
  *   get:
  *     security:
  *      - JWT: []
@@ -40,7 +40,7 @@ const { sanitiseQueryLimit } = require("../helpers/routes");
  *         description: Server Error Processing
  */
 router.get(
-  "/getCitizens",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),

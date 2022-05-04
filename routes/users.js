@@ -35,13 +35,13 @@ const EmailHelper = DIULibrary.Helpers.Email;
  *       200:
  *         description: Full List
  */
- router.get(
+router.get(
   "/",
   passport.authenticate("jwt", {
     session: false,
   }),
   (req, res, next) => {
-    if(req.query.organisation) {
+    if (req.query.organisation) {
       UserModel.getByOrgAndName(req.query, (err, result) => {
         res.send(err ? { success: false, msg: err } : result);
       });
@@ -68,7 +68,7 @@ const EmailHelper = DIULibrary.Helpers.Email;
  *       200:
  *         description: User Profile
  */
- router.get(
+router.get(
   "/profile",
   passport.authenticate("jwt", {
     session: false,
@@ -100,34 +100,41 @@ const EmailHelper = DIULibrary.Helpers.Email;
  *       200:
  *         description: Full List
  */
- router.get(
+router.get(
   "/:id",
   passport.authenticate("jwt", {
     session: false,
   }),
   MiddlewareHelper.validate(
-    "params", 
+    "params",
     {
-      id: { type: "string", pattern: "[A-z. 0-9]{1,50}#[A-z. ]{1,50}" }
-    }, { 
-      pattern: "The user id should be in the format of 'username#organisation'"
+      id: { type: "string", pattern: "[A-z. 0-9]{1,50}#[A-z. ]{1,50}" },
+    },
+    {
+      pattern: "The user id should be in the format of 'username#organisation'",
     }
-  ), 
+  ),
   (req, res, next) => {
-    UserModel.getByKeys({
-      username: req.params.id.split('#')[0],
-      organisation: req.params.id.split('#')[1]
-    }, (err, result) => {
-      //Error?
-      if (err) { res.status(500).json({ success: false, msg: err.message }); return; } 
+    UserModel.getByKeys(
+      {
+        username: req.params.id.split("#")[0],
+        organisation: req.params.id.split("#")[1],
+      },
+      (err, result) => {
+        //Error?
+        if (err) {
+          res.status(500).json({ success: false, msg: err.message });
+          return;
+        }
 
-      //Found user?
-      if(result.Items.length == 0) {
-        res.status(404).json({ success: false, msg: "User not found!" }); 
-      } else {
-        res.json(result.Items[0]); 
+        //Found user?
+        if (result.Items.length == 0) {
+          res.status(404).json({ success: false, msg: "User not found!" });
+        } else {
+          res.json(result.Items[0]);
+        }
       }
-    });
+    );
   }
 );
 
@@ -254,7 +261,6 @@ router.post("/authenticate", (req, res, next) => {
 
   //Get JWT
   AuthenticateHelper.login(authentication, username, password, organisation, (err, user) => {
-    console.log(err, user);
     if (err) {
       //Return error
       res.status(401).json({ success: false, msg: err });

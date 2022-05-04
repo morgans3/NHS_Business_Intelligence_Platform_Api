@@ -6,7 +6,7 @@
     const AWSHelper = require("diu-data-functions").Helpers.Aws;
     try {
       //Configure apis
-      await (require("./config/app")).configureApis();
+      await require("./config/app").configureApis();
 
       //Configure postgres
       const postgresCredentials = JSON.parse(await AWSHelper.getSecrets("postgres"));

@@ -216,6 +216,241 @@ router.all(
 
 /**
  * @swagger
+ * /teams/getTeamByCode?code={code}:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns the profile for a Team
+ *     tags:
+ *      - Teams
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *       - name: code
+ *         description: Teams Code
+ *         in: query
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Full List
+ */
+router.get(
+  "/getTeamByCode",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    const code = req.query.code;
+    TeamModel.getByCode(code, function (err, result) {
+      if (err) {
+        res.send({ success: false, msg: err });
+      } else {
+        if (result.Items) {
+          res.send(JSON.stringify(result.Items));
+        } else {
+          res.send(JSON.stringify([]));
+        }
+      }
+    });
+  }
+);
+
+/**
+ * @swagger
+ * /teams/getTeamsByOrgCode?orgcode={orgcode}:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns the teams associated to the Organisation
+ *     tags:
+ *      - Teams
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *       - name: orgcode
+ *         description: Organisation's Code
+ *         in: query
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Full List
+ */
+router.get(
+  "/getTeamsByOrgCode",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    const orgcode = req.query.orgcode;
+    TeamModel.getByOrg(orgcode, function (err, result) {
+      if (err) {
+        res.send({ success: false, msg: err });
+      } else {
+        if (result.Items) {
+          res.send(JSON.stringify(result.Items));
+        } else {
+          res.send(JSON.stringify([]));
+        }
+      }
+    });
+  }
+);
+
+/**
+ * @swagger
+ * /teams/getTeamsByPartialTeamName?partialteam={partialteam}:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns the teams that match the search criteria
+ *     tags:
+ *      - Teams
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *       - name: partialteam
+ *         description: Partial Team Name
+ *         in: query
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Full List
+ */
+router.get(
+  "/getTeamsByPartialTeamName",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    const partialteam = req.query.partialteam;
+    TeamModel.getByFilters(
+      {
+        name: partialteam,
+      },
+      function (err, result) {
+        if (err) {
+          res.send({ success: false, msg: err });
+        } else {
+          if (result.Items) {
+            res.send(JSON.stringify(result.Items));
+          } else {
+            res.send(JSON.stringify([]));
+          }
+        }
+      }
+    );
+  }
+);
+
+/**
+ * @swagger
+ * /teams/getTeamsByPartialTeamNameAndOrgCode?orgcode={orgcode}&partialteam={partialteam}:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns the teams that match the search criteria
+ *     tags:
+ *      - Teams
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *       - name: orgcode
+ *         description: Organisation Code
+ *         in: query
+ *         required: true
+ *         type: string
+ *       - name: partialteam
+ *         description: Partial Team Name
+ *         in: query
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Full List
+ */
+router.get(
+  "/getTeamsByPartialTeamNameAndOrgCode",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    const orgcode = req.url.split("=")[1].replace("&partialteam", "");
+    const partialteam = req.url.split("=")[2];
+    TeamModel.getByFilters(
+      {
+        name: partialteam,
+        orgcode: orgcode,
+      },
+      function (err, result) {
+        if (err) {
+          res.send({ success: false, msg: err });
+        } else {
+          if (result.Items) {
+            res.send(JSON.stringify(result.Items));
+          } else {
+            res.send(JSON.stringify([]));
+          }
+        }
+      }
+    );
+  }
+);
+
+/**
+ * @swagger
+ * /teams/archive?profile_id={profile_id}:
+ *   put:
+ *     security:
+ *      - JWT: []
+ *     description: Removes a Profile
+ *     tags:
+ *      - Teams
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *       - name: profile_id
+ *         description: Profile's ID
+ *         in: query
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Confirmation of Member being Archived
+ */
+router.put(
+  "/archive",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res) => {
+    const id = req.query.profile_id;
+    TeamModel.getByKeys({ _id: id }, (err, result) => {
+      //Output error
+      if (err) {
+        res.json({ success: false, msg: "Failed to archive: " + err });
+      }
+
+      //Item exists?
+      if (result.Items.length > 0) {
+        //Delete item
+        TeamModel.delete({ _id: id }, (err) => {
+          if (err) {
+            res.json({ success: false, msg: "Failed to remove: " + err });
+          }
+          res.json({ success: true, msg: "Profile removed" });
+        });
+      } else {
+        res.json({ success: false, msg: "Can not find item in database" });
+      }
+    });
+  }
+);
+
+/**
+ * @swagger
  * /teams/{id}/delete:
  *   delete:
  *     security:

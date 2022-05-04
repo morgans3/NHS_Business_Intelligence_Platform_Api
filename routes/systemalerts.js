@@ -13,7 +13,7 @@ const SystemAlerts = require("../models/systemalerts");
 
 /**
  * @swagger
- * /systemalerts/getAll:
+ * /systemalerts/:
  *   get:
  *     security:
  *      - JWT: []
@@ -26,10 +26,10 @@ const SystemAlerts = require("../models/systemalerts");
  *       200:
  *         description: Full List
  */
-router.get("/getAll", (req, res, next) => {
+router.get("/", (req, res, next) => {
   SystemAlerts.getAll(function (err, result) {
     if (err) {
-      res.send(err);
+      res.send({ success: false, msg: err });
     } else {
       if (result.Items) {
         res.send(JSON.stringify(result.Items));
@@ -63,7 +63,7 @@ router.get(
   (req, res, next) => {
     SystemAlerts.getActiveSystemAlerts(new Date(), function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));

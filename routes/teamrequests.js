@@ -9,7 +9,7 @@ const Members = require("../models/teammembers");
 /**
  * @swagger
  * tags:
- *   name: Requests
+ *   name: TeamRequests
  *   description: Team Requests on the Nexus Intelligence Platform
  */
 
@@ -21,7 +21,7 @@ const Members = require("../models/teammembers");
  *      - JWT: []
  *     description: Registers a Team Request
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -165,7 +165,7 @@ router.post(
  *      - JWT: []
  *     description: Updates an Team Request
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -266,7 +266,7 @@ router.put(
  *      - JWT: []
  *     description: Archives a Request
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -325,7 +325,7 @@ router.put(
  *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -347,7 +347,7 @@ router.get(
     const id = req.query.request_id;
     Requests.getRequestById(id, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -361,13 +361,13 @@ router.get(
 
 /**
  * @swagger
- * /teamrequests/getAll:
+ * /teamrequests/:
  *   get:
  *     security:
  *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     responses:
@@ -375,14 +375,14 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),
   (req, res, next) => {
     Requests.getAll(function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -402,7 +402,7 @@ router.get(
  *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -424,7 +424,7 @@ router.get(
     const username = req.query.username;
     Requests.getRequestsByUsername(username, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -444,7 +444,7 @@ router.get(
  *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     parameters:
@@ -466,7 +466,7 @@ router.get(
     const code = req.query.code;
     Requests.getRequestsByTeamCode(code, function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -486,7 +486,7 @@ router.get(
  *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
- *      - Requests
+ *      - TeamRequests
  *     produces:
  *      - application/json
  *     responses:
@@ -501,7 +501,7 @@ router.get(
   (req, res, next) => {
     Requests.getOutstandingRequests(function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));

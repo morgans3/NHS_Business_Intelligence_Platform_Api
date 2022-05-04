@@ -15,7 +15,7 @@ const DynamoDBData = require("diu-data-functions").Methods.DynamoDBData;
 
 /**
  * @swagger
- * /pointsofinterest/getAll:
+ * /pointsofinterest/:
  *   get:
  *     security:
  *      - JWT: []
@@ -29,7 +29,7 @@ const DynamoDBData = require("diu-data-functions").Methods.DynamoDBData;
  *         description: All data
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),

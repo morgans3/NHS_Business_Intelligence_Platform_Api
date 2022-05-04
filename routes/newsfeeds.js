@@ -156,7 +156,7 @@ router.get(
     const destination = req.query.destination;
     DynamoDBData.getItemByIndex(AWS, tablename, "destination", destination, (err, result) => {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -170,7 +170,7 @@ router.get(
 
 /**
  * @swagger
- * /newsfeeds/getAll:
+ * /newsfeeds/:
  *   get:
  *     security:
  *      - JWT: []
@@ -184,14 +184,14 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),
   (req, res, next) => {
     DynamoDBData.getAll(AWS, tablename, (err, result) => {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));

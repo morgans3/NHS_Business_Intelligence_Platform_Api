@@ -16,7 +16,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
- * /docobo/acknowledgements/getAll:
+ * /docobo/acknowledgements/:
  *   get:
  *     security:
  *      - JWT: []
@@ -42,9 +42,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *       503:
  *         description: Server Unavailable
  */
-router.get("/acknowledgements/getAll", MiddlewareHelper.authenticateWithKey(
-  credentials.docobo.inboundkey
-), (req, res, next) => {
+router.get("/acknowledgements/", MiddlewareHelper.authenticateWithKey(credentials.docobo.inboundkey), (req, res, next) => {
   Acknowledgements.getAll(function (err, result) {
     if (err) {
       res.status(500).send(err);
@@ -113,9 +111,7 @@ router.get("/acknowledgements/getAll", MiddlewareHelper.authenticateWithKey(
  *       503:
  *         description: Server Unavailable
  */
-router.post("/acknowledgements/report", MiddlewareHelper.authenticateWithKey(
-  credentials.docobo.inboundkey
-), (req, res, next) => {
+router.post("/acknowledgements/report", MiddlewareHelper.authenticateWithKey(credentials.docobo.inboundkey), (req, res, next) => {
   const item = req.body;
   console.log(JSON.stringify(item));
   let newItem = {

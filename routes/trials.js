@@ -15,7 +15,7 @@ const ClinicalTrialModel = new DIULibrary.Models.ClinicalTrialModel();
 
 /**
  * @swagger
- * /trials/getAll:
+ * /trials/:
  *   get:
  *     security:
  *      - JWT: []
@@ -29,23 +29,23 @@ const ClinicalTrialModel = new DIULibrary.Models.ClinicalTrialModel();
  *         description: Clinical Trials List
  */
 router.get(
-    "/getAll",
-    passport.authenticate("jwt", {
-        session: false
-    }),
-    (req, res, next) => {
-        ClinicalTrialModel.get(function (err, result) {
-            if (err) {
-                res.send(err);
-            } else {
-                if (result.rows) {
-                    res.send(JSON.stringify(result.rows));
-                } else {
-                    res.send("[]");
-                }
-            }
-        });
-    }
+  "/",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    ClinicalTrialModel.get(function (err, result) {
+      if (err) {
+        res.send({ success: false, msg: err });
+      } else {
+        if (result.rows) {
+          res.send(JSON.stringify(result.rows));
+        } else {
+          res.send("[]");
+        }
+      }
+    });
+  }
 );
 
 /**
@@ -80,26 +80,26 @@ router.get(
  *         description: Clinical Trials List
  */
 router.post(
-    "/getSearchTop1000",
-    passport.authenticate("jwt", {
-        session: false
-    }),
-    (req, res, next) => {
-        const query = req.body.search;
-        const phases = req.body.phases;
-        const min_date = req.body.min_date;
-        ClinicalTrialModel.getSearchTop1000(query, phases, min_date, function (err, result) {
-            if (err) {
-                res.send(err);
-            } else {
-                if (result.rows) {
-                    res.send(JSON.stringify(result.rows));
-                } else {
-                    res.send("[]");
-                }
-            }
-        });
-    }
+  "/getSearchTop1000",
+  passport.authenticate("jwt", {
+    session: false,
+  }),
+  (req, res, next) => {
+    const query = req.body.search;
+    const phases = req.body.phases;
+    const min_date = req.body.min_date;
+    ClinicalTrialModel.getSearchTop1000(query, phases, min_date, function (err, result) {
+      if (err) {
+        res.send({ success: false, msg: err });
+      } else {
+        if (result.rows) {
+          res.send(JSON.stringify(result.rows));
+        } else {
+          res.send("[]");
+        }
+      }
+    });
+  }
 );
 
 module.exports = router;

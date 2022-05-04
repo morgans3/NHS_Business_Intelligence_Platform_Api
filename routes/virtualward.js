@@ -13,7 +13,7 @@ const virtualward = require("../models/virtualward");
 
 /**
  * @swagger
- * /virtualward/getAll?Limit={limit}:
+ * /virtualward/?Limit={limit}:
  *   get:
  *     security:
  *      - JWT: []
@@ -38,7 +38,7 @@ const virtualward = require("../models/virtualward");
  *         description: Server Error Processing
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),
@@ -65,7 +65,8 @@ router.get(
         } else {
           res.status(400).send(
             JSON.stringify({
-              reason: "Unable to find patients, there may not exist patients who match this search or you may have insufficient permissions to view record.",
+              reason:
+                "Unable to find patients, there may not exist patients who match this search or you may have insufficient permissions to view record.",
             })
           );
         }

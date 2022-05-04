@@ -16,7 +16,7 @@ const tablename = "organisations";
 
 /**
  * @swagger
- * /organisations/getAll:
+ * /organisations/:
  *   get:
  *     description: Get all Information
  *     tags:
@@ -27,7 +27,7 @@ const tablename = "organisations";
  *       200:
  *         description: All data
  */
-router.get("/getAll", (req, res, next) => {
+router.get("/", (req, res, next) => {
   DynamoDBData.getAll(AWS, tablename, (err, result) => {
     if (err) {
       res.status(500).json({ success: false, msg: err });

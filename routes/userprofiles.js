@@ -84,7 +84,8 @@ router.post(
     let newProfile = {
       username: { S: req.body.username },
     };
-    if (req.body.preferredcontactmethod && req.body.preferredcontactmethod.length > 0) newProfile["preferredcontactmethod"] = { SS: req.body.preferredcontactmethod };
+    if (req.body.preferredcontactmethod && req.body.preferredcontactmethod.length > 0)
+      newProfile["preferredcontactmethod"] = { SS: req.body.preferredcontactmethod };
     if (req.body.mobiledeviceids && req.body.mobiledeviceids.length > 0) newProfile["mobiledeviceids"] = { SS: req.body.mobiledeviceids };
     if (req.body.photobase64) newProfile["photobase64"] = { S: req.body.photobase64 };
     if (req.body.contactnumber) newProfile["contactnumber"] = { S: req.body.contactnumber };
@@ -111,7 +112,7 @@ router.post(
 
 /**
  * @swagger
- * /userprofiles/getAll:
+ * /userprofiles/:
  *   get:
  *     security:
  *      - JWT: []
@@ -125,14 +126,14 @@ router.post(
  *         description: Full List
  */
 router.get(
-  "/getAll",
+  "/",
   passport.authenticate("jwt", {
     session: false,
   }),
   (req, res, next) => {
     Profiles.getAll(function (err, result) {
       if (err) {
-        res.send(err);
+        res.send({ success: false, msg: err });
       } else {
         if (result.Items) {
           res.send(JSON.stringify(result.Items));
@@ -184,19 +185,23 @@ router.get(
     //Find organisation details
     OrganisationModel.get({ authmethod: org }, (err, data) => {
       //Error?
-      if(err) { res.status(500).send({ success: false, message: err }); return; }
+      if (err) {
+        res.status(500).send({ success: false, message: err });
+        return;
+      }
 
       //Organisation exists?
-      if(data.Items.length == 0) {
-        res.send({ status: 404, message: "Organisation not found" }); return; 
+      if (data.Items.length == 0) {
+        res.send({ status: 404, message: "Organisation not found" });
+        return;
       }
-      
+
       //Query via active directory
       let organisation = data.Items[0];
       ActiveDirectoryModel.getInstance(organisation.authmethod, (err, activeDirectory) => {
         Profiles.getUserProfileByUsername(username, function (err, result) {
           if (err) {
-            res.send(err);
+            res.send({ success: false, msg: err });
             return;
           }
           if (result.Items.length > 0) {
@@ -302,7 +307,6 @@ router.get(
   }
 );
 
-
 /**
  * @swagger
  * /userprofiles/{userId}:
@@ -323,111 +327,137 @@ router.get(
  *       200:
  *         description: The user's profile
  */
- router.get(
+router.get(
   "/:userId",
   passport.authenticate("jwt", {
     session: false,
   }),
-  MiddlewareHelper.validate("params", 
+  MiddlewareHelper.validate(
+    "params",
     {
-      userId: { type: "string", pattern: "[A-z. 0-9]{1,50}#[A-z. ]{1,50}" }
-    }, { 
-      pattern: "The user id should be in the format of 'username#organisation'"
+      userId: { type: "string", pattern: "[A-z. 0-9]{1,50}#[A-z. ]{1,50}" },
+    },
+    {
+      pattern: "The user id should be in the format of 'username#organisation'",
     }
   ),
   (req, res, next) => {
     //Parse request
-    const username = req.params.userId.split('#')[0];
+    const username = req.params.userId.split("#")[0];
 
     //Valud organisation?
-    OrganisationModel.get({ name: req.params.userId.split('#')[1] }, (err, data) => {
+    OrganisationModel.get({ name: req.params.userId.split("#")[1] }, (err, data) => {
       //Error?
-      if(err) { res.status(500).send({ success: false, message: err }); return; }
+      if (err) {
+        res.status(500).send({ success: false, message: err });
+        return;
+      }
 
       //Organisation exists?
-      if(data.Items.length == 0) {
-        res.send({ status: 404, message: "Organisation not found" }); return; 
+      if (data.Items.length == 0) {
+        res.send({ status: 404, message: "Organisation not found" });
+        return;
       }
 
       //Set organisation
       const organisation = data.Items[0];
 
       //Get the user's profile
-      UserModel.getByKeys({
-        username: username,
-        organisation: organisation.name
-      }, (err, users) => {
-        //Error?
-        if (err) { res.status(500).json({ success: false, msg: err.message }); return; } 
-   
-        //Found user?
-        if(users.Items.length > 0) {
-          //Get user profile
-          const user = users.Items[0];
-          UserProfileModel.getByUsername(username, (err, profiles) => {
-            //Error?
-            if (err) { res.status(500).json({ success: false, msg: err.message }); return; } 
+      UserModel.getByKeys(
+        {
+          username: username,
+          organisation: organisation.name,
+        },
+        (err, users) => {
+          //Error?
+          if (err) {
+            res.status(500).json({ success: false, msg: err.message });
+            return;
+          }
 
-            //Return profile
-            const userprofile = (profiles.Items.length == 0) ? null : profiles.Items[0];
-            res.send({
-              _id: userprofile ? userprofile._id : user._id,
-              name: user.name,
-              email: user.email,
-              username: user.username,
-              organisation: organisation.name,
-              photobase64: userprofile ? userprofile.photobase64 : "",
-              contactnumber: userprofile ? userprofile.contactnumber : "",
-              preferredcontactmethod: userprofile ? userprofile.preferredcontactmethod : [],
-              mobiledeviceids: userprofile ? userprofile.mobiledeviceids : [],
-              emailpreference: userprofile ? userprofile.emailpreference : [],
-              impreference: userprofile ? userprofile.impreference : [],
-              im_id: userprofile ? userprofile.im_id : "",
-            });
-          });
-        } else {
-          //Resort to AD user
-          ActiveDirectoryModel.getInstance(organisation.authmethod, (err, activeDirectory) => {
-            //Organisation has already been checked, username and org combination must be incorrect
-            if(err == "Unknown organisation") { res.status(404).send({ success: false, message: "User not found!" }); return; }
-            
-            //Other error?
-            if(err) { res.status(500).send({ success: false, message: err }); return; }
-
-            //Find user in active directory
-            activeDirectory.findUser(username, (err, user) => {
-              if (err) { return res.json({ success: false, err: JSON.stringify(err), msg: "User not found" }); }
-
-              //User found?
-              if (user) {
-                UserProfileModel.getByUsername(username, (err, profiles) => {
-                  //Error?
-                  if (err) { res.status(500).json({ success: false, msg: err.message }); return; } 
-      
-                  //Return profile
-                  const userprofile = (profiles.Items.length == 0) ? null : profiles.Items[0];
-                  res.send({
-                    _id: userprofile ? userprofile._id : user.employeeID,
-                    name: user.cn,
-                    email: user.mail,
-                    username: user.sAMAccountName,
-                    organisation: organisation.name,
-                    photobase64: userprofile ? userprofile.photobase64 : "",
-                    contactnumber: userprofile ? userprofile.contactnumber : "",
-                    preferredcontactmethod: userprofile ? userprofile.preferredcontactmethod : [],
-                    mobiledeviceids: userprofile ? userprofile.mobiledeviceids : [],
-                    emailpreference: userprofile ? userprofile.emailpreference : [],
-                    impreference: userprofile ? userprofile.impreference : [],
-                    im_id: userprofile ? userprofile.im_id : "",
-                  });
-                });
-              } else {
-                return res.json({ success: false,  msg: "User: " + username + " not found."});
+          //Found user?
+          if (users.Items.length > 0) {
+            //Get user profile
+            const user = users.Items[0];
+            UserProfileModel.getByUsername(username, (err, profiles) => {
+              //Error?
+              if (err) {
+                res.status(500).json({ success: false, msg: err.message });
+                return;
               }
+
+              //Return profile
+              const userprofile = profiles.Items.length == 0 ? null : profiles.Items[0];
+              res.send({
+                _id: userprofile ? userprofile._id : user._id,
+                name: user.name,
+                email: user.email,
+                username: user.username,
+                organisation: organisation.name,
+                photobase64: userprofile ? userprofile.photobase64 : "",
+                contactnumber: userprofile ? userprofile.contactnumber : "",
+                preferredcontactmethod: userprofile ? userprofile.preferredcontactmethod : [],
+                mobiledeviceids: userprofile ? userprofile.mobiledeviceids : [],
+                emailpreference: userprofile ? userprofile.emailpreference : [],
+                impreference: userprofile ? userprofile.impreference : [],
+                im_id: userprofile ? userprofile.im_id : "",
+              });
             });
-          });
+          } else {
+            //Resort to AD user
+            ActiveDirectoryModel.getInstance(organisation.authmethod, (err, activeDirectory) => {
+              //Organisation has already been checked, username and org combination must be incorrect
+              if (err == "Unknown organisation") {
+                res.status(404).send({ success: false, message: "User not found!" });
+                return;
+              }
+
+              //Other error?
+              if (err) {
+                res.status(500).send({ success: false, message: err });
+                return;
+              }
+
+              //Find user in active directory
+              activeDirectory.findUser(username, (err, user) => {
+                if (err) {
+                  return res.json({ success: false, err: JSON.stringify(err), msg: "User not found" });
+                }
+
+                //User found?
+                if (user) {
+                  UserProfileModel.getByUsername(username, (err, profiles) => {
+                    //Error?
+                    if (err) {
+                      res.status(500).json({ success: false, msg: err.message });
+                      return;
+                    }
+
+                    //Return profile
+                    const userprofile = profiles.Items.length == 0 ? null : profiles.Items[0];
+                    res.send({
+                      _id: userprofile ? userprofile._id : user.employeeID,
+                      name: user.cn,
+                      email: user.mail,
+                      username: user.sAMAccountName,
+                      organisation: organisation.name,
+                      photobase64: userprofile ? userprofile.photobase64 : "",
+                      contactnumber: userprofile ? userprofile.contactnumber : "",
+                      preferredcontactmethod: userprofile ? userprofile.preferredcontactmethod : [],
+                      mobiledeviceids: userprofile ? userprofile.mobiledeviceids : [],
+                      emailpreference: userprofile ? userprofile.emailpreference : [],
+                      impreference: userprofile ? userprofile.impreference : [],
+                      im_id: userprofile ? userprofile.im_id : "",
+                    });
+                  });
+                } else {
+                  return res.json({ success: false, msg: "User: " + username + " not found." });
+                }
+              });
+            });
+          }
         }
-      });
+      );
     });
   }
 );
