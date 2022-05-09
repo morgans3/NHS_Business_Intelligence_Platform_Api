@@ -45,12 +45,12 @@ const CVICohortModel = new DIULibrary.Models.CVICohortModel();
  *         description: Confirmation of Account Registration
  */
 router.get("/", passport.authenticate("jwt", {
-  session: false,
+    session: false,
 }), (req, res, next) => {
-  CVICohortModel.get(req.query, (err, result) => {
-    if(err) { res.status(500).send({ success: false, msg: err }); return; }
-    res.send(result.Items);
-  });
+    CVICohortModel.get(req.query, (err, result) => {
+        if (err) { res.status(500).send({ success: false, msg: err }); return; }
+        res.send(result.Items);
+    });
 });
 
 /**
@@ -94,19 +94,19 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: Confirmation of Account Registration
  */
- router.post("/create", passport.authenticate("jwt", {
-  session: false,
+router.post("/create", passport.authenticate("jwt", {
+    session: false,
 }), (req, res, next) => {
-  CVICohortModel.create({
-    cohortName: req.body.cohortName,
-    createdDT: req.body.createdDT,
-    cohorturl: req.body.cohorturl,
-    teamcode: req.body.teamcode,
-    username: req.body.username,
-  }, (err, result) => {
-    if(err) { res.status(500).send({ success: false, msg: err }); return; }
-    res.send({ success: false, msg: "New cohort created!" });
-  });
+    CVICohortModel.create({
+        cohortName: req.body.cohortName,
+        createdDT: req.body.createdDT,
+        cohorturl: req.body.cohorturl,
+        teamcode: req.body.teamcode,
+        username: req.body.username,
+    }, (err, result) => {
+        if (err) { res.status(500).send({ success: false, msg: err }); return; }
+        res.send({ success: false, msg: "New cohort created!" });
+    });
 });
 
 
@@ -151,20 +151,20 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: Confirmation of Account Registration
  */
- router.post("/update", passport.authenticate("jwt", {
-  session: false,
+router.post("/update", passport.authenticate("jwt", {
+    session: false,
 }), (req, res, next) => {
-  CVICohortModel.update({
-    cohortName: req.body.cohortName,
-    createdDT: req.body.createdDT,
-  }, {
-    cohorturl: req.body.cohorturl,
-    teamcode: req.body.teamcode,
-    username: req.body.username
-  }, (err, result) => {
-    if(err) { res.status(500).send({ success: false, msg: err }); return; }
-    res.send({ success: false, msg: "Cohort updated!" });
-  });
+    CVICohortModel.update({
+        cohortName: req.body.cohortName,
+        createdDT: req.body.createdDT,
+    }, {
+        cohorturl: req.body.cohorturl,
+        teamcode: req.body.teamcode,
+        username: req.body.username
+    }, (err, result) => {
+        if (err) { res.status(500).send({ success: false, msg: err }); return; }
+        res.send({ success: false, msg: "Cohort updated!" });
+    });
 });
 
 /**
@@ -193,22 +193,22 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: Success status
  */
- router.delete("/delete", passport.authenticate("jwt", {
-  session: false,
+router.delete("/delete", passport.authenticate("jwt", {
+    session: false,
 }), (req, res, next) => {
-    //Delete cohort by id
+    // Delete cohort by id
     CVICohortModel.delete({
-      cohortName: req.body.cohortName,
-      createdDT: req.body.createdDT,
+        cohortName: req.body.cohortName,
+        createdDT: req.body.createdDT,
     }, (err, result) => {
-      //Return data
-      if (err) {
-        res.status(500).json({ success: false, msg: err });
-        return;
-      }
-      res.json({ success: true, msg: "Cohort deleted!" });
+        // Return data
+        if (err) {
+            res.status(500).json({ success: false, msg: err });
+            return;
+        }
+        res.json({ success: true, msg: "Cohort deleted!" });
     });
-  }
+}
 );
 
 module.exports = router;

@@ -31,70 +31,70 @@ const basePath = "https://10.164.36.166/mlcsu/production/gpinpatientapi/api/";
  *         description: JWT Bearer Token for Querying Inpatients API
  */
 router.post(
-  "/authenticate",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const token = req.headers.authorization.replace("JWT ", "");
-    const rawusername = jwt.decode(token)["username"] || "test";
-    const auth = jwt.decode(token)["authentication"] || "unknown";
-    const key = process.env.BTHAUTHKEY;
-    if (auth === "xfyldecoast" && key) {
-      const username = rawusername;
-      process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-      Request.post(
-        {
-          headers: { "content-type": "application/json" },
-          url: basePath + "_Authentication/authenticate",
-          body: JSON.stringify({ username: username, key: key }),
-        },
-        (error, response, body) => {
-          if (error) {
+    "/authenticate",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const token = req.headers.authorization.replace("JWT ", "");
+        const rawusername = jwt.decode(token)["username"] || "test";
+        const auth = jwt.decode(token)["authentication"] || "unknown";
+        const key = process.env.BTHAUTHKEY;
+        if (auth === "xfyldecoast" && key) {
+            const username = rawusername;
+            process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+            Request.post(
+                {
+                    headers: { "content-type": "application/json" },
+                    url: basePath + "_Authentication/authenticate",
+                    body: JSON.stringify({ username, key }),
+                },
+                (error, response, body) => {
+                    if (error) {
+                        res.json({
+                            success: false,
+                            msg: "Error: " + error,
+                        });
+                    } else {
+                        try {
+                            res.json({
+                                success: true,
+                                msg: JSON.parse(body),
+                            });
+                        } catch (exception) {
+                            res.json({
+                                success: false,
+                                msg: "Unable to interpret response from BTH",
+                            });
+                        }
+                    }
+                }
+            );
+        } else {
             res.json({
-              success: false,
-              msg: "Error: " + error,
-            });
-          } else {
-            try {
-              res.json({
-                success: true,
-                msg: JSON.parse(body),
-              });
-            } catch (exception) {
-              res.json({
                 success: false,
-                msg: "Unable to interpret response from BTH",
-              });
-            }
-          }
+                msg: "Not authorised to access this dataset",
+            });
         }
-      );
-    } else {
-      res.json({
-        success: false,
-        msg: "Not authorised to access this dataset",
-      });
     }
-  }
 );
 
 function sendGet(bthtoken, path, callback) {
-  Request.get(
-    {
-      headers: { "content-type": "application/json", authorization: bthtoken },
-      url: basePath + path,
-    },
-    (error, response, body) => {
-      if (response.statusCode === 200) {
-        callback(error, response, body);
-      } else if (response.statusCode === 401) {
-        callback("401: " + bthtoken, response, null);
-      } else {
-        callback(response.statusCode, response, null);
-      }
-    }
-  );
+    Request.get(
+        {
+            headers: { "content-type": "application/json", authorization: bthtoken },
+            url: basePath + path,
+        },
+        (error, response, body) => {
+            if (response.statusCode === 200) {
+                callback(error, response, body);
+            } else if (response.statusCode === 401) {
+                callback(new Error("401: " + bthtoken), response, null);
+            } else {
+                callback(response.statusCode, response, null);
+            }
+        }
+    );
 }
 
 /**
@@ -119,27 +119,27 @@ function sendGet(bthtoken, path, callback) {
  *         description: BTH Inpatient Count Totals
  */
 router.post(
-  "/inpatientcounts",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const token = "Bearer " + req.body.token;
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-    sendGet(token, "FyldecoastDashboard/InpatientCounts", (error, response, body) => {
-      if (error) {
-        res.json({
-          success: false,
-          msg: "Error: " + error,
+    "/inpatientcounts",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const token = "Bearer " + req.body.token;
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+        sendGet(token, "FyldecoastDashboard/InpatientCounts", (error, response, body) => {
+            if (error) {
+                res.json({
+                    success: false,
+                    msg: "Error: " + error,
+                });
+            } else {
+                res.send({
+                    success: true,
+                    msg: body,
+                });
+            }
         });
-      } else {
-        res.send({
-          success: true,
-          msg: body,
-        });
-      }
-    });
-  }
+    }
 );
 
 /**
@@ -164,27 +164,27 @@ router.post(
  *         description: BTH Outpatient Count Totals
  */
 router.post(
-  "/outpatientcounts",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const token = "Bearer " + req.body.token;
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-    sendGet(token, "FyldecoastDashboard/OutpatientCounts", (error, response, body) => {
-      if (error) {
-        res.json({
-          success: false,
-          msg: "Error: " + error,
+    "/outpatientcounts",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const token = "Bearer " + req.body.token;
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+        sendGet(token, "FyldecoastDashboard/OutpatientCounts", (error, response, body) => {
+            if (error) {
+                res.json({
+                    success: false,
+                    msg: "Error: " + error,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: body,
+                });
+            }
         });
-      } else {
-        res.json({
-          success: true,
-          msg: body,
-        });
-      }
-    });
-  }
+    }
 );
 
 /**
@@ -209,27 +209,27 @@ router.post(
  *         description: BTH AE Count Totals
  */
 router.post(
-  "/aecounts",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const token = "Bearer " + req.body.token;
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-    sendGet(token, "FyldecoastDashboard/AECounts", (error, response, body) => {
-      if (error) {
-        res.json({
-          success: false,
-          msg: "Error: " + error,
+    "/aecounts",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const token = "Bearer " + req.body.token;
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+        sendGet(token, "FyldecoastDashboard/AECounts", (error, response, body) => {
+            if (error) {
+                res.json({
+                    success: false,
+                    msg: "Error: " + error,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: body,
+                });
+            }
         });
-      } else {
-        res.json({
-          success: true,
-          msg: body,
-        });
-      }
-    });
-  }
+    }
 );
 
 /**
@@ -254,27 +254,27 @@ router.post(
  *         description: BTH ECS Count Totals
  */
 router.post(
-  "/ecscounts",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const token = "Bearer " + req.body.token;
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-    sendGet(token, "FyldecoastDashboard/ECSCounts", (error, response, body) => {
-      if (error) {
-        res.json({
-          success: false,
-          msg: "Error: " + error,
+    "/ecscounts",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const token = "Bearer " + req.body.token;
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+        sendGet(token, "FyldecoastDashboard/ECSCounts", (error, response, body) => {
+            if (error) {
+                res.json({
+                    success: false,
+                    msg: "Error: " + error,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: body,
+                });
+            }
         });
-      } else {
-        res.json({
-          success: true,
-          msg: body,
-        });
-      }
-    });
-  }
+    }
 );
 
 /**
@@ -299,27 +299,27 @@ router.post(
  *         description: BTH EPC Count Totals
  */
 router.post(
-  "/epccounts",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const token = "Bearer " + req.body.token;
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-    sendGet(token, "FyldecoastDashboard/EPCCounts", (error, response, body) => {
-      if (error) {
-        res.json({
-          success: false,
-          msg: "Error: " + error,
+    "/epccounts",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const token = "Bearer " + req.body.token;
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+        sendGet(token, "FyldecoastDashboard/EPCCounts", (error, response, body) => {
+            if (error) {
+                res.json({
+                    success: false,
+                    msg: "Error: " + error,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: body,
+                });
+            }
         });
-      } else {
-        res.json({
-          success: true,
-          msg: body,
-        });
-      }
-    });
-  }
+    }
 );
 
 /**
@@ -344,27 +344,27 @@ router.post(
  *         description: BTH Inpatient GP Summary Figures
  */
 router.post(
-  "/inpatientgpsummary",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const token = "Bearer " + req.body.token;
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-    sendGet(token, "FyldecoastDashboard/InpatientsGPSummary", (error, response, body) => {
-      if (error) {
-        res.json({
-          success: false,
-          msg: "Error: " + error,
+    "/inpatientgpsummary",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const token = "Bearer " + req.body.token;
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+        sendGet(token, "FyldecoastDashboard/InpatientsGPSummary", (error, response, body) => {
+            if (error) {
+                res.json({
+                    success: false,
+                    msg: "Error: " + error,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: body,
+                });
+            }
         });
-      } else {
-        res.json({
-          success: true,
-          msg: body,
-        });
-      }
-    });
-  }
+    }
 );
 
 /**
@@ -389,27 +389,27 @@ router.post(
  *         description: BTH AE GP Summary Figures
  */
 router.post(
-  "/aegpsummary",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const token = "Bearer " + req.body.token;
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-    sendGet(token, "FyldecoastDashboard/AEGPSummary", (error, response, body) => {
-      if (error) {
-        res.json({
-          success: false,
-          msg: "Error: " + error,
+    "/aegpsummary",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const token = "Bearer " + req.body.token;
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+        sendGet(token, "FyldecoastDashboard/AEGPSummary", (error, response, body) => {
+            if (error) {
+                res.json({
+                    success: false,
+                    msg: "Error: " + error,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: body,
+                });
+            }
         });
-      } else {
-        res.json({
-          success: true,
-          msg: body,
-        });
-      }
-    });
-  }
+    }
 );
 
 module.exports = router;

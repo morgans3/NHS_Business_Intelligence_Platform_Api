@@ -36,21 +36,21 @@ const EmailHelper = DIULibrary.Helpers.Email;
  *         description: Full List
  */
 router.get(
-  "/",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    if (req.query.organisation) {
-      UserModel.getByOrgAndName(req.query, (err, result) => {
-        res.send(err ? { success: false, msg: err } : result);
-      });
-    } else {
-      UserModel.get(req.query, (err, result) => {
-        res.send(err ? { success: false, msg: err } : result);
-      });
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        if (req.query.organisation) {
+            UserModel.getByOrgAndName(req.query, (err, result) => {
+                res.send(err ? { success: false, msg: err } : result);
+            });
+        } else {
+            UserModel.get(req.query, (err, result) => {
+                res.send(err ? { success: false, msg: err } : result);
+            });
+        }
     }
-  }
 );
 
 /**
@@ -69,15 +69,15 @@ router.get(
  *         description: User Profile
  */
 router.get(
-  "/profile",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    res.json({
-      user: req.user,
-    });
-  }
+    "/profile",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        res.json({
+            user: req.user,
+        });
+    }
 );
 
 /**
@@ -101,41 +101,41 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/:id",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  MiddlewareHelper.validate(
-    "params",
-    {
-      id: { type: "string", pattern: "[A-z. 0-9]{1,50}#[A-z. ]{1,50}" },
-    },
-    {
-      pattern: "The user id should be in the format of 'username#organisation'",
-    }
-  ),
-  (req, res, next) => {
-    UserModel.getByKeys(
-      {
-        username: req.params.id.split("#")[0],
-        organisation: req.params.id.split("#")[1],
-      },
-      (err, result) => {
-        //Error?
-        if (err) {
-          res.status(500).json({ success: false, msg: err.message });
-          return;
+    "/:id",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    MiddlewareHelper.validate(
+        "params",
+        {
+            id: { type: "string", pattern: "[A-z. 0-9]{1,50}#[A-z. ]{1,50}" },
+        },
+        {
+            pattern: "The user id should be in the format of 'username#organisation'",
         }
+    ),
+    (req, res, next) => {
+        UserModel.getByKeys(
+            {
+                username: req.params.id.split("#")[0],
+                organisation: req.params.id.split("#")[1],
+            },
+            (err, result) => {
+                // Error?
+                if (err) {
+                    res.status(500).json({ success: false, msg: err.message });
+                    return;
+                }
 
-        //Found user?
-        if (result.Items.length == 0) {
-          res.status(404).json({ success: false, msg: "User not found!" });
-        } else {
-          res.json(result.Items[0]);
-        }
-      }
-    );
-  }
+                // Found user?
+                if (result.Items.length === 0) {
+                    res.status(404).json({ success: false, msg: "User not found!" });
+                } else {
+                    res.json(result.Items[0]);
+                }
+            }
+        );
+    }
 );
 
 /**
@@ -188,34 +188,34 @@ router.get(
  *         description: Confirmation of Account Registration
  */
 router.post("/register", (req, res, next) => {
-  let newUser = {
-    name: { S: req.body.name },
-    email: { S: req.body.email },
-    username: { S: req.body.username },
-    password: { S: req.body.password },
-    organisation: { S: req.body.organisation },
-    linemanager: { S: req.body.linemanager },
-  };
-  if (req.body.key === credentials.secretkey) {
-    UserModel.addUser(newUser, req.body.password, (err, user) => {
-      if (err) {
-        res.json({
-          success: false,
-          msg: "Failed to register user",
+    const newUser = {
+        name: { S: req.body.name },
+        email: { S: req.body.email },
+        username: { S: req.body.username },
+        password: { S: req.body.password },
+        organisation: { S: req.body.organisation },
+        linemanager: { S: req.body.linemanager },
+    };
+    if (req.body.key === credentials.secretkey) {
+        UserModel.addUser(newUser, req.body.password, (err, user) => {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to register user",
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: "User registered",
+                });
+            }
         });
-      } else {
+    } else {
         res.json({
-          success: true,
-          msg: "User registered",
+            success: false,
+            msg: "Unauthorized",
         });
-      }
-    });
-  } else {
-    res.json({
-      success: false,
-      msg: "Unauthorized",
-    });
-  }
+    }
 });
 
 /**
@@ -253,45 +253,45 @@ router.post("/register", (req, res, next) => {
  *         description: User Token
  */
 router.post("/authenticate", (req, res, next) => {
-  //Get query parameters
-  const username = req.body.username;
-  const password = req.body.password;
-  const organisation = req.body.organisation;
-  const authentication = req.body.authentication;
+    // Get query parameters
+    const username = req.body.username;
+    const password = req.body.password;
+    const organisation = req.body.organisation;
+    const authentication = req.body.authentication;
 
-  //Get JWT
-  AuthenticateHelper.login(authentication, username, password, organisation, (err, user) => {
-    if (err) {
-      //Return error
-      res.status(401).json({ success: false, msg: err });
-      return null;
-    } else {
-      //Upgrade token
-      Authenticate.upgradePassportwithOrganisation(JWT.decode(user.jwt), false, (err, token) => {
-        if (err) console.log(err);
-
-        //Check password expiry
-        let password_expired = true;
-
-        //Check authentication method
-        if (authentication == "Demo") {
-          //Check password expiry
-          if (user.password_expires) {
-            //Date in future?
-            if (new Date(user.password_expires).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) {
-              password_expired = false;
-            }
-          }
+    // Get JWT
+    AuthenticateHelper.login(authentication, username, password, organisation, (err, user) => {
+        if (err) {
+            // Return error
+            res.status(401).json({ success: false, msg: err });
+            return null;
         } else {
-          //Default to false
-          password_expired = false;
-        }
+            // Upgrade token
+            Authenticate.upgradePassportwithOrganisation(JWT.decode(user.jwt), false, (upgradeError, token) => {
+                if (upgradeError) console.log(upgradeError);
 
-        //Return token
-        return res.json({ success: true, token: token, password_expired: password_expired });
-      });
-    }
-  });
+                // Check password expiry
+                let passwordExpired = true;
+
+                // Check authentication method
+                if (authentication === "Demo") {
+                    // Check password expiry
+                    if (user.password_expires) {
+                        // Date in future?
+                        if (new Date(user.password_expires).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) {
+                            passwordExpired = false;
+                        }
+                    }
+                } else {
+                    // Default to false
+                    passwordExpired = false;
+                }
+
+                // Return token
+                return res.json({ success: true, token, passwordExpired });
+            });
+        }
+    });
 });
 
 /**
@@ -312,15 +312,15 @@ router.post("/authenticate", (req, res, next) => {
  *         description: Credentials invalid
  */
 router.get(
-  "/validate",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    res.status(200).json({
-      msg: "Credentials valid",
-    });
-  }
+    "/validate",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        res.status(200).json({
+            msg: "Credentials valid",
+        });
+    }
 );
 
 /**
@@ -350,26 +350,26 @@ router.get(
  *         description: Credentials valid
  */
 router.delete(
-  "/delete",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    UserModel.delete(
-      {
-        username: req.body.username,
-        organisation: req.body.organisation,
-      },
-      (err, result) => {
-        //Return data
-        if (err) {
-          res.status(500).json({ success: false, msg: err });
-          return;
-        }
-        res.json({ success: true, msg: "User deleted!" });
-      }
-    );
-  }
+    "/delete",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        UserModel.delete(
+            {
+                username: req.body.username,
+                organisation: req.body.organisation,
+            },
+            (err, result) => {
+                // Return data
+                if (err) {
+                    res.status(500).json({ success: false, msg: err });
+                    return;
+                }
+                res.json({ success: true, msg: "User deleted!" });
+            }
+        );
+    }
 );
 
 /**
@@ -392,39 +392,39 @@ router.delete(
  *         description: Verification code sent
  */
 router.post("/send-code", (req, res, next) => {
-  //Generate token and send email
-  const payload = req.body;
-  VerificationCodeModel.create(
-    {
-      organisation: "",
-      username: payload.email,
-      generated: new Date().toISOString(),
-    },
-    (saveErr, savedCode) => {
-      //Check for errors
-      if (saveErr) {
-        res.json({ success: false, msg: "Failed: " + saveErr });
-        return;
-      }
-
-      //Send code to email
-      EmailHelper.sendMail(
+    // Generate token and send email
+    const payload = req.body;
+    VerificationCodeModel.create(
         {
-          to: payload.email,
-          subject: "Verification Code for Nexus Intelligence",
-          message: "Please enter this code where prompted on screen: " + savedCode.code,
+            organisation: "",
+            username: payload.email,
+            generated: new Date().toISOString(),
         },
-        (err, response) => {
-          if (err) {
-            console.log(err);
-            res.json({ success: false, msg: "Failed: " + err });
-          } else {
-            res.json({ success: true, msg: "Code has been sent to the provided email address" });
-          }
+        (saveErr, savedCode) => {
+            // Check for errors
+            if (saveErr) {
+                res.json({ success: false, msg: "Failed: " + saveErr });
+                return;
+            }
+
+            // Send code to email
+            EmailHelper.sendMail(
+                {
+                    to: payload.email,
+                    subject: "Verification Code for Nexus Intelligence",
+                    message: "Please enter this code where prompted on screen: " + savedCode.code,
+                },
+                (err, response) => {
+                    if (err) {
+                        console.log(err);
+                        res.json({ success: false, msg: "Failed: " + err });
+                    } else {
+                        res.json({ success: true, msg: "Code has been sent to the provided email address" });
+                    }
+                }
+            );
         }
-      );
-    }
-  );
+    );
 });
 
 /**
@@ -452,24 +452,24 @@ router.post("/send-code", (req, res, next) => {
  *         description: Verification code is/is not valid
  */
 router.post("/verify-code", (req, res, next) => {
-  //Token provided?
-  const payload = req.body;
-  VerificationCodeModel.getCode(payload.code, payload.email, (codeErr, codeRes) => {
-    //Return error
-    if (codeErr) {
-      res.json({ success: false, msg: "Failed: " + codeErr });
-      return;
-    }
+    // Token provided?
+    const payload = req.body;
+    VerificationCodeModel.getCode(payload.code, payload.email, (codeErr, codeRes) => {
+        // Return error
+        if (codeErr) {
+            res.json({ success: false, msg: "Failed: " + codeErr });
+            return;
+        }
 
-    //Return response
-    if (codeRes && codeRes.Items.length > 0) {
-      //Dont allow re-use
-      //passwordModel.deleteCode(payload.code, payload.email, () => {
-      res.json({ success: true, msg: "Code is valid." });
-    } else {
-      res.json({ success: false, msg: "Code not valid." });
-    }
-  });
+        // Return response
+        if (codeRes && codeRes.Items.length > 0) {
+            // Dont allow re-use
+            // passwordModel.deleteCode(payload.code, payload.email, () => {
+            res.json({ success: true, msg: "Code is valid." });
+        } else {
+            res.json({ success: false, msg: "Code not valid." });
+        }
+    });
 });
 
 module.exports = router;

@@ -3,7 +3,6 @@ const passport = require("passport");
 const express = require("express");
 const router = express.Router();
 
-const AWS = require("../config/database").AWS;
 const Authenticate = require("../models/authenticate");
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
@@ -54,102 +53,102 @@ const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
  *         description: Confirmation of Email Sent
  */
 router.post("/update", (req, res, next) => {
-  //Check params
-  const payload = req.body;
-  if (payload && payload.username && payload.authmethod && payload.newpassword) {
-    //Check organisation auth method
-    if (payload.authmethod !== "Demo") {
-      res.json({
-        success: false,
-        msg: "Please contact your IT Department if you wish to change your password.",
-      });
-      return;
-    }
-
-    //Authenticate with jwt or authcode?
-    if (payload.code) {
-      VerificationCodeModel.getCode(payload.code, payload.username, (err, result) => {
-        if (err) {
-          console.error(err);
-          res.json({
-            success: false,
-            msg: "Failed: " + err,
-          });
-          return;
+    // Check params
+    const payload = req.body;
+    if (payload && payload.username && payload.authmethod && payload.newpassword) {
+        // Check organisation auth method
+        if (payload.authmethod !== "Demo") {
+            res.json({
+                success: false,
+                msg: "Please contact your IT Department if you wish to change your password.",
+            });
+            return;
         }
-        if (result.Items && result.Items.length > 0) {
-          if (payload.username === result.Items[0].username) {
-            UserModel.updateUser(payload.username, payload.newpassword, (updateErr, updateRes) => {
-              if (updateErr) {
-                console.error(updateErr);
-                res.json({
-                  success: false,
-                  msg: "Failed: " + updateErr,
-                });
-                return;
-              }
-              VerificationCodeModel.deleteCode(payload.code, payload.username, (delErr, delRes) => {
-                if (delErr) {
-                  console.error(delErr);
-                  res.json({
-                    success: false,
-                    msg: "Failed: " + delRes,
-                  });
-                  return;
-                }
-                Authenticate.authenticateDemo(updateRes, (boolErr, strToken) => {
-                  if (boolErr) {
-                    console.error(boolErr);
+
+        // Authenticate with jwt or authcode?
+        if (payload.code) {
+            VerificationCodeModel.getCode(payload.code, payload.username, (err, result) => {
+                if (err) {
+                    console.error(err);
                     res.json({
-                      success: false,
-                      msg: "Failed: " + strToken,
+                        success: false,
+                        msg: "Failed: " + err,
                     });
                     return;
-                  }
-                  res.json({
-                    success: true,
-                    token: strToken,
-                  });
-                });
-              });
+                }
+                if (result.Items && result.Items.length > 0) {
+                    if (payload.username === result.Items[0].username) {
+                        UserModel.updateUser(payload.username, payload.newpassword, (updateErr, updateRes) => {
+                            if (updateErr) {
+                                console.error(updateErr);
+                                res.json({
+                                    success: false,
+                                    msg: "Failed: " + updateErr,
+                                });
+                                return;
+                            }
+                            VerificationCodeModel.deleteCode(payload.code, payload.username, (delErr, delRes) => {
+                                if (delErr) {
+                                    console.error(delErr);
+                                    res.json({
+                                        success: false,
+                                        msg: "Failed: " + delRes,
+                                    });
+                                    return;
+                                }
+                                Authenticate.authenticateDemo(updateRes, (boolErr, strToken) => {
+                                    if (boolErr) {
+                                        console.error(boolErr);
+                                        res.json({
+                                            success: false,
+                                            msg: "Failed: " + strToken,
+                                        });
+                                        return;
+                                    }
+                                    res.json({
+                                        success: true,
+                                        token: strToken,
+                                    });
+                                });
+                            });
+                        });
+                    } else {
+                        res.json({
+                            success: false,
+                            msg: "Use code sent to previously validated Email address",
+                        });
+                    }
+                } else {
+                    res.json({
+                        success: false,
+                        msg: "Use code sent to previously validated Email address",
+                    });
+                }
             });
-          } else {
-            res.json({
-              success: false,
-              msg: "Use code sent to previously validated Email address",
-            });
-          }
         } else {
-          res.json({
-            success: false,
-            msg: "Use code sent to previously validated Email address",
-          });
+            // Check if user can be authenticated
+            passport.authenticate("jwt", { session: false }, (err, authorisedUser) => {
+                if (err || authorisedUser === false) {
+                    // User is not authenticated
+                    res.status(401).json({ success: false, msg: "Unauthenticated!" });
+                } else {
+                    // Change user's password
+                    UserModel.updateUser(authorisedUser.username, payload.newpassword, (updateErr, updateRes) => {
+                        if (updateErr) console.error(updateErr);
+                        res.json({
+                            success: !updateErr,
+                            msg: updateErr ? "Failed to update password" : "Password has been updated!",
+                        });
+                    });
+                }
+            })(req, res, next);
         }
-      });
     } else {
-      //Check if user can be authenticated
-      passport.authenticate("jwt", { session: false }, (err, authorisedUser) => {
-        if (err || authorisedUser == false) {
-          //User is not authenticated
-          res.status(401).json({ success: false, msg: "Unauthenticated!" });
-        } else {
-          //Change user's password
-          UserModel.updateUser(authorisedUser.username, payload.newpassword, (updateErr, updateRes) => {
-            if (updateErr) console.error(updateErr);
-            res.json({
-              success: updateErr ? false : true,
-              msg: updateErr ? "Failed to update password" : "Password has been updated!",
-            });
-          });
-        }
-      })(req, res, next);
+        res.status(400).json({
+            success: false,
+            msg: "Failed: Not provided with username and organisation",
+        });
     }
-  } else {
-    res.status(400).json({
-      success: false,
-      msg: "Failed: Not provided with username and organisation",
-    });
-  }
 });
 
 module.exports = router;

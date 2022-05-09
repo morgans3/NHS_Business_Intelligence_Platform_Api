@@ -30,15 +30,15 @@ const PGConstruct = PostgresI.init(settings);
  *         description: Full List
  */
 router.get(
-  "/",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const params = {
-      tablename: "public.wards",
-      st_asgeojson: "ST_Simplify (lg.geom, 0.0001, TRUE)",
-      as_properties: `(select row_to_json(_) AS properties from (select st_areasha,
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const params = {
+            tablename: "public.wards",
+            st_asgeojson: "ST_Simplify (lg.geom, 0.0001, TRUE)",
+            as_properties: `(select row_to_json(_) AS properties from (select st_areasha,
         st_lengths,
         objectid,
         lad15nm,
@@ -47,11 +47,11 @@ router.get(
         wd15nm,
         wd15cd) as _)
 --row_to_json((organisation_code, name), true) AS properties`,
-    };
-    PostgresI.getGeoJson(PGConstruct, params, (response) => {
-      res.json(response);
-    });
-  }
+        };
+        PostgresI.getGeoJson(PGConstruct, params, (response) => {
+            res.json(response);
+        });
+    }
 );
 
 module.exports = router;

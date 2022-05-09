@@ -29,19 +29,19 @@ const DynamoDBData = require("diu-data-functions").Methods.DynamoDBData;
  *         description: All data
  */
 router.get(
-  "/",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    DynamoDBData.getAll(AWS, "warddetails", (err, result) => {
-      if (err) {
-        res.status(500).json({ success: false, msg: err });
-      } else {
-        res.json(result.Items);
-      }
-    });
-  }
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        DynamoDBData.getAll(AWS, "warddetails", (err, result) => {
+            if (err) {
+                res.status(500).json({ success: false, msg: err });
+            } else {
+                res.json(result.Items);
+            }
+        });
+    }
 );
 
 module.exports = router;

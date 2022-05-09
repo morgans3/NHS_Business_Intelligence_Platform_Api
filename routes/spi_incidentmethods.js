@@ -28,17 +28,17 @@ const SpiIncidentMethods = new DIULibrary.Models.SpiIncidentMethods();
  *       200:
  *         description: Full List
  */
- router.get(
-  "/",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    SpiIncidentMethods.get((err, result) => {
-      if(err) { res.status(500).send({ success: false, msg: err }); return; }
-      res.send(result.Items);
-    });
-  }
+router.get(
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        SpiIncidentMethods.get((err, result) => {
+            if (err) { res.status(500).send({ success: false, msg: err }); return; }
+            res.send(result.Items);
+        });
+    }
 );
 
 /**
@@ -77,18 +77,18 @@ const SpiIncidentMethods = new DIULibrary.Models.SpiIncidentMethods();
  *       200:
  *         description: Create an incident
  */
- router.post("/create", passport.authenticate("jwt", {
-  session: false,
+router.post("/create", passport.authenticate("jwt", {
+    session: false,
 }), (req, res, next) => {
-  SpiIncidentMethods.create({
-    method: req.body.method,
-    dateCreated: req.body.dateCreated,
-    list: req.body.list,
-    priority: req.body.priority,
-  }, (err, result) => {
-    if(err) { res.status(500).send({ success: false, msg: err }); return; }
-    res.send({ success: false, msg: "New incident created!" });
-  });
+    SpiIncidentMethods.create({
+        method: req.body.method,
+        dateCreated: req.body.dateCreated,
+        list: req.body.list,
+        priority: req.body.priority,
+    }, (err, result) => {
+        if (err) { res.status(500).send({ success: false, msg: err }); return; }
+        res.send({ success: false, msg: "New incident created!" });
+    });
 });
 
 
@@ -128,19 +128,19 @@ const SpiIncidentMethods = new DIULibrary.Models.SpiIncidentMethods();
  *       200:
  *         description: Incident updated
  */
- router.post("/update", passport.authenticate("jwt", {
-  session: false,
+router.post("/update", passport.authenticate("jwt", {
+    session: false,
 }), (req, res, next) => {
-  SpiIncidentMethods.update({
-    method: req.body.method,
-    dateCreated: req.body.dateCreated,
-  }, {
-    list: req.body.list,
-    priority: req.body.priority,
-  }, (err, result) => {
-    if(err) { res.status(500).send({ success: false, msg: err }); return; }
-    res.send({ success: false, msg: "Incident updated!" });
-  });
+    SpiIncidentMethods.update({
+        method: req.body.method,
+        dateCreated: req.body.dateCreated,
+    }, {
+        list: req.body.list,
+        priority: req.body.priority,
+    }, (err, result) => {
+        if (err) { res.status(500).send({ success: false, msg: err }); return; }
+        res.send({ success: false, msg: "Incident updated!" });
+    });
 });
 
 /**
@@ -169,22 +169,22 @@ const SpiIncidentMethods = new DIULibrary.Models.SpiIncidentMethods();
  *       200:
  *         description: Success status
  */
- router.delete("/delete", passport.authenticate("jwt", {
-  session: false,
+router.delete("/delete", passport.authenticate("jwt", {
+    session: false,
 }), (req, res, next) => {
-    //Delete cohort by id
+    // Delete cohort by id
     SpiIncidentMethods.delete({
-      method: req.body.method,
-      dateCreated: req.body.dateCreated,
+        method: req.body.method,
+        dateCreated: req.body.dateCreated,
     }, (err, result) => {
-      //Return data
-      if (err) {
-        res.status(500).json({ success: false, msg: err });
-        return;
-      }
-      res.json({ success: true, msg: "Incident deleted!" });
+        // Return data
+        if (err) {
+            res.status(500).json({ success: false, msg: err });
+            return;
+        }
+        res.json({ success: true, msg: "Incident deleted!" });
     });
-  }
+}
 );
 
 module.exports = router;

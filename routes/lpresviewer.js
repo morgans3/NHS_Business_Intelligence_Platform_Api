@@ -34,26 +34,26 @@ const jwt = require("jsonwebtoken");
  *         description: Open Source Audit List
  */
 router.post(
-  "/getValidationKey",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const token = req.headers.authorization.replace("JWT ", "");
-    const username = jwt.decode(token)["username"] || "test";
-    const nhsnumber = req.body.nhsnumber;
-    if (username === "test" || !nhsnumber) {
-      res.status(400).json({
-        success: false,
-        msg: "Unable to parse request",
-        token: null,
-      });
-    } else {
-      const sha512 = require("js-sha512").sha512;
-      const ssk = sha512(process.env.LPRES_SSK + "NEXUS" + username + nhsnumber);
-      res.json({ success: true, token: ssk });
+    "/getValidationKey",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const token = req.headers.authorization.replace("JWT ", "");
+        const username = jwt.decode(token)["username"] || "test";
+        const nhsnumber = req.body.nhsnumber;
+        if (username === "test" || !nhsnumber) {
+            res.status(400).json({
+                success: false,
+                msg: "Unable to parse request",
+                token: null,
+            });
+        } else {
+            const sha512 = require("js-sha512").sha512;
+            const ssk = sha512(process.env.LPRES_SSK + "NEXUS" + username + nhsnumber);
+            res.json({ success: true, token: ssk });
+        }
     }
-  }
 );
 
 module.exports = router;

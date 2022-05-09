@@ -75,43 +75,43 @@ const App = require("../models/apps");
  *         description: Confirmation of App Registration
  */
 router.post(
-  "/register",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let newApp = {
-      name: { S: req.body.name },
-      status: { S: req.body.status },
-      icon: { S: req.body.icon },
-      url: { S: req.body.url },
-      ownerName: { S: req.body.ownerName },
-      ownerEmail: { S: req.body.ownerEmail },
-      environment: { S: req.body.environment },
-      description: { S: req.body.description },
-    };
-    if (req.body.images) {
-      try {
-        newApp["images"] = { SS: req.body.images.split(",") };
-      } catch (ex) {
-        newApp["images"] = { SS: req.body.images };
-      }
-    }
+    "/register",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const newApp = {
+            name: { S: req.body.name },
+            status: { S: req.body.status },
+            icon: { S: req.body.icon },
+            url: { S: req.body.url },
+            ownerName: { S: req.body.ownerName },
+            ownerEmail: { S: req.body.ownerEmail },
+            environment: { S: req.body.environment },
+            description: { S: req.body.description },
+        };
+        if (req.body.images) {
+            try {
+                newApp["images"] = { SS: req.body.images.split(",") };
+            } catch (ex) {
+                newApp["images"] = { SS: req.body.images };
+            }
+        }
 
-    App.addApp(newApp, (err, user) => {
-      if (err) {
-        res.json({
-          success: false,
-          msg: "Failed to register: " + err,
+        App.addApp(newApp, (err, user) => {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to register: " + err,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: "Registered",
+                });
+            }
         });
-      } else {
-        res.json({
-          success: true,
-          msg: "Registered",
-        });
-      }
-    });
-  }
+    }
 );
 
 /**
@@ -182,45 +182,45 @@ router.post(
  *         description: Confirmation of App Registration
  */
 router.put(
-  "/update",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res) => {
-    const id = req.query.app_name;
-    App.getAppByName(id, function (err, app) {
-      if (err) {
-        res.json({
-          success: false,
-          msg: "Failed to update: " + err,
-        });
-      }
-      var scannedItem = app.Items[0];
-      var archive = false;
-      scannedItem.name = req.body.name;
-      scannedItem.status = req.body.status;
-      scannedItem.ownerName = req.body.ownerName;
-      scannedItem.ownerEmail = req.body.ownerEmail;
-      scannedItem.environment = req.body.environment;
-      scannedItem.icon = req.body.icon;
-      scannedItem.url = req.body.url;
-      scannedItem.description = req.body.description;
-      if (req.body.images) scannedItem.images = req.body.images;
+    "/update",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res) => {
+        const id = req.query.app_name;
+        App.getAppByName(id, function (err, app) {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to update: " + err,
+                });
+            }
+            const scannedItem = app.Items[0];
+            scannedItem.name = req.body.name;
+            scannedItem.status = req.body.status;
+            scannedItem.ownerName = req.body.ownerName;
+            scannedItem.ownerEmail = req.body.ownerEmail;
+            scannedItem.environment = req.body.environment;
+            scannedItem.icon = req.body.icon;
+            scannedItem.url = req.body.url;
+            scannedItem.description = req.body.description;
+            if (req.body.images) scannedItem.images = req.body.images;
 
-      App.updateApp(scannedItem, function (err, data) {
-        if (err) {
-          res.json({
-            success: false,
-            msg: "Failed to update: " + err,
-          });
-        }
-        res.json({
-          success: true,
-          msg: "App updated",
+            App.updateApp(scannedItem, function (errUpdate, data) {
+                if (errUpdate) {
+                    res.json({
+                        success: false,
+                        msg: "Failed to update: " + errUpdate,
+                    });
+                }
+                res.json({
+                    success: true,
+                    msg: "App updated",
+                    data,
+                });
+            });
         });
-      });
-    });
-  }
+    }
 );
 
 /**
@@ -239,17 +239,17 @@ router.put(
  *         description: Full List
  */
 router.get("/", (req, res, next) => {
-  App.getAll(function (err, result) {
-    if (err) {
-      res.send({ success: false, msg: err });
-    } else {
-      if (result.Items) {
-        res.send(JSON.stringify(result.Items));
-      } else {
-        res.send("[]");
-      }
-    }
-  });
+    App.getAll(function (err, result) {
+        if (err) {
+            res.send({ success: false, msg: err });
+        } else {
+            if (result.Items) {
+                res.send(JSON.stringify(result.Items));
+            } else {
+                res.send("[]");
+            }
+        }
+    });
 });
 
 /**
@@ -274,24 +274,24 @@ router.get("/", (req, res, next) => {
  *         description: Full List
  */
 router.get(
-  "/getByName",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const id = req.query.app_name;
-    App.getAppByName(id, function (err, result) {
-      if (err) {
-        res.send({ success: false, msg: err });
-      } else {
-        if (result.Items) {
-          res.send(JSON.stringify(result.Items));
-        } else {
-          res.send("[]");
-        }
-      }
-    });
-  }
+    "/getByName",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const id = req.query.app_name;
+        App.getAppByName(id, function (err, result) {
+            if (err) {
+                res.send({ success: false, msg: err });
+            } else {
+                if (result.Items) {
+                    res.send(JSON.stringify(result.Items));
+                } else {
+                    res.send("[]");
+                }
+            }
+        });
+    }
 );
 
 /**
@@ -316,34 +316,34 @@ router.get(
  *         description: Confirmation of App being Archived
  */
 router.put(
-  "/archive",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res) => {
-    const id = req.query.app_name;
-    App.getAppByName(id, function (err, app) {
-      if (err) {
-        res.json({
-          success: false,
-          msg: "Failed to archive: " + err,
+    "/archive",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res) => {
+        const id = req.query.app_name;
+        App.getAppByName(id, function (err, app) {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to archive: " + err,
+                });
+            }
+            const scannedItem = app.Items[0];
+            App.removeApp(scannedItem.name, scannedItem.environment, function (errRemove, data) {
+                if (errRemove) {
+                    res.json({
+                        success: false,
+                        msg: "Failed to update: " + errRemove,
+                    });
+                }
+                res.json({
+                    success: true,
+                    msg: "App removed",
+                });
+            });
         });
-      }
-      var scannedItem = app.Items[0];
-      App.removeApp(scannedItem.name, scannedItem.environment, function (err, data) {
-        if (err) {
-          res.json({
-            success: false,
-            msg: "Failed to update: " + err,
-          });
-        }
-        res.json({
-          success: true,
-          msg: "App removed",
-        });
-      });
-    });
-  }
+    }
 );
 
 module.exports = router;

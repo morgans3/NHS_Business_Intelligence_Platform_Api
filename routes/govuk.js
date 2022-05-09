@@ -35,7 +35,7 @@ const GovUkModel = new DIULibrary.Models.GovUkModel();
  *         description: Confirmation of Notifciation Update
  */
 router.post("/callback", MiddlewareHelper.authenticateWithKey(process.env.JWT_SECRETKEY), (req, res) => {
-    let item = req.body;
+    const item = req.body;
     GovUkModel.update(item, (err, result) => {
         if (err) console.error(err);
         res.json({
@@ -67,16 +67,21 @@ router.post("/callback", MiddlewareHelper.authenticateWithKey(process.env.JWT_SE
  *         description: Confirmation of Notifciation Update
  */
 router.post("/maincallback", MiddlewareHelper.authenticateWithKey(process.env.JWT_SECRETKEY), (req, res) => {
-    CredentialsModel.getByKeys({
-        type: 'GovUkService',
-        name: 'bth-staff-covid-test-results'
-    }, (err, result) => {
-        if(err) { res.status(500).json({ success: true, msg: err }); }
-        GovUkModel.updateGeneral(result.Items[0], req.body, (err, result) => {
-            if (err) console.error(err);
-            res.json({ success: true, msg: "Receipt recorded" });
-        });
-    });
+    CredentialsModel.getByKeys(
+        {
+            type: "GovUkService",
+            name: "bth-staff-covid-test-results",
+        },
+        (err, result) => {
+            if (err) {
+                res.status(500).json({ success: true, msg: err });
+            }
+            GovUkModel.updateGeneral(result.Items[0], req.body, (updateError) => {
+                if (updateError) console.error(updateError);
+                res.json({ success: true, msg: "Receipt recorded" });
+            });
+        }
+    );
 });
 
 module.exports = router;

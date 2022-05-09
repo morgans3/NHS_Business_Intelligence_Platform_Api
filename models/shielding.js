@@ -18,20 +18,20 @@ const select = `WITH p AS (
     n.address_postcode = p.postcode`;
 
 module.exports.getAll = function (limit, roles, callback) {
-  const rolecheck = functions.checkRole(true, roles, "populationshielding");
-  if (rolecheck === "" || rolecheck === "error") {
-    callback(true, null, { reason: "Access denied. Insufficient permissions to view any patients details." });
-  } else {
-    const query = select + rolecheck + ` LIMIT ` + limit;
-    pool.query(query, (error, results) => {
-      if (error) {
-        console.log("Error: " + error);
-        callback(null, "Error:" + error, null);
-      } else if (results && results.rows) {
-        callback(null, null, results.rows);
-      } else {
-        callback(null, "No rows returned", null);
-      }
-    });
-  }
+    const rolecheck = functions.checkRole(true, roles, "populationshielding");
+    if (rolecheck === "" || rolecheck === "error") {
+        callback(null, true, { reason: "Access denied. Insufficient permissions to view any patients details." });
+    } else {
+        const query = select + rolecheck + " LIMIT " + limit;
+        pool.query(query, (error, results) => {
+            if (error) {
+                console.log("Error: " + error);
+                callback(error, null, null);
+            } else if (results && results.rows) {
+                callback(null, null, results.rows);
+            } else {
+                callback(new Error("No rows returned"), null, null);
+            }
+        });
+    }
 };

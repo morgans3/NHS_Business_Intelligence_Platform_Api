@@ -29,20 +29,20 @@ const TeamMemberModel = new DIULibrary.Models.TeamMemberModel();
  *         description: Full List
  */
 router.get(
-  "/",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    TeamMemberModel.get((err, result) => {
-      //Return data
-      if (err) {
-        res.json({ success: false, msg: err });
-      } else {
-        res.json(result.Items);
-      }
-    });
-  }
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        TeamMemberModel.get((err, result) => {
+            // Return data
+            if (err) {
+                res.json({ success: false, msg: err });
+            } else {
+                res.json(result.Items);
+            }
+        });
+    }
 );
 
 /**
@@ -87,29 +87,29 @@ router.get(
  *         description: Confirmation of Member Registration
  */
 router.post(
-  "/create",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    //Create item
-    let member = {
-      teamcode: req.body.teamcode,
-      username: req.body.username,
-      joindate: req.body.joindate,
-    };
-    if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
-    if (req.body.enddate) member["enddate"] = req.body.enddate;
+    "/create",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        // Create item
+        const member = {
+            teamcode: req.body.teamcode,
+            username: req.body.username,
+            joindate: req.body.joindate,
+        };
+        if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
+        if (req.body.enddate) member["enddate"] = req.body.enddate;
 
-    //Persist in database
-    TeamMemberModel.create(member, (err, result) => {
-      if (err) {
-        res.json({ success: false, msg: "Failed to create " + err });
-      } else {
-        res.json({ success: true, msg: "Team member created successfully!", data: member });
-      }
-    });
-  }
+        // Persist in database
+        TeamMemberModel.create(member, (err, result) => {
+            if (err) {
+                res.json({ success: false, msg: "Failed to create " + err });
+            } else {
+                res.json({ success: true, msg: "Team member created successfully!", data: member });
+            }
+        });
+    }
 );
 
 /**
@@ -153,32 +153,32 @@ router.post(
  *         description: Confirmation of Member Registration
  */
 router.post(
-  "/update",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    //Create item
-    let member = { username: req.body.username };
-    if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
-    if (req.body.enddate) member["enddate"] = req.body.enddate;
+    "/update",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        // Create item
+        const member = { username: req.body.username };
+        if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
+        if (req.body.enddate) member["enddate"] = req.body.enddate;
 
-    //Persist in database
-    TeamMemberModel.update(
-      {
-        _id: req.body.id,
-        teamcode: req.body.teamcode,
-      },
-      member,
-      (err, result) => {
-        if (err) {
-          res.json({ success: false, msg: "Failed to update " + err });
-        } else {
-          res.json({ success: true, msg: "Team member updated successfully!", data: member });
-        }
-      }
-    );
-  }
+        // Persist in database
+        TeamMemberModel.update(
+            {
+                _id: req.body.id,
+                teamcode: req.body.teamcode,
+            },
+            member,
+            (err, result) => {
+                if (err) {
+                    res.json({ success: false, msg: "Failed to update " + err });
+                } else {
+                    res.json({ success: true, msg: "Team member updated successfully!", data: member });
+                }
+            }
+        );
+    }
 );
 
 /**
@@ -203,24 +203,24 @@ router.post(
  *         description: Full List
  */
 router.get(
-  "/getTeamMembersByCode",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const code = req.query.code;
-    TeamMemberModel.getByTeamCode(code, function (err, result) {
-      if (err) {
-        res.send({ success: false, msg: err });
-      } else {
-        if (result.Items) {
-          res.send(JSON.stringify(result.Items));
-        } else {
-          res.send(JSON.stringify([]));
-        }
-      }
-    });
-  }
+    "/getTeamMembersByCode",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const code = req.query.code;
+        TeamMemberModel.getByTeamCode(code, function (err, result) {
+            if (err) {
+                res.send({ success: false, msg: err });
+            } else {
+                if (result.Items) {
+                    res.send(JSON.stringify(result.Items));
+                } else {
+                    res.send(JSON.stringify([]));
+                }
+            }
+        });
+    }
 );
 
 /**
@@ -245,24 +245,24 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/getTeamMembershipsByUsername",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const username = req.query.username;
-    TeamMemberModel.getByUsername(username, function (err, result) {
-      if (err) {
-        res.send({ success: false, msg: err });
-      } else {
-        if (result.Items) {
-          res.send(JSON.stringify(result.Items));
-        } else {
-          res.send(JSON.stringify([]));
-        }
-      }
-    });
-  }
+    "/getTeamMembershipsByUsername",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const username = req.query.username;
+        TeamMemberModel.getByUsername(username, function (err, result) {
+            if (err) {
+                res.send({ success: false, msg: err });
+            } else {
+                if (result.Items) {
+                    res.send(JSON.stringify(result.Items));
+                } else {
+                    res.send(JSON.stringify([]));
+                }
+            }
+        });
+    }
 );
 
 /**
@@ -287,35 +287,35 @@ router.get(
  *         description: Confirmation of Member being Archived
  */
 router.put(
-  "/archive",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res) => {
-    TeamMemberModel.getByKeys({ _id: req.query.id }, (err, result) => {
-      if (err) {
-        res.json({ success: false, msg: "Failed to find item: " + err });
-      }
-      if (result.Items && result.Items.length > 0) {
-        let member = result.Items[0];
-        TeamMemberModel.delete(
-          {
-            _id: member._id,
-            teamcode: member.teamcode,
-          },
-          (err) => {
+    "/archive",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res) => {
+        TeamMemberModel.getByKeys({ _id: req.query.id }, (err, result) => {
             if (err) {
-              res.json({ success: false, msg: "Failed to archive: " + err });
-            } else {
-              res.json({ success: true, msg: "Archived" });
+                res.json({ success: false, msg: "Failed to find item: " + err });
             }
-          }
-        );
-      } else {
-        res.json({ success: false, msg: "Can not find item in database." });
-      }
-    });
-  }
+            if (result.Items && result.Items.length > 0) {
+                const member = result.Items[0];
+                TeamMemberModel.delete(
+                    {
+                        _id: member["_id"],
+                        teamcode: member.teamcode,
+                    },
+                    (memberDeleteErr) => {
+                        if (err) {
+                            res.json({ success: false, msg: "Failed to archive: " + memberDeleteErr });
+                        } else {
+                            res.json({ success: true, msg: "Archived" });
+                        }
+                    }
+                );
+            } else {
+                res.json({ success: false, msg: "Can not find item in database." });
+            }
+        });
+    }
 );
 
 /**
@@ -339,25 +339,25 @@ router.put(
  *         description: Teammember object
  */
 router.get(
-  "/:id",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    TeamMemberModel.getByKeys({ _id: req.params.id }, (err, result) => {
-      if (err) {
-        res.status(500).send({ success: false, msg: err });
-        return;
-      }
+    "/:id",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        TeamMemberModel.getByKeys({ _id: req.params.id }, (err, result) => {
+            if (err) {
+                res.status(500).send({ success: false, msg: err });
+                return;
+            }
 
-      //Found item?
-      if (result.Items.length == 0) {
-        res.status(404).json({ success: false, msg: "Team member not found!" });
-      } else {
-        res.json(result.Items[0]);
-      }
-    });
-  }
+            // Found item?
+            if (result.Items.length === 0) {
+                res.status(404).json({ success: false, msg: "Team member not found!" });
+            } else {
+                res.json(result.Items[0]);
+            }
+        });
+    }
 );
 
 module.exports = router;

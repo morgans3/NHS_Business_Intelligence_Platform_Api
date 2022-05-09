@@ -35,9 +35,9 @@ router.get("/content/search", (req, res, next) => {
         if (data) {
             res.json(data);
         } else {
-            res.status(500).json({ message: 'An error occurred fetching the content' });
+            res.status(500).json({ message: "An error occurred fetching the content" });
         }
-    })
+    });
 });
 
 /**
@@ -63,9 +63,9 @@ router.get("/content/:id", (req, res, next) => {
         if (data) {
             res.json(data);
         } else {
-            res.status(500).json({ message: 'An error occurred fetching the content' });
+            res.status(500).json({ message: "An error occurred fetching the content" });
         }
-    })
+    });
 });
 
 module.exports = router;

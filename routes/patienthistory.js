@@ -40,40 +40,40 @@ const JWT = require("jsonwebtoken");
  *         description: Server Error Processing
  */
 router.get(
-  "/patienthistorybynhsnumber",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const nhsNumber = req.query.NHSNumber;
-    res.type("application/json");
-    if (nhsNumber === undefined || nhsNumber === null) {
-      res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-    } else {
-      let jwt = req.header("authorization");
-      if (jwt) {
-        let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-        const userroles = decodedToken["capabilities"];
-        history.getPersonsPopulationHistoryByNHSNumber(nhsNumber, userroles, function (access, err, result) {
-          if (err) {
-            res.status(400).send(
-              JSON.stringify({
-                reason: "Error: " + err,
-              })
-            );
-          } else if (access) {
-            res.status(401).send(result);
-          } else {
-            if (result.length > 0) {
-              res.send(JSON.stringify(result));
-            } else {
-              res.send(JSON.stringify([]));
+    "/patienthistorybynhsnumber",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const nhsNumber = req.query.NHSNumber;
+        res.type("application/json");
+        if (nhsNumber === undefined || nhsNumber === null) {
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+        } else {
+            const jwt = req.header("authorization");
+            if (jwt) {
+                const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+                const userroles = decodedToken["capabilities"];
+                history.getPersonsPopulationHistoryByNHSNumber(nhsNumber, userroles, function (access, err, result) {
+                    if (err) {
+                        res.status(400).send(
+                            JSON.stringify({
+                                reason: "Error: " + err,
+                            })
+                        );
+                    } else if (access) {
+                        res.status(401).send(result);
+                    } else {
+                        if (result.length > 0) {
+                            res.send(JSON.stringify(result));
+                        } else {
+                            res.send(JSON.stringify([]));
+                        }
+                    }
+                });
             }
-          }
-        });
-      }
+        }
     }
-  }
 );
 
 /**
@@ -104,40 +104,40 @@ router.get(
  *         description: Server Error Processing
  */
 router.get(
-  "/districthistorybynhsnumber",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const nhsNumber = req.query.NHSNumber;
-    res.type("application/json");
-    if (nhsNumber === undefined || nhsNumber === null) {
-      res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-    } else {
-      let jwt = req.header("authorization");
-      if (jwt) {
-        let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-        const userroles = decodedToken["capabilities"];
-        history.getPersonsDistrictHistoryByNHSNumber(nhsNumber, userroles, function (access, err, result) {
-          if (err) {
-            res.status(400).send(
-              JSON.stringify({
-                reason: "Error: " + err,
-              })
-            );
-          } else if (access) {
-            res.status(401).send(result);
-          } else {
-            if (result.length > 0) {
-              res.send(JSON.stringify(result));
-            } else {
-              res.send(JSON.stringify([]));
+    "/districthistorybynhsnumber",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const nhsNumber = req.query.NHSNumber;
+        res.type("application/json");
+        if (nhsNumber === undefined || nhsNumber === null) {
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+        } else {
+            const jwt = req.header("authorization");
+            if (jwt) {
+                const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+                const userroles = decodedToken["capabilities"];
+                history.getPersonsDistrictHistoryByNHSNumber(nhsNumber, userroles, function (access, err, result) {
+                    if (err) {
+                        res.status(400).send(
+                            JSON.stringify({
+                                reason: "Error: " + err,
+                            })
+                        );
+                    } else if (access) {
+                        res.status(401).send(result);
+                    } else {
+                        if (result.length > 0) {
+                            res.send(JSON.stringify(result));
+                        } else {
+                            res.send(JSON.stringify([]));
+                        }
+                    }
+                });
             }
-          }
-        });
-      }
+        }
     }
-  }
 );
 
 module.exports = router;

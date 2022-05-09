@@ -28,12 +28,12 @@ const pool = require("../config/database").pool;
  *         description: Full List
  */
 router.get(
-  "/",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const pcgeoquery = `SELECT
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const pcgeoquery = `SELECT
         'FeatureCollection' AS TYPE,
         array_to_json(array_agg(f)) AS features
     FROM (
@@ -44,17 +44,17 @@ router.get(
         FROM
             mosaicpostcode AS lg)
     AS f`;
-    pool.query(pcgeoquery, (error, results) => {
-      if (error) {
-        res.json("Error: " + error);
-      }
-      if (results.rows) {
-        res.status(200).json(results.rows);
-      } else {
-        res.status(200).json([]);
-      }
-    });
-  }
+        pool.query(pcgeoquery, (error, results) => {
+            if (error) {
+                res.json("Error: " + error);
+            }
+            if (results.rows) {
+                res.status(200).json(results.rows);
+            } else {
+                res.status(200).json([]);
+            }
+        });
+    }
 );
 
 module.exports = router;

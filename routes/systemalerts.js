@@ -27,17 +27,17 @@ const SystemAlerts = require("../models/systemalerts");
  *         description: Full List
  */
 router.get("/", (req, res, next) => {
-  SystemAlerts.getAll(function (err, result) {
-    if (err) {
-      res.send({ success: false, msg: err });
-    } else {
-      if (result.Items) {
-        res.send(JSON.stringify(result.Items));
-      } else {
-        res.send(JSON.stringify("[]"));
-      }
-    }
-  });
+    SystemAlerts.getAll(function (err, result) {
+        if (err) {
+            res.send({ success: false, msg: err });
+        } else {
+            if (result.Items) {
+                res.send(JSON.stringify(result.Items));
+            } else {
+                res.send(JSON.stringify("[]"));
+            }
+        }
+    });
 });
 
 /**
@@ -56,23 +56,23 @@ router.get("/", (req, res, next) => {
  *         description: Full List
  */
 router.get(
-  "/getActive",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    SystemAlerts.getActiveSystemAlerts(new Date(), function (err, result) {
-      if (err) {
-        res.send({ success: false, msg: err });
-      } else {
-        if (result.Items) {
-          res.send(JSON.stringify(result.Items));
-        } else {
-          res.send(JSON.stringify("[]"));
-        }
-      }
-    });
-  }
+    "/getActive",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        SystemAlerts.getActiveSystemAlerts(new Date(), function (err, result) {
+            if (err) {
+                res.send({ success: false, msg: err });
+            } else {
+                if (result.Items) {
+                    res.send(JSON.stringify(result.Items));
+                } else {
+                    res.send(JSON.stringify("[]"));
+                }
+            }
+        });
+    }
 );
 
 /**
@@ -139,35 +139,35 @@ router.get(
  *         description: Confirmation of Alert Update
  */
 router.put(
-  "/update",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res) => {
-    const newAlert = {
-      _id: req.body._id,
-      name: req.body.name,
-      message: req.body.message,
-      startdate: req.body.startdate,
-      enddate: req.body.enddate,
-      status: req.body.status,
-      icon: req.body.icon,
-      author: req.body.author,
-      archive: req.body.archive,
-    };
-    SystemAlerts.updateSystemAlert(newAlert, function (err) {
-      if (err) {
-        res.json({
-          success: false,
-          msg: "Failed to update: " + err,
+    "/update",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res) => {
+        const newAlert = {
+            _id: req.body["_id"],
+            name: req.body.name,
+            message: req.body.message,
+            startdate: req.body.startdate,
+            enddate: req.body.enddate,
+            status: req.body.status,
+            icon: req.body.icon,
+            author: req.body.author,
+            archive: req.body.archive,
+        };
+        SystemAlerts.updateSystemAlert(newAlert, function (err) {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to update: " + err,
+                });
+            }
+            res.json({
+                success: true,
+                msg: "Alert updated",
+            });
         });
-      }
-      res.json({
-        success: true,
-        msg: "Alert updated",
-      });
-    });
-  }
+    }
 );
 
 /**
@@ -229,37 +229,37 @@ router.put(
  *         description: Confirmation of Alert Registered
  */
 router.post(
-  "/register",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let newSystemAlerts = {
-      name: { S: req.body.name },
-      message: { S: req.body.message },
-      startdate: { S: req.body.startdate },
-      enddate: { S: req.body.enddate },
-      status: { S: req.body.status },
-      icon: { S: req.body.icon },
-      author: { S: req.body.author },
-      archive: { BOOL: false },
-    };
+    "/register",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const newSystemAlerts = {
+            name: { S: req.body.name },
+            message: { S: req.body.message },
+            startdate: { S: req.body.startdate },
+            enddate: { S: req.body.enddate },
+            status: { S: req.body.status },
+            icon: { S: req.body.icon },
+            author: { S: req.body.author },
+            archive: { BOOL: false },
+        };
 
-    SystemAlerts.addSystemAlert(newSystemAlerts, (err, event) => {
-      if (err) {
-        res.json({
-          success: false,
-          msg: "Failed to register: " + err,
+        SystemAlerts.addSystemAlert(newSystemAlerts, (err, event) => {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to register: " + err,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: "Registered",
+                    _id: event,
+                });
+            }
         });
-      } else {
-        res.json({
-          success: true,
-          msg: "Registered",
-          _id: event,
-        });
-      }
-    });
-  }
+    }
 );
 
 module.exports = router;
