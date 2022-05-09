@@ -70,7 +70,7 @@ router.post(
     (req, res, next) => {
         GetNICE(req.body.search_query, req.body.search_length, (error, response, body) => {
             if (error) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + error,
                 });

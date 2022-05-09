@@ -34,7 +34,7 @@ router.get(
     }),
     (req, res, next) => {
         outbreak.getOutbreak((error, results) => {
-            if (error) res.json("Error: " + error);
+            if (error) res.status(500).json("Error: " + error);
             if (results.rows) {
                 res.status(200).json(results.rows);
             } else {

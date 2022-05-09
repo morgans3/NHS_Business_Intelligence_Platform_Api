@@ -51,7 +51,7 @@ router.get(
                 });
             }
         } else {
-            res.json({ status: 401, message: "User registration failed" });
+            res.status(401).json({ status: 401, message: "User registration failed" });
         }
     }
 );
@@ -99,7 +99,7 @@ router.get(
                 });
             }
         } else {
-            res.json({ status: 401, error: "User registration failed" });
+            res.status(401).json({ status: 401, error: "User registration failed" });
         }
     }
 );
@@ -168,10 +168,10 @@ router.post(
                     }
                 });
             } else {
-                res.json({ status: 401, message: "User verification failed" });
+                res.status(401).json({ status: 401, message: "User verification failed" });
             }
         } else {
-            res.json({ status: 401, message: "User verification failed" });
+            res.status(401).json({ status: 401, message: "User verification failed" });
         }
     }
 );
@@ -210,7 +210,7 @@ router.post(
             if (username) {
                 MFA.getUserSecret(username, (err, response) => {
                     if (err) {
-                        res.json({ status: 404, message: "User verification method not found" });
+                        res.status(404).json({ status: 404, message: "User verification method not found" });
                     } else {
                         if (response.Items.length > 0) {
                             const secret = response.Items[0].verification;
@@ -220,18 +220,18 @@ router.post(
                                     res.json({ status: 200, message: "Authorized", token });
                                 });
                             } else {
-                                res.json({ status: 400, message: "User verification failed" });
+                                res.status(400).json({ status: 400, message: "User verification failed" });
                             }
                         } else {
-                            res.json({ status: 404, message: "User verification method not found" });
+                            res.status(404).json({ status: 404, message: "User verification method not found" });
                         }
                     }
                 });
             } else {
-                res.json({ status: 401, message: "User validation failed" });
+                res.status(401).json({ status: 401, message: "User validation failed" });
             }
         } else {
-            res.json({ status: 401, message: "User validation failed" });
+            res.status(401).json({ status: 401, message: "User validation failed" });
         }
     }
 );
@@ -287,7 +287,7 @@ router.get(
                 });
             }
         } else {
-            res.json({ status: 401, message: "User authentication removal failed" });
+            res.status(401).json({ status: 401, message: "User authentication removal failed" });
         }
     }
 );

@@ -277,7 +277,7 @@ router.post(
             (err) => {
                 // Return status
                 if (err) {
-                    res.json({ status: 500, error: err });
+                    res.status(500).json({ status: 500, error: err });
                 } else {
                     res.json({ status: 200, msg: "Log stored successfully" });
                 }

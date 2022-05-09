@@ -46,7 +46,7 @@ router.get(
             },
             function (err, teams) {
                 if (err) {
-                    res.send({ status: 500, message: err });
+                    res.status(500).send({ status: 500, message: err });
                 } else {
                     res.send(JSON.stringify(teams.Items));
                 }

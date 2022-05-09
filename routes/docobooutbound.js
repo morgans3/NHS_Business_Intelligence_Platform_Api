@@ -71,7 +71,7 @@ router.post(
                 },
                 (error, response, body) => {
                     if (error) {
-                        res.json({
+                        res.status(500).json({
                             success: false,
                             msg: "Error: " + error,
                         });
@@ -82,7 +82,7 @@ router.post(
                                 msg: JSON.parse(body),
                             });
                         } catch (exception) {
-                            res.json({
+                            res.status(500).json({
                                 success: false,
                                 msg: "Unable to interpret response from Docobo",
                             });
@@ -149,7 +149,7 @@ router.post(
                 },
                 (error, response, body) => {
                     if (error) {
-                        res.json({
+                        res.status(500).json({
                             success: false,
                             msg: "Error: " + error,
                         });
@@ -160,7 +160,7 @@ router.post(
                                 msg: JSON.parse(body),
                             });
                         } catch (exception) {
-                            res.json({
+                            res.status(500).json({
                                 success: false,
                                 msg: "Unable to interpret response from Docobo",
                             });

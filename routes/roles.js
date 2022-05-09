@@ -487,7 +487,7 @@ router.delete(
         // Get all capabilities
         RoleModel.deleteByPrimaryKey(req.params.id, (err, result) => {
             if (err) {
-                res.json({ success: false, msg: err });
+                res.status(500).json({ success: false, msg: err });
             } else {
                 res.json({ success: true, msg: "Role deleted successfully!" });
             }

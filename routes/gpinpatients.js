@@ -51,7 +51,7 @@ router.post(
                 },
                 (error, response, body) => {
                     if (error) {
-                        res.json({
+                        res.status(500).json({
                             success: false,
                             msg: "Error: " + error,
                         });
@@ -62,7 +62,7 @@ router.post(
                                 msg: JSON.parse(body),
                             });
                         } catch (exception) {
-                            res.json({
+                            res.status(500).json({
                                 success: false,
                                 msg: "Unable to interpret response from BTH",
                             });
@@ -71,7 +71,7 @@ router.post(
                 }
             );
         } else {
-            res.json({
+            res.status(401).json({
                 success: false,
                 msg: "Not authorised to access this dataset",
             });
@@ -128,7 +128,7 @@ router.post(
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/InpatientCounts", (error, response, body) => {
             if (error) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + error,
                 });
@@ -173,7 +173,7 @@ router.post(
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/OutpatientCounts", (error, response, body) => {
             if (error) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + error,
                 });
@@ -218,7 +218,7 @@ router.post(
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/AECounts", (error, response, body) => {
             if (error) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + error,
                 });
@@ -263,7 +263,7 @@ router.post(
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/ECSCounts", (error, response, body) => {
             if (error) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + error,
                 });
@@ -308,7 +308,7 @@ router.post(
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/EPCCounts", (error, response, body) => {
             if (error) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + error,
                 });
@@ -353,7 +353,7 @@ router.post(
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/InpatientsGPSummary", (error, response, body) => {
             if (error) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + error,
                 });
@@ -398,7 +398,7 @@ router.post(
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/AEGPSummary", (error, response, body) => {
             if (error) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + error,
                 });
