@@ -52,6 +52,15 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            orgcode: { type: "string", pattern: "[a-zA-Z0-9]+" },
+        },
+        {
+            pattern: "Please provide a valid org code",
+        }
+    ),
     (req, res, next) => {
         if (req.body.orgcode) {
             const code = req.body.orgcode;
@@ -121,6 +130,15 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            patientid: { type: "string", pattern: "[a-zA-Z0-9]+" },
+        },
+        {
+            pattern: "Please provide a valid patient id",
+        }
+    ),
     (req, res, next) => {
         if (req.body.patientid) {
             const patientid = req.body.patientid;

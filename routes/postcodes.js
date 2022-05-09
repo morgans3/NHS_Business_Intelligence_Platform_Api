@@ -3,7 +3,7 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const pool = require("../config/database").pool;
+const postcodes = require("../models/postcodes");
 
 /**
  * @swagger
@@ -33,18 +33,7 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        const pcgeoquery = `SELECT
-        'FeatureCollection' AS TYPE,
-        array_to_json(array_agg(f)) AS features
-    FROM (
-        SELECT
-            'Feature' AS TYPE,
-            ST_AsGeoJSON (ST_Simplify (lg.geom, 0.0001, TRUE), 4)::json AS geometry,
-            row_to_json(row(mostype, pop), true) AS properties
-        FROM
-            mosaicpostcode AS lg)
-    AS f`;
-        pool.query(pcgeoquery, (error, results) => {
+        postcodes.getPostcodes((error, results) => {
             if (error) {
                 res.json("Error: " + error);
             }

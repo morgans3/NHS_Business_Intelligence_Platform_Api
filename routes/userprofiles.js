@@ -214,7 +214,7 @@ router.get(
                     if (result.Items.length > 0) {
                         UserModel.getUserByUsername(username, function (err2, result2) {
                             if (err2) {
-                                res.send(err2);
+                                res.send({ success: false, msg: err2 });
                             } else {
                                 if (result2.Items.length === 0) {
                                     // @ts-ignore
