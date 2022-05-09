@@ -58,7 +58,7 @@ router.post(
             const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
             Codes.validateCode(decodedToken["email"], code, jwt, (err, response) => {
                 if (err) {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         result: err,
                     });
@@ -69,7 +69,7 @@ router.post(
                             res.json({ status: 200, message: "Authorized", token });
                         });
                     } else {
-                        res.json({
+                        res.status(400).json({
                             success: false,
                             message: "Invalid Code",
                         });
@@ -129,7 +129,7 @@ router.get(
                         },
                         (mailError, response) => {
                             if (mailError) {
-                                res.json({ success: false, msg: "Failed: " + mailError });
+                                res.status(500).json({ success: false, msg: "Failed: " + mailError });
                             } else {
                                 res.json({ success: true, msg: "Email sent" });
                             }

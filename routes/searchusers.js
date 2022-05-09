@@ -47,7 +47,7 @@ router.get(
         UserModel.getUserByPartialUsername(search, function (err, users) {
             if (err) {
                 console.log("ERROR: " + JSON.stringify(err));
-                res.send({ status: 503, message: "Organisation service not available" });
+                res.status(503).send({ status: 503, message: "Organisation service not available" });
             } else {
                 const response = [];
                 users.Items.forEach((element) => {
@@ -112,7 +112,7 @@ router.get(
                 UserModel.getUserByPartialUsername(search, function (err, users) {
                     if (err) {
                         console.log("ERROR: " + JSON.stringify(err));
-                        res.send({ status: 503, message: "Organisation service not available" });
+                        res.status(503).send({ status: 503, message: "Organisation service not available" });
                     } else {
                         const response = [];
                         users.Items.forEach((element) => {
@@ -136,13 +136,13 @@ router.get(
                 OrganisationModel.get({ name: organisation }, (err, data) => {
                     // Handle error
                     if (err) {
-                        res.send({ status: 500, message: err });
+                        res.status(500).send({ status: 500, message: err });
                         return;
                     }
 
                     // Organisation exists?
                     if (data.Items.length === 0) {
-                        res.send({ status: 404, message: "Organisation not found" });
+                        res.status(404).send({ status: 404, message: "Organisation not found" });
                         return;
                     }
 
@@ -151,7 +151,7 @@ router.get(
                     ActiveDirectoryModel.getInstance(selOrganisation.authmethod, (errGetInstance, activeDirectory) => {
                         // Handle error type?
                         if (errGetInstance) {
-                            res.send({ status: 500, message: errGetInstance });
+                            res.status(500).send({ status: 500, message: errGetInstance });
                             return;
                         }
 
@@ -159,7 +159,7 @@ router.get(
                         activeDirectory.findUsers(fullquery, function (errFind, user) {
                             if (errFind) {
                                 console.log("ERROR: " + JSON.stringify(errFind));
-                                res.send({ status: 503, message: "Organisation service not available" });
+                                res.status(503).send({ status: 503, message: "Organisation service not available" });
                             } else {
                                 if (user && user.length > 0) {
                                     const responseAD = [];

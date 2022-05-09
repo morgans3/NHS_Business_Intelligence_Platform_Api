@@ -35,12 +35,12 @@ router.get(
     (req, res, next) => {
         postcodes.getPostcodes((error, results) => {
             if (error) {
-                res.json("Error: " + error);
+                res.status(500).json("Error: " + error);
             }
             if (results.rows) {
-                res.status(200).json(results.rows);
+                res.json(results.rows);
             } else {
-                res.status(200).json([]);
+                res.json("[]");
             }
         });
     }

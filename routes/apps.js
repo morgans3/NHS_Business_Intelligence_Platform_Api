@@ -100,7 +100,7 @@ router.post(
 
         App.addApp(newApp, (err, user) => {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to register: " + err,
                 });
@@ -190,7 +190,7 @@ router.put(
         const id = req.query.app_name;
         App.getAppByName(id, function (err, app) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to update: " + err,
                 });
@@ -208,7 +208,7 @@ router.put(
 
             App.updateApp(scannedItem, function (errUpdate, data) {
                 if (errUpdate) {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         msg: "Failed to update: " + errUpdate,
                     });
@@ -332,7 +332,7 @@ router.put(
             const scannedItem = app.Items[0];
             App.removeApp(scannedItem.name, scannedItem.environment, function (errRemove, data) {
                 if (errRemove) {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         msg: "Failed to update: " + errRemove,
                     });

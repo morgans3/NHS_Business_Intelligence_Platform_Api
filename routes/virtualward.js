@@ -53,7 +53,7 @@ router.get(
         res.type("application/json");
         virtualward.getAll("virtualward_lightertouchpathway", numCheck.toString(), req.user["capabilities"], (access, err, result) => {
             if (err) {
-                res.status(400).send(
+                res.status(500).send(
                     JSON.stringify({
                         reason: "Error: " + err,
                     })
@@ -64,7 +64,7 @@ router.get(
                 if (result.length > 0) {
                     res.send(JSON.stringify(result));
                 } else {
-                    res.status(400).send(
+                    res.status(404).send(
                         JSON.stringify({
                             reason: `Unable to find patients, there may not exist patients who match
                             this search or you may have insufficient permissions to view record.`,
@@ -150,7 +150,7 @@ router.post(
         const item = req.body;
         virtualward.update("virtualward_lightertouchpathway", item, item.uid, function (err, data) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to update: " + err,
                 });

@@ -152,6 +152,7 @@ router.get(
  *
  *      - name: date
  *        type: string
+ *        format: date
  *     responses:
  *       200:
  *         description: Form has been submitted sucessfully
@@ -254,7 +255,7 @@ router.post("/account", (req, res, next) => {
 router.get("/account/:id", (req, res, next) => {
     formSubmissionsModel.getById(req.params.id, (err, data) => {
         if (err || data.Items.length === 0) {
-            res.json({ success: false, msg: "Failed to retrieve request" });
+            res.status(500).json({ success: false, msg: "Failed to retrieve request" });
         } else {
             res.json(data.Items[0]);
         }
@@ -340,7 +341,7 @@ router.post("/account/complete", (req, res, next) => {
                 usersModel.addUser(AWS.DynamoDB.Converter.marshall(userAccount), userAccount.password, (userAddError, user) => {
                     // Return failed
                     if (userAddError) {
-                        res.json({ success: false, msg: "Failed to register user" });
+                        res.status(500).json({ success: false, msg: "Failed to register user" });
                     }
                 });
 
@@ -415,7 +416,7 @@ router.post("/account/complete", (req, res, next) => {
                             console.log("Unable to send approval notification to: " + formData.email + ". Reason: " + error.toString());
                             res.status(500).json({ success: false, msg: error });
                         } else {
-                            res.json({ success: false, msg: "Response has been recorded" });
+                            res.json({ success: true, msg: "Response has been recorded" });
                         }
                     }
                 );

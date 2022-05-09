@@ -48,7 +48,7 @@ router.post(
         const limit = parseInt(req.body.limit) || 100;
         Views.getByPage(page, limit, function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -99,7 +99,7 @@ router.post("/addView", (req, res, next) => {
     };
     Views.addView(newView, function (err, result) {
         if (err) {
-            res.send({ status: 503, msg: err });
+            res.status(503).send({ status: 503, msg: err });
         } else {
             res.send({ status: 200, msg: "View Recorded" });
         }
