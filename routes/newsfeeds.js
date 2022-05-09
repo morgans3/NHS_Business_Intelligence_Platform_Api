@@ -4,6 +4,7 @@ const express = require("express");
 const router = express.Router();
 const AWS = require("../config/database").AWS;
 const passport = require("passport");
+const DynamoDBData = require("diu-data-functions").Methods.DynamoDBData;
 const tablename = "newsfeeds";
 
 /**
