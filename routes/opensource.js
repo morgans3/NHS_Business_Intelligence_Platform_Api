@@ -91,17 +91,17 @@ router.post("/addView", (req, res, next) => {
     const forwarded = req.headers["x-forwarded-for"] || "";
     const ipaddress = forwarded.toString().split(",").pop() || req.connection.remoteAddress || req.socket.remoteAddress;
     const parent = req.body.parent;
-    const newView = {
-        page: { S: page },
-        datetime: { S: new Date().toUTCString() },
-        ipaddress: { S: ipaddress },
-        parent: { S: parent },
-    };
-    Views.addView(newView, function (err, result) {
+
+    Views.addView({
+        page,
+        datetime: new Date().toUTCString(),
+        ipaddress,
+        parent,
+    }, function (err, data) {
         if (err) {
             res.status(503).send({ status: 503, msg: err });
         } else {
-            res.send({ status: 200, msg: "View Recorded" });
+            res.send({ status: 200, msg: "View Recorded", data });
         }
     });
 });

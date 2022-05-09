@@ -20,10 +20,13 @@ module.exports.getByPage = function (page, limit, callback) {
 };
 
 module.exports.addView = function (newView, callback) {
-    const docClient = new AWS.DynamoDB();
-    const params = {
-        TableName: "opensourceviews",
-        Item: newView,
-    };
-    docClient.putItem(params, callback);
+    (new AWS.DynamoDB()).putItem(
+        {
+            TableName: "opensourceviews",
+            Item: AWS.DynamoDB.Converter.marshall(newView),
+        },
+        (err, data) => {
+            callback(err, newView, data);
+        }
+    );
 };

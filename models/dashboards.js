@@ -32,7 +32,13 @@ module.exports.getAll = function (callback) {
 };
 
 module.exports.addDashboard = function (newDashboard, callback) {
-    DynamoDB.addItem(AWS, tablename, newDashboard, callback);
+    (new AWS.DynamoDB()).putItem(
+        {
+            TableName: tablename,
+            Item: AWS.DynamoDB.Converter.marshall(newDashboard),
+        },
+        (err, data) => { callback(err, newDashboard, data); }
+    );
 };
 
 module.exports.updateDashboard = function (updatedItem, callback) {

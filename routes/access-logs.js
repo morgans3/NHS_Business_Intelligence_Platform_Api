@@ -278,12 +278,12 @@ router.post(
                 },
                 data: payload.data || {},
             },
-            (err) => {
+            (err, data) => {
                 // Return status
                 if (err) {
                     res.status(500).json({ status: 500, error: err });
                 } else {
-                    res.json({ status: 200, msg: "Log stored successfully" });
+                    res.json({ status: 200, msg: "Log stored successfully", data });
                 }
             }
         );

@@ -77,27 +77,32 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
-        const newItem = {
-            code: { S: req.body.code },
-            name: { S: req.body.name },
-            authmethod: { S: req.body.authmethod },
-            contact: { S: req.body.contact },
-        };
-
-        DynamoDBData.addItem(AWS, tablename, newItem, (err, install) => {
-            if (err) {
-                res.status(500).json({
-                    success: false,
-                    msg: "Failed to register: " + err,
-                });
-            } else {
-                res.json({
-                    success: true,
-                    msg: "Registered",
-                    id: req.body.code,
-                });
+        (new AWS.DynamoDB()).putItem(
+            {
+                TableName: tablename,
+                Item: AWS.DynamoDB.Converter.marshall({
+                    code: { S: req.body.code },
+                    name: { S: req.body.name },
+                    authmethod: { S: req.body.authmethod },
+                    contact: { S: req.body.contact },
+                }),
+            },
+            (err, data) => {
+                if (err) {
+                    res.status(500).json({
+                        success: false,
+                        msg: "Failed to register: " + err,
+                    });
+                } else {
+                    res.json({
+                        success: true,
+                        msg: "Registered",
+                        id: req.body.code,
+                        data
+                    });
+                }
             }
-        });
+        );
     }
 );
 
