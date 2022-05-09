@@ -152,6 +152,7 @@ router.get(
  *
  *      - name: date
  *        type: string
+ *        format: date
  *     responses:
  *       200:
  *         description: Form has been submitted sucessfully

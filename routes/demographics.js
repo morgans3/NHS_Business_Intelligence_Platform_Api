@@ -103,7 +103,7 @@ router.get(
  *                     type: string
  *                  DateOfBirth:
  *                     type: string
- *                     format: datetime
+ *                     format: date-time
  *     responses:
  *       200:
  *         description: Confirmation of Task Complete
@@ -178,6 +178,7 @@ router.post(
  *                     type: string
  *                  dob:
  *                     type: string
+ *                     format: date
  *                  postcode:
  *                     type: string
  *                  forename:

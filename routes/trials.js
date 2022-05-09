@@ -75,6 +75,7 @@ router.get(
  *         in: formData
  *         required: true
  *         type: string
+ *         format: date-time
  *     responses:
  *       200:
  *         description: Clinical Trials List

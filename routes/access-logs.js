@@ -28,6 +28,7 @@ const momentLib = require("moment");
  *        description: Date to filter by, defaults to current
  *        in: query
  *        type: string
+ *        format: date
  *      - name: type
  *        description: Type to filter by
  *        in: query
@@ -88,6 +89,7 @@ router.get(
  *        description: Date to filter by, defaults to current
  *        in: query
  *        type: string
+ *        format: date
  *      - name: pageKey
  *        description: Start page from item with this key
  *        in: query
@@ -127,14 +129,16 @@ router.get(
  *     tags:
  *      - AccessLogs
  *     parameters:
- *      - name: date_from
+ *      - name: dateFrom
  *        description: Date to get the statistics from
  *        in: query
  *        type: string
- *      - name: date_to
+ *        format: date
+ *      - name: dateTo
  *        description: Date to get the statistics to
  *        in: query
  *        type: string
+ *        format: date
  *     produces:
  *      - application/json
  *     responses:
@@ -147,8 +151,8 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        const dateFrom = req.query.date_from.toString();
-        const dateTo = req.query.date_to.toString();
+        const dateFrom = req.query.dateFrom.toString();
+        const dateTo = req.query.dateTo.toString();
         if (!dateFrom || !dateTo) {
             res.status(400).json({ success: false, msg: "Missing input params" });
             return;
