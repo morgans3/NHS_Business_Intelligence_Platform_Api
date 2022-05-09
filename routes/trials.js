@@ -9,7 +9,7 @@ const ClinicalTrialModel = new DIULibrary.Models.ClinicalTrialModel();
 /**
  * @swagger
  * tags:
- *   name: AACT
+ *   name: Trials
  *   description: Queries for AACT Clinical Trials Database
  */
 
@@ -21,7 +21,7 @@ const ClinicalTrialModel = new DIULibrary.Models.ClinicalTrialModel();
  *      - JWT: []
  *     description: Get Clinical Trials List
  *     tags:
- *      - AACT
+ *      - Trials
  *     produces:
  *      - application/json
  *     responses:
@@ -56,7 +56,7 @@ router.get(
  *      - JWT: []
  *     description: Get Clinical Trials List
  *     tags:
- *      - AACT
+ *      - Trials
  *     produces:
  *      - application/json
  *     parameters:

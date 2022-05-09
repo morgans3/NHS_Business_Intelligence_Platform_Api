@@ -378,7 +378,7 @@ router.delete(
  *   post:
  *     description: Send code to email address
  *     tags:
- *      - Email
+ *      - Users
  *     produces:
  *      - application/json
  *     parameters:
@@ -433,7 +433,7 @@ router.post("/send-code", (req, res, next) => {
  *   post:
  *     description: Verify code sent to an email address
  *     tags:
- *      - Email
+ *      - Users
  *     produces:
  *      - application/json
  *     parameters:
