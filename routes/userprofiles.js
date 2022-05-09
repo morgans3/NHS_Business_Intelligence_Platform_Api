@@ -81,33 +81,24 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
-        const newProfile = {
-            username: { S: req.body.username },
-        };
-        if (req.body.preferredcontactmethod && req.body.preferredcontactmethod.length > 0) {
-            newProfile["preferredcontactmethod"] = { SS: req.body.preferredcontactmethod };
-        }
-        if (req.body.mobiledeviceids && req.body.mobiledeviceids.length > 0) {
-            newProfile["mobiledeviceids"] = { SS: req.body.mobiledeviceids };
-        }
-        if (req.body.photobase64) newProfile["photobase64"] = { S: req.body.photobase64 };
-        if (req.body.contactnumber) newProfile["contactnumber"] = { S: req.body.contactnumber };
-        if (req.body.emailpreference) newProfile["emailpreference"] = { S: req.body.emailpreference };
-        if (req.body.impreference) newProfile["impreference"] = { S: req.body.impreference };
-        if (req.body.im_id) newProfile["im_id"] = { S: req.body.im_id };
-
-        Profiles.addUserProfile(newProfile, (err, method) => {
+        Profiles.addUserProfile({
+            username: req.body.username,
+            ...((req.body.preferredcontactmethod && req.body.preferredcontactmethod.length > 0) && {
+                preferredcontactmethod: req.body.preferredcontactmethod
+            }),
+            ...((req.body.mobiledeviceids && req.body.mobiledeviceids.length > 0) && {
+                mobiledeviceids: req.body.mobiledeviceids
+            }),
+            ...((req.body.photobase64) && { photobase64: req.body.photobase64 }),
+            ...((req.body.contactnumber) && { contactnumber: req.body.contactnumber }),
+            ...((req.body.emailpreference) && { emailpreference: req.body.emailpreference }),
+            ...((req.body.impreference) && { impreference: req.body.impreference }),
+            ...((req.body.im_id) && { im_id: req.body.im_id }),
+        }, (err, data) => {
             if (err) {
-                res.json({
-                    success: false,
-                    msg: "Failed to register: " + err,
-                });
+                res.json({ success: false, msg: "Failed to register: " + err });
             } else {
-                res.json({
-                    success: true,
-                    msg: "Registered",
-                    _id: method,
-                });
+                res.json({ success: true, msg: "Registered", _id: data["_id"], data });
             }
         });
     }
@@ -620,6 +611,7 @@ router.put(
                     res.json({
                         success: true,
                         msg: "Install updated",
+                        data: profile
                     });
                 });
             } else {

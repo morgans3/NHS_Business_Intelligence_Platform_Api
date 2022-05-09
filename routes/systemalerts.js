@@ -165,6 +165,7 @@ router.put(
             res.json({
                 success: true,
                 msg: "Alert updated",
+                data: newAlert
             });
         });
     }

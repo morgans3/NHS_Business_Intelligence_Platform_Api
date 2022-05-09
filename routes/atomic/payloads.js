@@ -140,12 +140,12 @@ router.post(
                 type: req.body.type,
                 config: req.body.config,
             },
-            (err, result) => {
+            (err, data) => {
                 if (err) {
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: false, msg: "New payload created!" });
+                res.send({ success: false, msg: "New payload created!", data });
             }
         );
     }
@@ -196,12 +196,12 @@ router.post(
             {
                 config: req.body.config,
             },
-            (err, result) => {
+            (err, data) => {
                 if (err) {
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: false, msg: "Payload updated!" });
+                res.send({ success: false, msg: "Payload updated!", data });
             }
         );
     }

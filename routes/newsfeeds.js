@@ -4,7 +4,6 @@ const express = require("express");
 const router = express.Router();
 const AWS = require("../config/database").AWS;
 const passport = require("passport");
-const DynamoDBData = require("diu-data-functions").Methods.DynamoDBData;
 const tablename = "newsfeeds";
 
 /**
@@ -51,26 +50,34 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        // Create item
         const newNewsFeed = {
-            destination: { S: req.body.destination },
-            type: { S: req.body.type },
-            priority: { N: req.body.priority },
+            destination: req.body.destination,
+            type: req.body.type,
+            priority: req.body.priority,
         };
 
-        DynamoDBData.addItem(AWS, tablename, newNewsFeed, (err, install) => {
-            if (err) {
-                res.json({
-                    success: false,
-                    msg: "Failed to register: " + err,
-                });
-            } else {
-                res.json({
-                    success: true,
-                    msg: "Registered",
-                    id: req.body.destination,
-                });
+        // Persist
+        (new AWS.DynamoDB()).putItem(
+            {
+                TableName: tablename,
+                Item: AWS.DynamoDB.Converter.marshall(newNewsFeed),
+            },
+            (err, data) => {
+                if (err) {
+                    res.json({
+                        success: false,
+                        msg: "Failed to register: " + err,
+                    });
+                } else {
+                    res.json({
+                        success: true,
+                        msg: "Registered",
+                        id: req.body.destination,
+                    });
+                }
             }
-        });
+        );
     }
 );
 

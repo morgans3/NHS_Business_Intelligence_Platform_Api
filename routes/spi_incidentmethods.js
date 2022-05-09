@@ -85,9 +85,9 @@ router.post("/create", passport.authenticate("jwt", {
         dateCreated: req.body.dateCreated,
         list: req.body.list,
         priority: req.body.priority,
-    }, (err, result) => {
+    }, (err, data) => {
         if (err) { res.status(500).send({ success: false, msg: err }); return; }
-        res.send({ success: false, msg: "New incident created!" });
+        res.send({ success: false, msg: "New incident created!", data });
     });
 });
 

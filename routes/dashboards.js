@@ -81,20 +81,20 @@ router.post(
     }),
     (req, res, next) => {
         const newDashboard = {
-            name: { S: req.body.name },
-            status: { S: req.body.status },
-            icon: { S: req.body.icon },
-            url: { S: req.body.url },
-            ownerName: { S: req.body.ownerName },
-            ownerEmail: { S: req.body.ownerEmail },
-            environment: { S: req.body.environment },
-            description: { S: req.body.description },
+            name: req.body.name,
+            status: req.body.status,
+            icon: req.body.icon,
+            url: req.body.url,
+            ownerName: req.body.ownerName,
+            ownerEmail: req.body.ownerEmail,
+            environment: req.body.environment,
+            description: req.body.description,
         };
         if (req.body.images) {
             try {
-                newDashboard["images"] = { SS: req.body.images.split(",") };
+                newDashboard["images"] = req.body.images.split(",");
             } catch (ex) {
-                newDashboard["images"] = { SS: req.body.images };
+                newDashboard["images"] = req.body.images;
             }
         }
 
@@ -108,6 +108,7 @@ router.post(
                 res.json({
                     success: true,
                     msg: "Registered",
+                    data: newDashboard
                 });
             }
         });
@@ -216,6 +217,7 @@ router.put(
                 res.json({
                     success: true,
                     msg: "Dashboard updated",
+                    data: scannedItem
                 });
             });
         });

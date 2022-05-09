@@ -18,9 +18,16 @@ module.exports.getAll = function (callback) {
 };
 
 module.exports.addUserProfile = function (newUserProfile, callback) {
-    const assignRandomint = Generic.getDateTime() + Math.floor(Math.random() * 1e4).toString();
-    newUserProfile["_id"] = { S: assignRandomint };
-    DynamoDB.addItem(AWS, tablename, newUserProfile, callback);
+    newUserProfile["_id"] = Generic.getDateTime() + Math.floor(Math.random() * 1e4).toString();
+    (new AWS.DynamoDB()).putItem(
+        {
+            TableName: tablename,
+            Item: AWS.DynamoDB.Converter.marshall(newUserProfile),
+        },
+        (err, data) => {
+            callback(err, newUserProfile, data);
+        }
+    );
 };
 
 module.exports.remove = function (user, callback) {

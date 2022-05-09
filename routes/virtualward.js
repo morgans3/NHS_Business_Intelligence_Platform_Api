@@ -158,6 +158,7 @@ router.post(
                 res.json({
                     success: true,
                     msg: "Item updated",
+                    data: item
                 });
             }
         });

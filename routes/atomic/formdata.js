@@ -129,12 +129,12 @@ router.post(
                 formid: req.body.formid,
                 config: req.body.config,
             },
-            (err, result) => {
+            (err, data) => {
                 if (err) {
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: false, msg: "New formdata created!" });
+                res.send({ success: false, msg: "New formdata created!", data });
             }
         );
     }
@@ -185,12 +185,12 @@ router.post(
             {
                 config: req.body.config,
             },
-            (err, result) => {
+            (err, data) => {
                 if (err) {
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: false, msg: "Formdata updated!" });
+                res.send({ success: false, msg: "Formdata updated!", data });
             }
         );
     }

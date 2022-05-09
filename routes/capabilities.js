@@ -106,7 +106,7 @@ router.post(
             authoriser: req.body.authoriser,
             tags: req.body.tags,
         };
-        CapabilitiesModel.create(newCapability, (err, user) => {
+        CapabilitiesModel.create(newCapability, (err) => {
             if (err) {
                 res.json({
                     success: false,
@@ -116,6 +116,7 @@ router.post(
                 res.json({
                     success: true,
                     msg: "Capability registered",
+                    data: newCapability
                 });
             }
         });
@@ -202,6 +203,7 @@ router.post(
                             res.json({
                                 success: true,
                                 msg: "Capability updated",
+                                data: newCapability
                             });
                         }
                     });

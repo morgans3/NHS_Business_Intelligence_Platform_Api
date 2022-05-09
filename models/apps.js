@@ -32,9 +32,17 @@ module.exports.getAll = function (callback) {
 };
 
 module.exports.addApp = function (newApp, callback) {
-    DynamoDB.addItem(AWS, tablename, newApp, callback);
+    (new AWS.DynamoDB()).putItem(
+        {
+            TableName: tablename,
+            Item: AWS.DynamoDB.Converter.marshall(newApp),
+        },
+        (err, data) => { callback(err, newApp, data); }
+    );
 };
 
 module.exports.updateApp = function (updatedItem, callback) {
-    DynamoDB.updateItem(AWS, tablename, ["name", "environment"], updatedItem, callback);
+    DynamoDB.updateItem(AWS, tablename, ["name", "environment"], updatedItem, (err, data) => {
+        callback(err, updatedItem, data);
+    });
 };

@@ -97,9 +97,9 @@ router.post("/create", passport.authenticate("jwt", {
         cohorturl: req.body.cohorturl,
         teamcode: req.body.teamcode,
         user: req.body.username
-    }, (err, result) => {
+    }, (err, data) => {
         if (err) { res.status(500).send({ success: false, msg: err }); return; }
-        res.send({ success: false, msg: "New cohort created!" });
+        res.send({ success: false, msg: "New cohort created!", data });
     });
 });
 
@@ -155,9 +155,9 @@ router.post("/update", passport.authenticate("jwt", {
         cohorturl: req.body.cohorturl,
         teamcode: req.body.teamcode,
         user: req.body.username
-    }, (err, result) => {
+    }, (err, data) => {
         if (err) { res.status(500).send({ success: false, msg: err }); return; }
-        res.send({ success: false, msg: "Cohort updated!" });
+        res.send({ success: false, msg: "Cohort updated!", data });
     });
 });
 
