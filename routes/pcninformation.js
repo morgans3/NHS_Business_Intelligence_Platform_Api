@@ -48,7 +48,7 @@ router.get(
 
 /**
  * @swagger
- * /pcninformation/getData:
+ * /pcninformation/:
  *   get:
  *     security:
  *      - JWT: []
@@ -62,7 +62,7 @@ router.get(
  *         description: Full List
  */
 router.get(
-    "/getData",
+    "/",
     passport.authenticate("jwt", {
         session: false,
     }),

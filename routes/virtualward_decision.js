@@ -14,7 +14,7 @@ const JWT = require("jsonwebtoken");
 
 /**
  * @swagger
- * /virtualward_decision/getAll?Limit={limit}:
+ * /virtualward_decision/?Limit={limit}:
  *   get:
  *     security:
  *      - JWT: []
@@ -39,7 +39,7 @@ const JWT = require("jsonwebtoken");
  *         description: Server Error Processing
  */
 router.get(
-    "/getAll",
+    "/",
     passport.authenticate("jwt", {
         session: false,
     }),
