@@ -129,12 +129,12 @@ router.get(
  *     tags:
  *      - AccessLogs
  *     parameters:
- *      - name: dateFrom
+ *      - name: date_from
  *        description: Date to get the statistics from
  *        in: query
  *        type: string
  *        format: date
- *      - name: dateTo
+ *      - name: date_to
  *        description: Date to get the statistics to
  *        in: query
  *        type: string
@@ -151,8 +151,8 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        const dateFrom = req.query.dateFrom.toString();
-        const dateTo = req.query.dateTo.toString();
+        const dateFrom = req.query.date_from.toString();
+        const dateTo = req.query.date_to.toString();
         if (!dateFrom || !dateTo) {
             res.status(400).json({ success: false, msg: "Missing input params" });
             return;
