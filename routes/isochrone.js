@@ -36,19 +36,19 @@ const PGConstruct = PostgresI.init(settings);
  *         description: Household Statistics
  */
 router.post(
-  "/getHousesWithinIsochrone",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const query = req.body.isochrone_bounds;
-    const params = {
-      query: query,
-    };
-    PostgresI.getIsoChrone(PGConstruct, params, (response) => {
-      res.json(response);
-    });
-  }
+    "/getHousesWithinIsochrone",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const query = req.body.isochrone_bounds;
+        const params = {
+            query,
+        };
+        PostgresI.getIsoChrone(PGConstruct, params, (response) => {
+            res.json(response);
+        });
+    }
 );
 
 module.exports = router;

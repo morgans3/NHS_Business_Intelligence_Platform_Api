@@ -40,42 +40,42 @@ const { sanitiseQueryLimit } = require("../helpers/routes");
  *         description: Server Error Processing
  */
 router.get(
-  "/",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const limit = sanitiseQueryLimit(req.query.Limit);
-    res.type("application/json");
-    let jwt = req.header("authorization");
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      const userroles = decodedToken["capabilities"];
-      shielding.getAll(limit, userroles, function (access, err, result) {
-        if (err) {
-          res.status(400).send(
-            JSON.stringify({
-              reason: "Error: " + err,
-            })
-          );
-        } else if (access) {
-          res.status(401).send(result);
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const limit = sanitiseQueryLimit(req.query.Limit);
+        res.type("application/json");
+        const jwt = req.header("authorization");
+        if (jwt) {
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            const userroles = decodedToken["capabilities"];
+            shielding.getAll(limit, userroles, function (access, err, result) {
+                if (err) {
+                    res.status(400).send(
+                        JSON.stringify({
+                            reason: "Error: " + err,
+                        })
+                    );
+                } else if (access) {
+                    res.status(401).send(result);
+                } else {
+                    if (result.length > 0) {
+                        res.send(JSON.stringify(result));
+                    } else {
+                        res.status(400).send(
+                            JSON.stringify({
+                                reason: "Unable to find any citizens, may not exist or have insufficient permissions to view record.",
+                            })
+                        );
+                    }
+                }
+            });
         } else {
-          if (result.length > 0) {
-            res.send(JSON.stringify(result));
-          } else {
-            res.status(400).send(
-              JSON.stringify({
-                reason: "Unable to find any citizens, may not exist or have insufficient permissions to view record.",
-              })
-            );
-          }
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
         }
-      });
-    } else {
-      res.status(400).json({ success: false, msg: "Incorrect Parameters" });
     }
-  }
 );
 
 module.exports = router;

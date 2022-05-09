@@ -4,15 +4,14 @@ const express = require("express");
 const router = express.Router();
 const credentials = require("../_credentials/credentials");
 const jwt = require("jsonwebtoken");
-const SimpleCrypto = require("simple-crypto-js").default;
-const _simpleCrypto = new SimpleCrypto(credentials.secretkey);
+const SimpleCrypto = new (require("simple-crypto-js").default)(credentials.secretkey);
 
-//TODO: Update group to pull key from Secrets Manager
+// TODO: Update group to pull key from Secrets Manager
 const securegroup = [
-  {
-    org: "ANY",
-    key: "SERVICEACCOUNTKEYHERE",
-  },
+    {
+        org: "ANY",
+        key: "SERVICEACCOUNTKEYHERE",
+    },
 ];
 
 /**
@@ -51,23 +50,23 @@ const securegroup = [
  *         description: Unauthorized
  */
 router.post("/check", (req, res, next) => {
-  if (req.body.org && req.body.key) {
-    if (securegroup.find((x) => x.org === req.body.org && x.key === req.body.key)) {
-      const servicepayload = {
-        organisation: req.body.org,
-        key: _simpleCrypto.encrypt(req.body.key),
-        username: "serviceaccount",
-      };
-      const key = jwt.sign(servicepayload, credentials.secret, {
-        expiresIn: 604800 * 52, //52 week
-      });
-      res.status(200).json({ msg: key });
+    if (req.body.org && req.body.key) {
+        if (securegroup.find((x) => x.org === req.body.org && x.key === req.body.key)) {
+            const servicepayload = {
+                organisation: req.body.org,
+                key: SimpleCrypto.encrypt(req.body.key),
+                username: "serviceaccount",
+            };
+            const key = jwt.sign(servicepayload, credentials.secret, {
+                expiresIn: 604800 * 52, // 52 week
+            });
+            res.status(200).json({ msg: key });
+        } else {
+            res.status(401).json({ msg: "Key not found" });
+        }
     } else {
-      res.status(401).json({ msg: "Key not found" });
+        res.status(400).json({ msg: "Unable to parse Key" });
     }
-  } else {
-    res.status(400).json({ msg: "Unable to parse Key" });
-  }
 });
 
 module.exports = router;

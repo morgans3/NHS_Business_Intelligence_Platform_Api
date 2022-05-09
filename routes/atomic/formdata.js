@@ -28,14 +28,21 @@ const AtomicFormDataModel = new DIULibrary.Models.AtomicFormDataModel();
  *       200:
  *         description: List of all formdata submitted
  */
-router.get("/", passport.authenticate("jwt", {
-  session: false,
-}), (req, res, next) => {
-  AtomicFormDataModel.get((err, result) => {
-    if(err) { res.status(500).send({ success: false, msg: err }); return; }
-    res.send(result.Items);
-  });
-});
+router.get(
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        AtomicFormDataModel.get((err, result) => {
+            if (err) {
+                res.status(500).send({ success: false, msg: err });
+                return;
+            }
+            res.send(result.Items);
+        });
+    }
+);
 
 /**
  * @swagger
@@ -52,22 +59,32 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: List of all formdata submitted
  */
- router.get("/:id", passport.authenticate("jwt", {
-    session: false,
-  }), (req, res, next) => {
-    AtomicFormDataModel.getByKeys({
-        id: req.params.id
-    }, (err, result) => {
-      if(err) { res.status(500).send({ success: false, msg: err }); return; }
+router.get(
+    "/:id",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        AtomicFormDataModel.getByKeys(
+            {
+                id: req.params.id,
+            },
+            (err, result) => {
+                if (err) {
+                    res.status(500).send({ success: false, msg: err });
+                    return;
+                }
 
-      //Found item?
-      if(result.Items.length == 0) {
-        res.status(404).json({ success: false, msg: "Formdata not found!" }); 
-      } else {
-        res.json(result.Items[0]); 
-      }
-    });
-  });
+                // Found item?
+                if (result.Items.length === 0) {
+                    res.status(404).json({ success: false, msg: "Formdata not found!" });
+                } else {
+                    res.json(result.Items[0]);
+                }
+            }
+        );
+    }
+);
 
 /**
  * @swagger
@@ -100,19 +117,28 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: Create a formdata item
  */
- router.post("/create", passport.authenticate("jwt", {
-  session: false,
-}), (req, res, next) => {
-  AtomicFormDataModel.create({
-    id: req.body.id,
-    formid: req.body.formid,
-    config: req.body.config,
-  }, (err, result) => {
-    if(err) { res.status(500).send({ success: false, msg: err }); return; }
-    res.send({ success: false, msg: "New formdata created!" });
-  });
-});
-
+router.post(
+    "/create",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        AtomicFormDataModel.create(
+            {
+                id: req.body.id,
+                formid: req.body.formid,
+                config: req.body.config,
+            },
+            (err, result) => {
+                if (err) {
+                    res.status(500).send({ success: false, msg: err });
+                    return;
+                }
+                res.send({ success: false, msg: "New formdata created!" });
+            }
+        );
+    }
+);
 
 /**
  * @swagger
@@ -145,19 +171,30 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: Formdata item updated
  */
- router.post("/update", passport.authenticate("jwt", {
-  session: false,
-}), (req, res, next) => {
-  AtomicFormDataModel.update({
-    id: req.body.id,
-    formid: req.body.formid,
-  }, {
-    config: req.body.config
-  }, (err, result) => {
-    if(err) { res.status(500).send({ success: false, msg: err }); return; }
-    res.send({ success: false, msg: "Formdata updated!" });
-  });
-});
+router.post(
+    "/update",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        AtomicFormDataModel.update(
+            {
+                id: req.body.id,
+                formid: req.body.formid,
+            },
+            {
+                config: req.body.config,
+            },
+            (err, result) => {
+                if (err) {
+                    res.status(500).send({ success: false, msg: err });
+                    return;
+                }
+                res.send({ success: false, msg: "Formdata updated!" });
+            }
+        );
+    }
+);
 
 /**
  * @swagger
@@ -185,22 +222,28 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: Success status
  */
- router.delete("/delete", passport.authenticate("jwt", {
-  session: false,
-}), (req, res, next) => {
-    //Delete cohort by id
-    AtomicFormDataModel.delete({
-      id: req.body.id,
-      formid: req.body.formid,
-    }, (err, result) => {
-      //Return data
-      if (err) {
-        res.status(500).json({ success: false, msg: err });
-        return;
-      }
-      res.json({ success: true, msg: "Formdata deleted!" });
-    });
-  }
+router.delete(
+    "/delete",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        // Delete cohort by id
+        AtomicFormDataModel.delete(
+            {
+                id: req.body.id,
+                formid: req.body.formid,
+            },
+            (err, result) => {
+                // Return data
+                if (err) {
+                    res.status(500).json({ success: false, msg: err });
+                    return;
+                }
+                res.json({ success: true, msg: "Formdata deleted!" });
+            }
+        );
+    }
 );
 
 module.exports = router;

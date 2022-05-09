@@ -40,42 +40,42 @@ const { sanitiseQueryLimit } = require("../helpers/routes");
  *         description: Server Error Processing
  */
 router.get(
-  "/",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const limit = sanitiseQueryLimit(req.query.Limit);
-    res.type("application/json");
-    let jwt = req.header("authorization");
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      const userroles = decodedToken["capabilities"];
-      patients.getAll(limit, userroles, function (access, err, result) {
-        if (err) {
-          res.status(400).send(
-            JSON.stringify({
-              reason: "Error: " + err,
-            })
-          );
-        } else if (access) {
-          res.status(401).send(result);
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const limit = sanitiseQueryLimit(req.query.Limit);
+        res.type("application/json");
+        const jwt = req.header("authorization");
+        if (jwt) {
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            const userroles = decodedToken["capabilities"];
+            patients.getAll(limit, userroles, function (access, err, result) {
+                if (err) {
+                    res.status(400).send(
+                        JSON.stringify({
+                            reason: "Error: " + err,
+                        })
+                    );
+                } else if (access) {
+                    res.status(401).send(result);
+                } else {
+                    if (result.length > 0) {
+                        res.send(JSON.stringify(result));
+                    } else {
+                        res.status(400).send(
+                            JSON.stringify({
+                                reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
+                            })
+                        );
+                    }
+                }
+            });
         } else {
-          if (result.length > 0) {
-            res.send(JSON.stringify(result));
-          } else {
-            res.status(400).send(
-              JSON.stringify({
-                reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
-              })
-            );
-          }
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
         }
-      });
-    } else {
-      res.status(400).json({ success: false, msg: "Incorrect Parameters" });
     }
-  }
 );
 
 /**
@@ -106,44 +106,44 @@ router.get(
  *         description: Server Error Processing
  */
 router.get(
-  "/patientdetailsbynhsnumber",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const nhsNumber = req.query.NHSNumber;
-    res.type("application/json");
-    if (nhsNumber === undefined || nhsNumber === null) {
-      res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-    } else {
-      let jwt = req.header("authorization");
-      if (jwt) {
-        let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-        const userroles = decodedToken["capabilities"];
-        patients.getPersonByNHSNumber(nhsNumber, userroles, function (access, err, result) {
-          if (err) {
-            res.status(400).send(
-              JSON.stringify({
-                reason: "Error: " + err,
-              })
-            );
-          } else if (access) {
-            res.status(401).send(result);
-          } else {
-            if (result.length > 0) {
-              res.send(JSON.stringify(result[0]));
-            } else {
-              res.status(400).send(
-                JSON.stringify({
-                  reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
-                })
-              );
+    "/patientdetailsbynhsnumber",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const nhsNumber = req.query.NHSNumber;
+        res.type("application/json");
+        if (nhsNumber === undefined || nhsNumber === null) {
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+        } else {
+            const jwt = req.header("authorization");
+            if (jwt) {
+                const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+                const userroles = decodedToken["capabilities"];
+                patients.getPersonByNHSNumber(nhsNumber, userroles, function (access, err, result) {
+                    if (err) {
+                        res.status(400).send(
+                            JSON.stringify({
+                                reason: "Error: " + err,
+                            })
+                        );
+                    } else if (access) {
+                        res.status(401).send(result);
+                    } else {
+                        if (result.length > 0) {
+                            res.send(JSON.stringify(result[0]));
+                        } else {
+                            res.status(400).send(
+                                JSON.stringify({
+                                    reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
+                                })
+                            );
+                        }
+                    }
+                });
             }
-          }
-        });
-      }
+        }
     }
-  }
 );
 
 /**
@@ -177,41 +177,41 @@ router.get(
  *         description: Server Error Processing
  */
 router.get(
-  "/getPatientsByCohort",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let cohort = req.query.cohort || "";
-    res.type("application/json");
-    let jwt = req.header("authorization");
-    const limit = sanitiseQueryLimit(req.query.limit);
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      const userroles = decodedToken["capabilities"];
-      patients.getAllByCohort(limit, cohort, userroles, function (access, err, result) {
-        if (err) {
-          res.status(400).json({
-            reason: "Error: " + err,
-          });
-        } else if (access) {
-          res.status(401).send(result);
+    "/getPatientsByCohort",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const cohort = req.query.cohort || "";
+        res.type("application/json");
+        const jwt = req.header("authorization");
+        const limit = sanitiseQueryLimit(req.query.limit);
+        if (jwt) {
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            const userroles = decodedToken["capabilities"];
+            patients.getAllByCohort(limit, cohort, userroles, function (access, err, result) {
+                if (err) {
+                    res.status(400).json({
+                        reason: "Error: " + err,
+                    });
+                } else if (access) {
+                    res.status(401).send(result);
+                } else {
+                    if (result.length > 0) {
+                        res.send(JSON.stringify(result));
+                    } else {
+                        res.status(400).send(
+                            JSON.stringify({
+                                reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
+                            })
+                        );
+                    }
+                }
+            });
         } else {
-          if (result.length > 0) {
-            res.send(JSON.stringify(result));
-          } else {
-            res.status(400).send(
-              JSON.stringify({
-                reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
-              })
-            );
-          }
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
         }
-      });
-    } else {
-      res.status(400).json({ success: false, msg: "Incorrect Parameters" });
     }
-  }
 );
 
 module.exports = router;

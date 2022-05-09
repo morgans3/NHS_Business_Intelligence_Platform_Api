@@ -35,17 +35,24 @@ const TeamModel = new DIULibrary.Models.TeamModel();
  *         description: Search Results
  */
 router.get(
-  "/searchTeams",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    TeamModel.getByFilters({
-      name: req.query.searchterm
-    }, function (err, teams) {
-      res.send(JSON.stringify(teams.Items));
-    });
-  }
+    "/searchTeams",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        TeamModel.getByFilters(
+            {
+                name: req.query.searchterm,
+            },
+            function (err, teams) {
+                if (err) {
+                    res.send({ status: 500, message: err });
+                } else {
+                    res.send(JSON.stringify(teams.Items));
+                }
+            }
+        );
+    }
 );
 
 module.exports = router;

@@ -35,25 +35,25 @@ const issuer = process.env.SITE_URL || "NHS BI Platform";
  *         description: Confirmation of Authentication Setup
  */
 router.get(
-  "/register",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let jwt = req.header("authorization");
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      let username = decodedToken["username"];
-      if (username) {
-        MFA.setup(username, (err, response) => {
-          if (err) console.log(response);
-          res.json(response);
-        });
-      }
-    } else {
-      res.json({ status: 401, message: "User registration failed" });
+    "/register",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const jwt = req.header("authorization");
+        if (jwt) {
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            const username = decodedToken["username"];
+            if (username) {
+                MFA.setup(username, (err, response) => {
+                    if (err) console.log(response);
+                    res.json(response);
+                });
+            }
+        } else {
+            res.json({ status: 401, message: "User registration failed" });
+        }
     }
-  }
 );
 
 /**
@@ -72,36 +72,36 @@ router.get(
  *         description: Confirmation of Authentication Setup
  */
 router.get(
-  "/checkmfa",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let jwt = req.header("authorization");
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      let username = decodedToken["username"];
-      if (username) {
-        MFA.check(username, (err, response) => {
-          if (err) {
-            console.log(err);
-            res.json({ status: 200, error: err });
-          } else {
-            if (response) {
-              let flag = false;
-              if (response.Items.length > 0) flag = true;
-              res.json({
-                status: 200,
-                msg: flag,
-              });
+    "/checkmfa",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const jwt = req.header("authorization");
+        if (jwt) {
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            const username = decodedToken["username"];
+            if (username) {
+                MFA.check(username, (err, response) => {
+                    if (err) {
+                        console.log(err);
+                        res.json({ status: 200, error: err });
+                    } else {
+                        if (response) {
+                            let flag = false;
+                            if (response.Items.length > 0) flag = true;
+                            res.json({
+                                status: 200,
+                                msg: flag,
+                            });
+                        }
+                    }
+                });
             }
-          }
-        });
-      }
-    } else {
-      res.json({ status: 401, error: "User registration failed" });
+        } else {
+            res.json({ status: 401, error: "User registration failed" });
+        }
     }
-  }
 );
 
 /**
@@ -131,47 +131,49 @@ router.get(
  *         description: Confirmation of Authentication Setup
  */
 router.post(
-  "/verify",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let jwt = req.header("authorization");
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      let username = decodedToken["username"];
-      let email = decodedToken["email"];
-      if (username && email) {
-        let token = req.body.token;
-        let tempSecret = req.body.tempSecret;
-        MFA.verify(username, token, tempSecret, decodedToken, (err, response) => {
-          if (err) {
-            console.log(response);
-          } else {
-            EmailHelper.sendMail(
-              {
-                to: email,
-                subject: "New MFA Device Registered for: " + issuer.replace("api.", ""),
-                message: "A new device has been registered to secure your " + issuer.replace("api.", "") + " account. If you are receiving this and you have not registered a new device please contact our support team immediately.",
-              },
-              (error, response) => {
-                if (error) {
-                  console.log("Unable to send security email for: " + username + ". Reason: " + error.toString());
-                } else {
-                  console.log("Security email sent for new MFA device for: " + username);
-                }
-              }
-            );
-            res.json(response);
-          }
-        });
-      } else {
-        res.json({ status: 401, message: "User verification failed" });
-      }
-    } else {
-      res.json({ status: 401, message: "User verification failed" });
+    "/verify",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const jwt = req.header("authorization");
+        if (jwt) {
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            const username = decodedToken["username"];
+            const email = decodedToken["email"];
+            if (username && email) {
+                const token = req.body.token;
+                const tempSecret = req.body.tempSecret;
+                MFA.verify(username, token, tempSecret, decodedToken, (err, response) => {
+                    if (err) {
+                        console.log(response);
+                    } else {
+                        EmailHelper.sendMail(
+                            {
+                                to: email,
+                                subject: "New MFA Device Registered for: " + issuer.replace("api.", ""),
+                                message: `A new device has been registered to secure your ${issuer.replace("api.", "")} \
+                                account. If you are receiving this and you have not registered a new \
+                                device please contact our support team immediately.`,
+                            },
+                            (error) => {
+                                if (error) {
+                                    console.log("Unable to send security email for: " + username + ". Reason: " + error.toString());
+                                } else {
+                                    console.log("Security email sent for new MFA device for: " + username);
+                                }
+                            }
+                        );
+                        res.json(response);
+                    }
+                });
+            } else {
+                res.json({ status: 401, message: "User verification failed" });
+            }
+        } else {
+            res.json({ status: 401, message: "User verification failed" });
+        }
     }
-  }
 );
 
 /**
@@ -196,42 +198,42 @@ router.post(
  *         description: Confirmation of Authentication Setup
  */
 router.post(
-  "/validate",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let jwt = req.header("authorization");
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      let username = decodedToken["username"];
-      if (username) {
-        MFA.getUserSecret(username, (err, response) => {
-          if (err) {
-            res.json({ status: 404, message: "User verification method not found" });
-          } else {
-            if (response.Items.length > 0) {
-              const secret = response.Items[0].verification;
-              if (MFA.validate(secret, req.body.token)) {
-                Authenticate.upgradePassportwithOrganisation(decodedToken, true, (err, token) => {
-                  if (err) console.log(err);
-                  res.json({ status: 200, message: "Authorized", token: token });
+    "/validate",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const jwt = req.header("authorization");
+        if (jwt) {
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            const username = decodedToken["username"];
+            if (username) {
+                MFA.getUserSecret(username, (err, response) => {
+                    if (err) {
+                        res.json({ status: 404, message: "User verification method not found" });
+                    } else {
+                        if (response.Items.length > 0) {
+                            const secret = response.Items[0].verification;
+                            if (MFA.validate(secret, req.body.token)) {
+                                Authenticate.upgradePassportwithOrganisation(decodedToken, true, (passportOrgError, token) => {
+                                    if (passportOrgError) console.log(passportOrgError);
+                                    res.json({ status: 200, message: "Authorized", token });
+                                });
+                            } else {
+                                res.json({ status: 400, message: "User verification failed" });
+                            }
+                        } else {
+                            res.json({ status: 404, message: "User verification method not found" });
+                        }
+                    }
                 });
-              } else {
-                res.json({ status: 400, message: "User verification failed" });
-              }
             } else {
-              res.json({ status: 404, message: "User verification method not found" });
+                res.json({ status: 401, message: "User validation failed" });
             }
-          }
-        });
-      } else {
-        res.json({ status: 401, message: "User validation failed" });
-      }
-    } else {
-      res.json({ status: 401, message: "User validation failed" });
+        } else {
+            res.json({ status: 401, message: "User validation failed" });
+        }
     }
-  }
 );
 
 /**
@@ -250,40 +252,44 @@ router.post(
  *         description: Confirmation of Authentication Removal
  */
 router.get(
-  "/unregister",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let jwt = req.header("authorization");
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      let username = decodedToken["username"];
-      let email = decodedToken["email"];
-      if (username && email) {
-        MFA.unregister(username, (err, response) => {
-          if (err) console.log(response);
-          EmailHelper.sendMail(
-            {
-              to: email,
-              subject: "New MFA Device Unregistered for: " + issuer.replace("api.", ""),
-              message: "Your device that secures your " + issuer.replace("api.", "") + " account has been unregistered. If you are receiving this and you have not unregistered your device please contact our support team immediately.",
-            },
-            (error, response) => {
-              if (error) {
-                console.log("Unable to send device removal security email for: " + username + ". Reason: " + error.toString());
-              } else {
-                console.log("Security email sent for unregistering MFA device for: " + username);
-              }
+    "/unregister",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const jwt = req.header("authorization");
+        if (jwt) {
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            const username = decodedToken["username"];
+            const email = decodedToken["email"];
+            if (username && email) {
+                MFA.unregister(username, (err, response) => {
+                    if (err) console.log(response);
+                    EmailHelper.sendMail(
+                        {
+                            to: email,
+                            subject: "New MFA Device Unregistered for: " + issuer.replace("api.", ""),
+                            message: `Your device that secures your ${issuer.replace("api.", "")} account has been \
+                            unregistered. If you are receiving this and you have not unregistered your device please \
+                            contact our support team immediately.`,
+                        },
+                        (error) => {
+                            if (error) {
+                                console.log(
+                                    "Unable to send device removal security email for: " + username + ". Reason: " + error.toString()
+                                );
+                            } else {
+                                console.log("Security email sent for unregistering MFA device for: " + username);
+                            }
+                        }
+                    );
+                    res.json(response);
+                });
             }
-          );
-          res.json(response);
-        });
-      }
-    } else {
-      res.json({ status: 401, message: "User authentication removal failed" });
+        } else {
+            res.json({ status: 401, message: "User authentication removal failed" });
+        }
     }
-  }
 );
 
 module.exports = router;

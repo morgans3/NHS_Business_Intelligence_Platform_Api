@@ -43,17 +43,17 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         description: Server Unavailable
  */
 router.get("/acknowledgements/", MiddlewareHelper.authenticateWithKey(credentials.docobo.inboundkey), (req, res, next) => {
-  Acknowledgements.getAll(function (err, result) {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      if (result.rows) {
-        res.send(JSON.stringify(result.rows));
-      } else {
-        res.send("[]");
-      }
-    }
-  });
+    Acknowledgements.getAll(function (err, result) {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            if (result.rows) {
+                res.send(JSON.stringify(result.rows));
+            } else {
+                res.send("[]");
+            }
+        }
+    });
 });
 
 /**
@@ -112,53 +112,53 @@ router.get("/acknowledgements/", MiddlewareHelper.authenticateWithKey(credential
  *         description: Server Unavailable
  */
 router.post("/acknowledgements/report", MiddlewareHelper.authenticateWithKey(credentials.docobo.inboundkey), (req, res, next) => {
-  const item = req.body;
-  console.log(JSON.stringify(item));
-  let newItem = {
-    importFileName: item.importFileName,
-    totalPatientsInFile: item.totalPatientsInFile,
-    error: item.error,
-    result: item.result,
-  };
-  if (newItem.error) {
+    const item = req.body;
+    console.log(JSON.stringify(item));
+    const newItem = {
+        importFileName: item.importFileName,
+        totalPatientsInFile: item.totalPatientsInFile,
+        error: item.error,
+        result: item.result,
+    };
+    if (newItem.error) {
     // Process File Error
-  }
-  if (newItem.result && newItem.result.length > 0) {
+    }
+    if (newItem.result && newItem.result.length > 0) {
     // Process row acknowledgements
-    newItem.result.forEach((result) => {
-      result.importFileName = newItem.importFileName;
-      if (result.error) {
-        // Flag error
-      }
-    });
-    var rowCount = 0;
-    async.mapSeries(
-      newItem.result,
-      (values, outerCB) => {
-        Acknowledgements.addResource(values, (err, response) => {
-          var errmsg = null;
-          if (err) {
-            errmsg = "Error in saving: " + JSON.stringify(values) + ". Error message from Database: " + err.toString();
-            console.error(errmsg);
-          } else if (response) {
-            console.log("Saved Acknowledgement for: " + values.nhsNumber);
-          }
-          rowCount++;
-          // @ts-ignore
-          outerCB(errmsg, response);
+        newItem.result.forEach((result) => {
+            result.importFileName = newItem.importFileName;
+            if (result.error) {
+                // Flag error
+            }
         });
-      },
-      (err, results) => {
-        if (err) {
-          res.status(500).json({ success: false, error: err, failedOnRow: rowCount });
-        } else {
-          res.json({ success: true, rowsUpdated: newItem.totalPatientsInFile });
-        }
-      }
-    );
-  } else {
-    res.json({ success: true, rowsUpdated: 0 });
-  }
+        let rowCount = 0;
+        async.mapSeries(
+            newItem.result,
+            (values, outerCB) => {
+                Acknowledgements.addResource(values, (err, response) => {
+                    let errmsg = null;
+                    if (err) {
+                        errmsg = "Error in saving: " + JSON.stringify(values) + ". Error message from Database: " + err.toString();
+                        console.error(errmsg);
+                    } else if (response) {
+                        console.log("Saved Acknowledgement for: " + values.nhsNumber);
+                    }
+                    rowCount++;
+                    // @ts-ignore
+                    outerCB(errmsg, response);
+                });
+            },
+            (err, results) => {
+                if (err) {
+                    res.status(500).json({ success: false, error: err, failedOnRow: rowCount });
+                } else {
+                    res.json({ success: true, rowsUpdated: newItem.totalPatientsInFile });
+                }
+            }
+        );
+    } else {
+        res.json({ success: true, rowsUpdated: 0 });
+    }
 });
 
 module.exports = router;

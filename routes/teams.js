@@ -30,20 +30,20 @@ const TeamModel = new DIULibrary.Models.TeamModel();
  *         description: A list of all teams
  */
 router.get(
-  "/",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    TeamModel.get((err, result) => {
-      //Return data
-      if (err) {
-        res.json({ success: false, msg: err });
-      } else {
-        res.json(result.Items);
-      }
-    });
-  }
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        TeamModel.get((err, result) => {
+            // Return data
+            if (err) {
+                res.json({ success: false, msg: err });
+            } else {
+                res.json(result.Items);
+            }
+        });
+    }
 );
 
 /**
@@ -89,31 +89,31 @@ router.get(
  *         description: The newly created team
  */
 router.post(
-  "/create",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  async (req, res, next) => {
-    //Get params
-    const payload = req.body;
-    const team = {
-      _id: uuid.v1(),
-      code: payload.code,
-      description: payload.description,
-      name: payload.name,
-      organisationcode: payload.organisationcode,
-      responsiblepeople: payload.responsiblepeople ? payload.responsiblepeople.split(",") : [],
-    };
+    "/create",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    async (req, res, next) => {
+        // Get params
+        const payload = req.body;
+        const team = {
+            _id: uuid.v1(),
+            code: payload.code,
+            description: payload.description,
+            name: payload.name,
+            organisationcode: payload.organisationcode,
+            responsiblepeople: payload.responsiblepeople ? payload.responsiblepeople.split(",") : [],
+        };
 
-    //Persist in database
-    TeamModel.create(team, (err, result) => {
-      if (err) {
-        res.json({ success: false, msg: "Failed to create " + err });
-      } else {
-        res.json({ success: true, msg: "Team created successfully!", data: team });
-      }
-    });
-  }
+        // Persist in database
+        TeamModel.create(team, (err, result) => {
+            if (err) {
+                res.json({ success: false, msg: "Failed to create " + err });
+            } else {
+                res.json({ success: true, msg: "Team created successfully!", data: team });
+            }
+        });
+    }
 );
 
 /**
@@ -179,39 +179,39 @@ router.post(
  *         description: The updated team
  */
 router.all(
-  "/update",
-  passport.authenticate("jwt", {
-    //Router set to all for teamprofile update redirect
-    session: false,
-  }),
-  async (req, res, next) => {
-    //Get params
-    let payload = req.body;
+    "/update",
+    passport.authenticate("jwt", {
+        // Router set to all for teamprofile update redirect
+        session: false,
+    }),
+    async (req, res, next) => {
+        // Get params
+        const payload = req.body;
 
-    //For teamprofile update redirect
-    payload.id = req.query.profile_id;
+        // For teamprofile update redirect
+        payload.id = req.query.profile_id;
 
-    //Update team
-    TeamModel.update(
-      {
-        _id: payload.id,
-        code: payload.code,
-      },
-      {
-        description: payload.description,
-        name: payload.name,
-        organisationcode: payload.organisationcode,
-        responsiblepeople: payload.responsiblepeople || [],
-      },
-      (err, team) => {
-        if (err) {
-          res.json({ success: false, msg: "Failed to update " + err });
-        } else {
-          res.json({ success: true, msg: "Team updated successfully!", data: team });
-        }
-      }
-    );
-  }
+        // Update team
+        TeamModel.update(
+            {
+                _id: payload.id,
+                code: payload.code,
+            },
+            {
+                description: payload.description,
+                name: payload.name,
+                organisationcode: payload.organisationcode,
+                responsiblepeople: payload.responsiblepeople || [],
+            },
+            (err, team) => {
+                if (err) {
+                    res.json({ success: false, msg: "Failed to update " + err });
+                } else {
+                    res.json({ success: true, msg: "Team updated successfully!", data: team });
+                }
+            }
+        );
+    }
 );
 
 /**
@@ -236,24 +236,24 @@ router.all(
  *         description: Full List
  */
 router.get(
-  "/getTeamByCode",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const code = req.query.code;
-    TeamModel.getByCode(code, function (err, result) {
-      if (err) {
-        res.send({ success: false, msg: err });
-      } else {
-        if (result.Items) {
-          res.send(JSON.stringify(result.Items));
-        } else {
-          res.send(JSON.stringify([]));
-        }
-      }
-    });
-  }
+    "/getTeamByCode",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const code = req.query.code;
+        TeamModel.getByCode(code, function (err, result) {
+            if (err) {
+                res.send({ success: false, msg: err });
+            } else {
+                if (result.Items) {
+                    res.send(JSON.stringify(result.Items));
+                } else {
+                    res.send(JSON.stringify([]));
+                }
+            }
+        });
+    }
 );
 
 /**
@@ -278,24 +278,24 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/getTeamsByOrgCode",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const orgcode = req.query.orgcode;
-    TeamModel.getByOrg(orgcode, function (err, result) {
-      if (err) {
-        res.send({ success: false, msg: err });
-      } else {
-        if (result.Items) {
-          res.send(JSON.stringify(result.Items));
-        } else {
-          res.send(JSON.stringify([]));
-        }
-      }
-    });
-  }
+    "/getTeamsByOrgCode",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const orgcode = req.query.orgcode;
+        TeamModel.getByOrg(orgcode, function (err, result) {
+            if (err) {
+                res.send({ success: false, msg: err });
+            } else {
+                if (result.Items) {
+                    res.send(JSON.stringify(result.Items));
+                } else {
+                    res.send(JSON.stringify([]));
+                }
+            }
+        });
+    }
 );
 
 /**
@@ -320,29 +320,29 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/getTeamsByPartialTeamName",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const partialteam = req.query.partialteam;
-    TeamModel.getByFilters(
-      {
-        name: partialteam,
-      },
-      function (err, result) {
-        if (err) {
-          res.send({ success: false, msg: err });
-        } else {
-          if (result.Items) {
-            res.send(JSON.stringify(result.Items));
-          } else {
-            res.send(JSON.stringify([]));
-          }
-        }
-      }
-    );
-  }
+    "/getTeamsByPartialTeamName",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const partialteam = req.query.partialteam;
+        TeamModel.getByFilters(
+            {
+                name: partialteam,
+            },
+            function (err, result) {
+                if (err) {
+                    res.send({ success: false, msg: err });
+                } else {
+                    if (result.Items) {
+                        res.send(JSON.stringify(result.Items));
+                    } else {
+                        res.send(JSON.stringify([]));
+                    }
+                }
+            }
+        );
+    }
 );
 
 /**
@@ -372,31 +372,31 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/getTeamsByPartialTeamNameAndOrgCode",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const orgcode = req.url.split("=")[1].replace("&partialteam", "");
-    const partialteam = req.url.split("=")[2];
-    TeamModel.getByFilters(
-      {
-        name: partialteam,
-        orgcode: orgcode,
-      },
-      function (err, result) {
-        if (err) {
-          res.send({ success: false, msg: err });
-        } else {
-          if (result.Items) {
-            res.send(JSON.stringify(result.Items));
-          } else {
-            res.send(JSON.stringify([]));
-          }
-        }
-      }
-    );
-  }
+    "/getTeamsByPartialTeamNameAndOrgCode",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const orgcode = req.url.split("=")[1].replace("&partialteam", "");
+        const partialteam = req.url.split("=")[2];
+        TeamModel.getByFilters(
+            {
+                name: partialteam,
+                orgcode,
+            },
+            function (err, result) {
+                if (err) {
+                    res.send({ success: false, msg: err });
+                } else {
+                    if (result.Items) {
+                        res.send(JSON.stringify(result.Items));
+                    } else {
+                        res.send(JSON.stringify([]));
+                    }
+                }
+            }
+        );
+    }
 );
 
 /**
@@ -421,32 +421,32 @@ router.get(
  *         description: Confirmation of Member being Archived
  */
 router.put(
-  "/archive",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res) => {
-    const id = req.query.profile_id;
-    TeamModel.getByKeys({ _id: id }, (err, result) => {
-      //Output error
-      if (err) {
-        res.json({ success: false, msg: "Failed to archive: " + err });
-      }
+    "/archive",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res) => {
+        const id = req.query.profile_id;
+        TeamModel.getByKeys({ _id: id }, (err, result) => {
+            // Output error
+            if (err) {
+                res.json({ success: false, msg: "Failed to archive: " + err });
+            }
 
-      //Item exists?
-      if (result.Items.length > 0) {
-        //Delete item
-        TeamModel.delete({ _id: id }, (err) => {
-          if (err) {
-            res.json({ success: false, msg: "Failed to remove: " + err });
-          }
-          res.json({ success: true, msg: "Profile removed" });
+            // Item exists?
+            if (result.Items.length > 0) {
+                // Delete item
+                TeamModel.delete({ _id: id }, (deleteError) => {
+                    if (deleteError) {
+                        res.json({ success: false, msg: "Failed to remove: " + deleteError });
+                    }
+                    res.json({ success: true, msg: "Profile removed" });
+                });
+            } else {
+                res.json({ success: false, msg: "Can not find item in database" });
+            }
         });
-      } else {
-        res.json({ success: false, msg: "Can not find item in database" });
-      }
-    });
-  }
+    }
 );
 
 /**
@@ -476,26 +476,26 @@ router.put(
  *         description: Team deletion status
  */
 router.delete(
-  "/:id/delete",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    //Get all capabilities
-    TeamModel.delete(
-      {
-        _id: req.body.id,
-        code: req.body.code,
-      },
-      (err, result) => {
-        if (err) {
-          res.json({ success: false, msg: err });
-        } else {
-          res.json({ success: true, msg: "Team deleted successfully!" });
-        }
-      }
-    );
-  }
+    "/:id/delete",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        // Get all capabilities
+        TeamModel.delete(
+            {
+                _id: req.body.id,
+                code: req.body.code,
+            },
+            (err, result) => {
+                if (err) {
+                    res.json({ success: false, msg: err });
+                } else {
+                    res.json({ success: true, msg: "Team deleted successfully!" });
+                }
+            }
+        );
+    }
 );
 
 module.exports = router;

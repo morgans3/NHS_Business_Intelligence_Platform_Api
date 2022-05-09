@@ -28,20 +28,27 @@ const AtomicPayloadsModel = new DIULibrary.Models.AtomicPayloadsModel();
  *         in: query
  *         required: false
  *         type: string
-*     produces:
+ *     produces:
  *      - application/json
  *     responses:
  *       200:
  *         description: List of all atomic payloads
  */
-router.get("/", passport.authenticate("jwt", {
-  session: false,
-}), (req, res, next) => {
-  AtomicPayloadsModel.get(req.query, (err, result) => {
-    if(err) { res.status(500).send({ success: false, msg: err }); return; }
-    res.send(result.Items);
-  });
-});
+router.get(
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        AtomicPayloadsModel.get(req.query, (err, result) => {
+            if (err) {
+                res.status(500).send({ success: false, msg: err });
+                return;
+            }
+            res.send(result.Items);
+        });
+    }
+);
 
 /**
  * @swagger
@@ -63,22 +70,32 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: List of all atomic payloads
  */
- router.get("/:id", passport.authenticate("jwt", {
-    session: false,
-  }), (req, res, next) => {
-    AtomicPayloadsModel.getByKeys({
-        id: req.params.id
-    }, (err, result) => {
-      if(err) { res.status(500).send({ success: false, msg: err }); return; }
+router.get(
+    "/:id",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        AtomicPayloadsModel.getByKeys(
+            {
+                id: req.params.id,
+            },
+            (err, result) => {
+                if (err) {
+                    res.status(500).send({ success: false, msg: err });
+                    return;
+                }
 
-      //Found item?
-      if(result.Items.length == 0) {
-        res.status(404).json({ success: false, msg: "Payload not found!" }); 
-      } else {
-        res.json(result.Items[0]); 
-      }
-    });
-  });
+                // Found item?
+                if (result.Items.length === 0) {
+                    res.status(404).json({ success: false, msg: "Payload not found!" });
+                } else {
+                    res.json(result.Items[0]);
+                }
+            }
+        );
+    }
+);
 
 /**
  * @swagger
@@ -111,19 +128,28 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: Create a formdata item
  */
- router.post("/create", passport.authenticate("jwt", {
-  session: false,
-}), (req, res, next) => {
-  AtomicPayloadsModel.create({
-    id: req.body.id,
-    type: req.body.type,
-    config: req.body.config,
-  }, (err, result) => {
-    if(err) { res.status(500).send({ success: false, msg: err }); return; }
-    res.send({ success: false, msg: "New payload created!" });
-  });
-});
-
+router.post(
+    "/create",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        AtomicPayloadsModel.create(
+            {
+                id: req.body.id,
+                type: req.body.type,
+                config: req.body.config,
+            },
+            (err, result) => {
+                if (err) {
+                    res.status(500).send({ success: false, msg: err });
+                    return;
+                }
+                res.send({ success: false, msg: "New payload created!" });
+            }
+        );
+    }
+);
 
 /**
  * @swagger
@@ -156,19 +182,30 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: Confirmation of Account Registration
  */
- router.post("/update", passport.authenticate("jwt", {
-  session: false,
-}), (req, res, next) => {
-  AtomicPayloadsModel.update({
-    id: req.body.id,
-    type: req.body.type,
-  }, {
-    config: req.body.config
-  }, (err, result) => {
-    if(err) { res.status(500).send({ success: false, msg: err }); return; }
-    res.send({ success: false, msg: "Payload updated!" });
-  });
-});
+router.post(
+    "/update",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        AtomicPayloadsModel.update(
+            {
+                id: req.body.id,
+                type: req.body.type,
+            },
+            {
+                config: req.body.config,
+            },
+            (err, result) => {
+                if (err) {
+                    res.status(500).send({ success: false, msg: err });
+                    return;
+                }
+                res.send({ success: false, msg: "Payload updated!" });
+            }
+        );
+    }
+);
 
 /**
  * @swagger
@@ -196,22 +233,28 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: Success status
  */
- router.delete("/delete", passport.authenticate("jwt", {
-  session: false,
-}), (req, res, next) => {
-    //Delete cohort by id
-    AtomicPayloadsModel.delete({
-      id: req.body.id,
-      type: req.body.type,
-    }, (err, result) => {
-      //Return data
-      if (err) {
-        res.status(500).json({ success: false, msg: err });
-        return;
-      }
-      res.json({ success: true, msg: "Payload deleted!" });
-    });
-  }
+router.delete(
+    "/delete",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        // Delete cohort by id
+        AtomicPayloadsModel.delete(
+            {
+                id: req.body.id,
+                type: req.body.type,
+            },
+            (err, result) => {
+                // Return data
+                if (err) {
+                    res.status(500).json({ success: false, msg: err });
+                    return;
+                }
+                res.json({ success: true, msg: "Payload deleted!" });
+            }
+        );
+    }
 );
 
 module.exports = router;

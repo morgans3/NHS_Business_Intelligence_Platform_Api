@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const virtualward_decision = require("../models/virtualward_decision");
+const virtualwardDecision = require("../models/virtualward_decision");
 const JWT = require("jsonwebtoken");
 
 /**
@@ -39,47 +39,48 @@ const JWT = require("jsonwebtoken");
  *         description: Server Error Processing
  */
 router.get(
-  "/getAll",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let limit = req.query.Limit.toString() || "1000";
-    try {
-      const numCheck = parseInt(limit);
-    } catch {
-      limit = "1000";
-    }
-    res.type("application/json");
-    let jwt = req.header("authorization");
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      const userroles = decodedToken["capabilities"];
-      virtualward_decision.getAll(limit, userroles, function (access, err, result) {
-        if (err) {
-          res.status(400).send(
-            JSON.stringify({
-              reason: "Error: " + err,
-            })
-          );
-        } else if (access) {
-          res.status(401).send(result);
-        } else {
-          if (result.length > 0) {
-            res.send(JSON.stringify(result));
-          } else {
-            res.status(400).send(
-              JSON.stringify({
-                reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
-              })
-            );
-          }
+    "/getAll",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const limit = req.query.Limit.toString() || "1000";
+        let numCheck;
+        try {
+            numCheck = parseInt(limit);
+        } catch {
+            numCheck = 1000;
         }
-      });
-    } else {
-      res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+        res.type("application/json");
+        const jwt = req.header("authorization");
+        if (jwt) {
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            const userroles = decodedToken["capabilities"];
+            virtualwardDecision.getAll(numCheck.toString(), userroles, function (err, access, result) {
+                if (err) {
+                    res.status(400).send(
+                        JSON.stringify({
+                            reason: "Error: " + err,
+                        })
+                    );
+                } else if (access) {
+                    res.status(401).send(result);
+                } else {
+                    if (result.length > 0) {
+                        res.send(JSON.stringify(result));
+                    } else {
+                        res.status(400).send(
+                            JSON.stringify({
+                                reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
+                            })
+                        );
+                    }
+                }
+            });
+        } else {
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+        }
     }
-  }
 );
 
 /**
@@ -115,48 +116,49 @@ router.get(
  *         description: Server Error Processing
  */
 router.post(
-  "/getAllByStatus",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let status = req.body.status;
-    let limit = req.body.limit.toString() || "1000";
-    try {
-      const numCheck = parseInt(limit);
-    } catch {
-      limit = "1000";
-    }
-    res.type("application/json");
-    let jwt = req.header("authorization");
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      const userroles = decodedToken["capabilities"];
-      virtualward_decision.getAllByStatus(status, userroles, limit, function (access, err, result) {
-        if (err) {
-          res.status(400).send(
-            JSON.stringify({
-              reason: "Error: " + err,
-            })
-          );
-        } else if (access) {
-          res.status(401).send(result);
-        } else {
-          if (result.length > 0) {
-            res.send(JSON.stringify(result));
-          } else {
-            res.status(400).send(
-              JSON.stringify({
-                reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
-              })
-            );
-          }
+    "/getAllByStatus",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const status = req.body.status;
+        const limit = req.query.Limit.toString() || "1000";
+        let numCheck;
+        try {
+            numCheck = parseInt(limit);
+        } catch {
+            numCheck = 1000;
         }
-      });
-    } else {
-      res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+        res.type("application/json");
+        const jwt = req.header("authorization");
+        if (jwt) {
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            const userroles = decodedToken["capabilities"];
+            virtualwardDecision.getAllByStatus(status, userroles, numCheck.toString(), (err, access, result) => {
+                if (err) {
+                    res.status(400).send(
+                        JSON.stringify({
+                            reason: "Error: " + err,
+                        })
+                    );
+                } else if (access) {
+                    res.status(401).send(result);
+                } else {
+                    if (result.length > 0) {
+                        res.send(JSON.stringify(result));
+                    } else {
+                        res.status(400).send(
+                            JSON.stringify({
+                                reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
+                            })
+                        );
+                    }
+                }
+            });
+        } else {
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+        }
     }
-  }
 );
 
 /**
@@ -196,34 +198,34 @@ router.post(
  *         description: Server Error Processing Result
  */
 router.post(
-  "/updateStatus",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    res.type("application/json");
-    if (req.body && req.body.status && req.body.id) {
-      const id = req.body.id;
-      const status = req.body.status;
-      const nonreferral_reason = req.body.nonreferral_reason || null;
-      virtualward_decision.updateStatus(id, status, nonreferral_reason, (err, data) => {
-        if (err) {
-          res.status(400).send(
-            JSON.stringify({
-              reason: "Error: " + err,
-            })
-          );
+    "/updateStatus",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        res.type("application/json");
+        if (req.body && req.body.status && req.body.id) {
+            const id = req.body.id;
+            const status = req.body.status;
+            const nonreferralReason = req.body.nonreferral_reason || null;
+            virtualwardDecision.updateStatus(id, status, nonreferralReason, (err, data) => {
+                if (err) {
+                    res.status(400).send(
+                        JSON.stringify({
+                            reason: "Error: " + err,
+                        })
+                    );
+                } else {
+                    res.status(200).json({ success: true });
+                }
+            });
         } else {
-          res.status(200).json({ success: true });
+            res.status(400).json({
+                success: false,
+                msg: "Incorrect format of message",
+            });
         }
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        msg: "Incorrect format of message",
-      });
     }
-  }
 );
 
 /**
@@ -253,47 +255,48 @@ router.post(
  *         description: Server Error Processing
  */
 router.get(
-  "/getAllActioned",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let limit = req.query.Limit.toString() || "1000";
-    try {
-      const numCheck = parseInt(limit);
-    } catch {
-      limit = "1000";
-    }
-    res.type("application/json");
-    let jwt = req.header("authorization");
-    if (jwt) {
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      const userroles = decodedToken["capabilities"];
-      virtualward_decision.getAllActioned(limit, userroles, function (access, err, result) {
-        if (err) {
-          res.status(400).send(
-            JSON.stringify({
-              reason: "Error: " + err,
-            })
-          );
-        } else if (access) {
-          res.status(401).send(result);
-        } else {
-          if (result.length > 0) {
-            res.send(JSON.stringify(result));
-          } else {
-            res.status(400).send(
-              JSON.stringify({
-                reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
-              })
-            );
-          }
+    "/getAllActioned",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const limit = req.query.Limit.toString() || "1000";
+        let numCheck;
+        try {
+            numCheck = parseInt(limit);
+        } catch {
+            numCheck = 1000;
         }
-      });
-    } else {
-      res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+        res.type("application/json");
+        const jwt = req.header("authorization");
+        if (jwt) {
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            const userroles = decodedToken["capabilities"];
+            virtualwardDecision.getAllActioned(numCheck.toString(), userroles, function (access, err, result) {
+                if (err) {
+                    res.status(400).send(
+                        JSON.stringify({
+                            reason: "Error: " + err,
+                        })
+                    );
+                } else if (access) {
+                    res.status(401).send(result);
+                } else {
+                    if (result.length > 0) {
+                        res.send(JSON.stringify(result));
+                    } else {
+                        res.status(400).send(
+                            JSON.stringify({
+                                reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
+                            })
+                        );
+                    }
+                }
+            });
+        } else {
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+        }
     }
-  }
 );
 
 /**
@@ -331,33 +334,33 @@ router.get(
  *         description: Server Error Processing Result
  */
 router.post(
-  "/updateContact",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    res.type("application/json");
-    if (req.body && req.body.contact && req.body.id) {
-      const id = req.body.id;
-      const contact = req.body.contact;
-      virtualward_decision.updateContactInfo(id, contact, (err, data) => {
-        if (err) {
-          res.status(400).send(
-            JSON.stringify({
-              reason: "Error: " + err,
-            })
-          );
+    "/updateContact",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        res.type("application/json");
+        if (req.body && req.body.contact && req.body.id) {
+            const id = req.body.id;
+            const contact = req.body.contact;
+            virtualwardDecision.updateContactInfo(id, contact, (err, data) => {
+                if (err) {
+                    res.status(400).send(
+                        JSON.stringify({
+                            reason: "Error: " + err,
+                        })
+                    );
+                } else {
+                    res.status(200).json({ success: true });
+                }
+            });
         } else {
-          res.status(200).json({ success: true });
+            res.status(400).json({
+                success: false,
+                msg: "Incorrect format of message",
+            });
         }
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        msg: "Incorrect format of message",
-      });
     }
-  }
 );
 
 /**
@@ -393,32 +396,32 @@ router.post(
  *         description: Server Error Processing Result
  */
 router.post(
-  "/clearContact",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    res.type("application/json");
-    if (req.body && req.body.id) {
-      const id = req.body.id;
-      virtualward_decision.removeContactInfo(id, (err, data) => {
-        if (err) {
-          res.status(400).send(
-            JSON.stringify({
-              reason: "Error: " + err,
-            })
-          );
+    "/clearContact",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        res.type("application/json");
+        if (req.body && req.body.id) {
+            const id = req.body.id;
+            virtualwardDecision.removeContactInfo(id, (err, data) => {
+                if (err) {
+                    res.status(400).send(
+                        JSON.stringify({
+                            reason: "Error: " + err,
+                        })
+                    );
+                } else {
+                    res.status(200).json({ success: true });
+                }
+            });
         } else {
-          res.status(200).json({ success: true });
+            res.status(400).json({
+                success: false,
+                msg: "Incorrect format of message",
+            });
         }
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        msg: "Incorrect format of message",
-      });
     }
-  }
 );
 
 /**
@@ -456,33 +459,33 @@ router.post(
  *         description: Server Error Processing Result
  */
 router.post(
-  "/updateNotes",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    res.type("application/json");
-    if (req.body && req.body.notes && req.body.id) {
-      const id = req.body.id;
-      const notes = req.body.notes;
-      virtualward_decision.updateNotes(id, notes, (err, data) => {
-        if (err) {
-          res.status(400).send(
-            JSON.stringify({
-              reason: "Error: " + err,
-            })
-          );
+    "/updateNotes",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        res.type("application/json");
+        if (req.body && req.body.notes && req.body.id) {
+            const id = req.body.id;
+            const notes = req.body.notes;
+            virtualwardDecision.updateNotes(id, notes, (err, data) => {
+                if (err) {
+                    res.status(400).send(
+                        JSON.stringify({
+                            reason: "Error: " + err,
+                        })
+                    );
+                } else {
+                    res.status(200).json({ success: true });
+                }
+            });
         } else {
-          res.status(200).json({ success: true });
+            res.status(400).json({
+                success: false,
+                msg: "Incorrect format of message",
+            });
         }
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        msg: "Incorrect format of message",
-      });
     }
-  }
 );
 
 /**
@@ -518,32 +521,32 @@ router.post(
  *         description: Server Error Processing Result
  */
 router.post(
-  "/clearNotes",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    res.type("application/json");
-    if (req.body && req.body.id) {
-      const id = req.body.id;
-      virtualward_decision.removeNotes(id, (err, data) => {
-        if (err) {
-          res.status(400).send(
-            JSON.stringify({
-              reason: "Error: " + err,
-            })
-          );
+    "/clearNotes",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        res.type("application/json");
+        if (req.body && req.body.id) {
+            const id = req.body.id;
+            virtualwardDecision.removeNotes(id, (err, data) => {
+                if (err) {
+                    res.status(400).send(
+                        JSON.stringify({
+                            reason: "Error: " + err,
+                        })
+                    );
+                } else {
+                    res.status(200).json({ success: true });
+                }
+            });
         } else {
-          res.status(200).json({ success: true });
+            res.status(400).json({
+                success: false,
+                msg: "Incorrect format of message",
+            });
         }
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        msg: "Incorrect format of message",
-      });
     }
-  }
 );
 
 module.exports = router;

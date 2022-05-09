@@ -3,7 +3,7 @@
 const pool = require("../config/database").pool;
 
 module.exports.getAll = function (callback) {
-  const geoquery = `WITH AllVarsConcatTypeAndName AS
+    const geoquery = `WITH AllVarsConcatTypeAndName AS
   (
      SELECT
         "VarId",
@@ -109,5 +109,5 @@ module.exports.getAll = function (callback) {
      concat('{', string_agg(cats, ', '), '}')::json
   FROM
      groupedIntoCats`;
-  pool.query(geoquery, callback);
+    pool.query(geoquery, callback);
 };

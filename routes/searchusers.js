@@ -37,34 +37,34 @@ const StringHelper = DIULibrary.Helpers.StringMethods;
  *         description: Search Results
  */
 router.get(
-  "/searchUserProfiles",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const search = req.query.searchterm;
-    let searchresults = [];
-    UserModel.getUserByPartialUsername(search, function (err, users) {
-      if (err) {
-        console.log("ERROR: " + JSON.stringify(err));
-        res.send({ status: 503, message: "Organisation service not available" });
-      } else {
-        let response = [];
-        users.Items.forEach((element) => {
-          response.push({
-            name: element.name,
-            email: element.email,
-            username: element.username,
-          });
+    "/searchUserProfiles",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const search = req.query.searchterm;
+        const searchresults = [];
+        UserModel.getUserByPartialUsername(search, function (err, users) {
+            if (err) {
+                console.log("ERROR: " + JSON.stringify(err));
+                res.send({ status: 503, message: "Organisation service not available" });
+            } else {
+                const response = [];
+                users.Items.forEach((element) => {
+                    response.push({
+                        name: element.name,
+                        email: element.email,
+                        username: element.username,
+                    });
+                });
+                searchresults.push({
+                    name: "Collaborative Partners",
+                    results: response,
+                });
+                res.send(searchresults);
+            }
         });
-        searchresults.push({
-          name: "Collaborative Partners",
-          results: response,
-        });
-        res.send(searchresults);
-      }
-    });
-  }
+    }
 );
 
 /**
@@ -94,86 +94,96 @@ router.get(
  *         description: Search Results
  */
 router.get(
-  "/searchOrgUserProfiles",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const search = req.query.searchterm;
-    const organisation = req.query.organisation;
-    let searchresults = [];
-    const personquery = "(&(|(objectClass=user)(objectClass=person))(!(objectClass=computer))(!(objectClass=group)))";
-    const emailquery = "(|(mail=" + search + "*)(displayName=" + search + "*)(cn=" + search + "*)(sAMAccountName=" + search + "*))";
-    const fullquery = "(&" + emailquery + personquery + ")";
-    switch (organisation) {
-      case "Demo":
-      case "Collaborative Partners":
-      case "Admin":
-        UserModel.getUserByPartialUsername(search, function (err, users) {
-          if (err) {
-            console.log("ERROR: " + JSON.stringify(err));
-            res.send({ status: 503, message: "Organisation service not available" });
-          } else {
-            let response = [];
-            users.Items.forEach((element) => {
-              response.push({
-                name: element.name,
-                email: element.email,
-                username: element.username,
-                organisation: element.organisation,
-                linemanager: element.linemanager,
-              });
-            });
-            searchresults.push({
-              name: organisation,
-              results: response,
-            });
-            res.send(searchresults);
-          }
-        });
-        break;
-      default:
-        OrganisationModel.get({ name: organisation }, (err, data) => {
-          //Organisation exists?
-          if(data.Items.length == 0) {
-            res.send({ status: 404, message: "Organisation not found" }); return; 
-          }
-          
-          //Query via active directory
-          let organisation = data.Items[0];
-          ActiveDirectoryModel.getInstance(organisation.authmethod, (err, activeDirectory) => {
-            //Handle error type?
-            if(err) { res.send({ status: 500, message: err }); return; }
+    "/searchOrgUserProfiles",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const search = req.query.searchterm;
+        const organisation = req.query.organisation;
+        const searchresults = [];
+        const personquery = "(&(|(objectClass=user)(objectClass=person))(!(objectClass=computer))(!(objectClass=group)))";
+        const emailquery = "(|(mail=" + search + "*)(displayName=" + search + "*)(cn=" + search + "*)(sAMAccountName=" + search + "*))";
+        const fullquery = "(&" + emailquery + personquery + ")";
+        switch (organisation) {
+            case "Demo":
+            case "Collaborative Partners":
+            case "Admin":
+                UserModel.getUserByPartialUsername(search, function (err, users) {
+                    if (err) {
+                        console.log("ERROR: " + JSON.stringify(err));
+                        res.send({ status: 503, message: "Organisation service not available" });
+                    } else {
+                        const response = [];
+                        users.Items.forEach((element) => {
+                            response.push({
+                                name: element.name,
+                                email: element.email,
+                                username: element.username,
+                                organisation: element.organisation,
+                                linemanager: element.linemanager,
+                            });
+                        });
+                        searchresults.push({
+                            name: organisation,
+                            results: response,
+                        });
+                        res.send(searchresults);
+                    }
+                });
+                break;
+            default:
+                OrganisationModel.get({ name: organisation }, (err, data) => {
+                    // Handle error
+                    if (err) {
+                        res.send({ status: 500, message: err });
+                        return;
+                    }
 
-            //Find users
-            activeDirectory.findUsers(fullquery, function (err, user) {
-              if (err) {
-                console.log("ERROR: " + JSON.stringify(err));
-                res.send({ status: 503, message: "Organisation service not available" });
-              } else {
-                if (user && user.length > 0) {
-                  let responseAD = [];
-                  user.forEach((staff) => {
-                    responseAD.push({
-                      _id: StringHelper.sidBufferToString(staff.objectSid),
-                      name: staff.cn,
-                      email: staff.mail,
-                      username: staff.sAMAccountName,
+                    // Organisation exists?
+                    if (data.Items.length === 0) {
+                        res.send({ status: 404, message: "Organisation not found" });
+                        return;
+                    }
+
+                    // Query via active directory
+                    const selOrganisation = data.Items[0];
+                    ActiveDirectoryModel.getInstance(selOrganisation.authmethod, (errGetInstance, activeDirectory) => {
+                        // Handle error type?
+                        if (errGetInstance) {
+                            res.send({ status: 500, message: errGetInstance });
+                            return;
+                        }
+
+                        // Find users
+                        activeDirectory.findUsers(fullquery, function (errFind, user) {
+                            if (errFind) {
+                                console.log("ERROR: " + JSON.stringify(errFind));
+                                res.send({ status: 503, message: "Organisation service not available" });
+                            } else {
+                                if (user && user.length > 0) {
+                                    const responseAD = [];
+                                    user.forEach((staff) => {
+                                        responseAD.push({
+                                            _id: StringHelper.sidBufferToString(staff.objectSid),
+                                            name: staff.cn,
+                                            email: staff.mail,
+                                            username: staff.sAMAccountName,
+                                        });
+                                    });
+                                    searchresults.push({
+                                        name: selOrganisation.name,
+                                        results: responseAD,
+                                    });
+                                }
+                                res.send(searchresults);
+                            }
+                        });
                     });
-                  });
-                  searchresults.push({
-                    name: organisation.name,
-                    results: responseAD,
-                  });
-                }
-                res.send(searchresults);
-              }
-            });
-          });
-        });
-        break;
+                });
+                break;
+        }
     }
-  }
 );
 
 module.exports = router;

@@ -29,20 +29,21 @@ const PGConstruct = PostgresI.init(settings);
  *         description: Full List
  */
 router.get(
-  "/getTopoJSON",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const params = {
-      tablename: "public.icps",
-      st_asgeojson: "ST_Simplify (lg.geom, 0.0001, TRUE)",
-      as_properties: `(select row_to_json(_) AS properties from (select lg.icp AS "ICP") as _) --row_to_json((organisation_code, name), true) AS properties`,
-    };
-    PostgresI.getGeoJson(PGConstruct, params, (response) => {
-      res.json(response);
-    });
-  }
+    "/getTopoJSON",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const params = {
+            tablename: "public.icps",
+            st_asgeojson: "ST_Simplify (lg.geom, 0.0001, TRUE)",
+            as_properties: `(select row_to_json(_) AS properties from (select lg.icp AS "ICP") as _)
+             --row_to_json((organisation_code, name), true) AS properties`,
+        };
+        PostgresI.getGeoJson(PGConstruct, params, (response) => {
+            res.json(response);
+        });
+    }
 );
 
 /**
@@ -61,15 +62,15 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/getData",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    PostgresI.getAll(PGConstruct, `public.mosaicpcn`, (response) => {
-      res.json(response);
-    });
-  }
+    "/getData",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        PostgresI.getAll(PGConstruct, "public.mosaicpcn", (response) => {
+            res.json(response);
+        });
+    }
 );
 
 /**
@@ -88,20 +89,20 @@ router.get(
  *         description: Full List
  */
 router.get(
-  "/getHexGeojson",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const params = {
-      tablename: "public.pcn_hex_geo",
-      st_asgeojson: "lg.geom",
-      as_properties: "(select row_to_json(_) AS properties from (select id, pcn) as _)",
-    };
-    PostgresI.getGeoJson(PGConstruct, params, (response) => {
-      res.json(response);
-    });
-  }
+    "/getHexGeojson",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const params = {
+            tablename: "public.pcn_hex_geo",
+            st_asgeojson: "lg.geom",
+            as_properties: "(select row_to_json(_) AS properties from (select id, pcn) as _)",
+        };
+        PostgresI.getGeoJson(PGConstruct, params, (response) => {
+            res.json(response);
+        });
+    }
 );
 
 module.exports = router;

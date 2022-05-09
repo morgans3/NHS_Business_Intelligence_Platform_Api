@@ -41,44 +41,44 @@ const JWT = require("jsonwebtoken");
  *         description: Server Error Processing
  */
 router.get(
-  "/demographicsbynhsnumber",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const nhsNumber = req.query.NHSNumber;
-    res.type("application/json");
-    if (nhsNumber === undefined || nhsNumber === null) {
-      res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-    } else {
-      let jwt = req.header("authorization");
-      if (jwt) {
-        let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-        const userroles = decodedToken["capabilities"];
-        demographics.getPersonByNHSNumber(nhsNumber, userroles, function (access, err, result) {
-          if (err) {
-            res.status(400).send(
-              JSON.stringify({
-                reason: "Error: " + err,
-              })
-            );
-          } else if (access) {
-            res.status(401).send(result);
-          } else {
-            if (result.length > 0) {
-              res.send(JSON.stringify(result[0]));
-            } else {
-              res.status(400).send(
-                JSON.stringify({
-                  reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
-                })
-              );
+    "/demographicsbynhsnumber",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const nhsNumber = req.query.NHSNumber;
+        res.type("application/json");
+        if (nhsNumber === undefined || nhsNumber === null) {
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+        } else {
+            const jwt = req.header("authorization");
+            if (jwt) {
+                const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+                const userroles = decodedToken["capabilities"];
+                demographics.getPersonByNHSNumber(nhsNumber, userroles, function (access, err, result) {
+                    if (err) {
+                        res.status(400).send(
+                            JSON.stringify({
+                                reason: "Error: " + err,
+                            })
+                        );
+                    } else if (access) {
+                        res.status(401).send(result);
+                    } else {
+                        if (result.length > 0) {
+                            res.send(JSON.stringify(result[0]));
+                        } else {
+                            res.status(400).send(
+                                JSON.stringify({
+                                    reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
+                                })
+                            );
+                        }
+                    }
+                });
             }
-          }
-        });
-      }
+        }
     }
-  }
 );
 
 /**
@@ -117,35 +117,43 @@ router.get(
  *         description: Server Error Processing Result
  */
 router.post(
-  "/validateNHSNumber",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    res.type("application/json");
-    if (req.body && req.body.NHSNumber && req.body.DateOfBirth) {
-      const NHSNumber = req.body.NHSNumber;
-      const DateOfBirth = req.body.DateOfBirth;
-      let jwt = req.header("authorization");
-      if (jwt) {
-        let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-        const userroles = decodedToken["capabilities"];
-        demographics.validateNHSNumber(NHSNumber, userroles, DateOfBirth, (err, data) => {
-          res.status(200).json(data);
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          msg: "Incorrect format of message",
-        });
-      }
-    } else {
-      res.status(400).json({
-        success: false,
-        msg: "Incorrect format of message",
-      });
+    "/validateNHSNumber",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        res.type("application/json");
+        if (req.body && req.body.NHSNumber && req.body.DateOfBirth) {
+            const NHSNumber = req.body.NHSNumber;
+            const DateOfBirth = req.body.DateOfBirth;
+            const jwt = req.header("authorization");
+            if (jwt) {
+                const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+                const userroles = decodedToken["capabilities"];
+                demographics.validateNHSNumber(NHSNumber, userroles, DateOfBirth, (err, data) => {
+                    if (err) {
+                        res.status(400).send(
+                            JSON.stringify({
+                                reason: "Error: " + err,
+                            })
+                        );
+                    } else {
+                        res.status(200).json(data);
+                    }
+                });
+            } else {
+                res.status(400).json({
+                    success: false,
+                    msg: "Incorrect format of message",
+                });
+            }
+        } else {
+            res.status(400).json({
+                success: false,
+                msg: "Incorrect format of message",
+            });
+        }
     }
-  }
 );
 
 /**
@@ -187,35 +195,35 @@ router.post(
  *         description: Server Error Processing Result
  */
 router.post(
-  "/findMyNHSNumber",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    res.type("application/json");
-    if (req.body && req.body.gender && req.body.dob && req.body.postcode) {
-      const resource = {
-        gender: req.body.gender,
-        dob: req.body.dob,
-        postcode: req.body.postcode,
-      };
-      if (req.body.forename) {
-        resource["forename"] = req.body.forename;
-      }
-      patient.findMyNHSNumber(resource, (err, data) => {
-        if (err) {
-          res.status(200).json({ success: true, nhsnumber: null, msg: "Unable to find NHS Number" });
+    "/findMyNHSNumber",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        res.type("application/json");
+        if (req.body && req.body.gender && req.body.dob && req.body.postcode) {
+            const resource = {
+                gender: req.body.gender,
+                dob: req.body.dob,
+                postcode: req.body.postcode,
+            };
+            if (req.body.forename) {
+                resource["forename"] = req.body.forename;
+            }
+            patient.findMyNHSNumber(resource, (err, data) => {
+                if (err) {
+                    res.status(200).json({ success: true, nhsnumber: null, msg: "Unable to find NHS Number" });
+                } else {
+                    if (data[0] && data[0].nhs_number) res.status(200).json({ success: true, nhsnumber: data[0].nhs_number });
+                }
+            });
         } else {
-          if (data[0] && data[0].nhs_number) res.status(200).json({ success: true, nhsnumber: data[0].nhs_number });
+            res.status(400).json({
+                success: false,
+                msg: "Incorrect format of message",
+            });
         }
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        msg: "Incorrect format of message",
-      });
     }
-  }
 );
 
 module.exports = router;

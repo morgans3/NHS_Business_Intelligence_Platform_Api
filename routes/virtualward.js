@@ -38,41 +38,42 @@ const virtualward = require("../models/virtualward");
  *         description: Server Error Processing
  */
 router.get(
-  "/",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let limit = req.query.Limit.toString() || "1000";
-    try {
-      const numCheck = parseInt(limit);
-    } catch {
-      limit = "1000";
-    }
-    res.type("application/json");
-    virtualward.getAll("virtualward_lightertouchpathway", limit, req.user["capabilities"], function (access, err, result) {
-      if (err) {
-        res.status(400).send(
-          JSON.stringify({
-            reason: "Error: " + err,
-          })
-        );
-      } else if (access) {
-        res.status(401).send(result);
-      } else {
-        if (result.length > 0) {
-          res.send(JSON.stringify(result));
-        } else {
-          res.status(400).send(
-            JSON.stringify({
-              reason:
-                "Unable to find patients, there may not exist patients who match this search or you may have insufficient permissions to view record.",
-            })
-          );
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const limit = req.query.Limit.toString() || "1000";
+        let numCheck;
+        try {
+            numCheck = parseInt(limit);
+        } catch {
+            numCheck = 1000;
         }
-      }
-    });
-  }
+        res.type("application/json");
+        virtualward.getAll("virtualward_lightertouchpathway", numCheck.toString(), req.user["capabilities"], (access, err, result) => {
+            if (err) {
+                res.status(400).send(
+                    JSON.stringify({
+                        reason: "Error: " + err,
+                    })
+                );
+            } else if (access) {
+                res.status(401).send(result);
+            } else {
+                if (result.length > 0) {
+                    res.send(JSON.stringify(result));
+                } else {
+                    res.status(400).send(
+                        JSON.stringify({
+                            reason: `Unable to find patients, there may not exist patients who match
+                            this search or you may have insufficient permissions to view record.`,
+                        })
+                    );
+                }
+            }
+        });
+    }
 );
 
 /**
@@ -141,26 +142,26 @@ router.get(
  *         description: Confirmation of Notifciation Update
  */
 router.post(
-  "/update",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res) => {
-    let item = req.body;
-    virtualward.update("virtualward_lightertouchpathway", item, item.uid, function (err, data) {
-      if (err) {
-        res.json({
-          success: false,
-          msg: "Failed to update: " + err,
+    "/update",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res) => {
+        const item = req.body;
+        virtualward.update("virtualward_lightertouchpathway", item, item.uid, function (err, data) {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to update: " + err,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: "Item updated",
+                });
+            }
         });
-      } else {
-        res.json({
-          success: true,
-          msg: "Item updated",
-        });
-      }
-    });
-  }
+    }
 );
 
 module.exports = router;

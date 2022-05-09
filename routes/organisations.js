@@ -28,13 +28,13 @@ const tablename = "organisations";
  *         description: All data
  */
 router.get("/", (req, res, next) => {
-  DynamoDBData.getAll(AWS, tablename, (err, result) => {
-    if (err) {
-      res.status(500).json({ success: false, msg: err });
-    } else {
-      res.json(result.Items);
-    }
-  });
+    DynamoDBData.getAll(AWS, tablename, (err, result) => {
+        if (err) {
+            res.status(500).json({ success: false, msg: err });
+        } else {
+            res.json(result.Items);
+        }
+    });
 });
 
 /**
@@ -72,33 +72,33 @@ router.get("/", (req, res, next) => {
  *         description: Confirmation of Registration
  */
 router.post(
-  "/register",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    let newItem = {
-      code: { S: req.body.code },
-      name: { S: req.body.name },
-      authmethod: { S: req.body.authmethod },
-      contact: { S: req.body.contact },
-    };
+    "/register",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const newItem = {
+            code: { S: req.body.code },
+            name: { S: req.body.name },
+            authmethod: { S: req.body.authmethod },
+            contact: { S: req.body.contact },
+        };
 
-    DynamoDBData.addItem(AWS, tablename, newItem, (err, install) => {
-      if (err) {
-        res.json({
-          success: false,
-          msg: "Failed to register: " + err,
+        DynamoDBData.addItem(AWS, tablename, newItem, (err, install) => {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to register: " + err,
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: "Registered",
+                    id: req.body.code,
+                });
+            }
         });
-      } else {
-        res.json({
-          success: true,
-          msg: "Registered",
-          id: req.body.code,
-        });
-      }
-    });
-  }
+    }
 );
 
 /**
@@ -138,24 +138,24 @@ router.post(
  *         description: Confirmation of update
  */
 router.post(
-  "/update",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res) => {
-    DynamoDBData.updateItem(AWS, tablename, ["destination", "type"], req.body, (err, app) => {
-      if (err) {
-        res.json({
-          success: false,
-          msg: "Failed to update: " + err,
+    "/update",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res) => {
+        DynamoDBData.updateItem(AWS, tablename, ["destination", "type"], req.body, (err, app) => {
+            if (err) {
+                res.json({
+                    success: false,
+                    msg: "Failed to update: " + err,
+                });
+            }
+            res.json({
+                success: true,
+                msg: "Updated",
+            });
         });
-      }
-      res.json({
-        success: true,
-        msg: "Updated",
-      });
-    });
-  }
+    }
 );
 
 /**
@@ -185,36 +185,36 @@ router.post(
  *         description: Confirmation of removal
  */
 router.delete(
-  "/remove",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    if (req.body.code && req.body.name) {
-      const key = {
-        code: { S: req.body.code },
-        name: { S: req.body.name },
-      };
-      DynamoDBData.removeItem(AWS, tablename, key, (err, response) => {
-        if (err) {
-          res.status(400).json({
-            success: false,
-            msg: "Error: " + err,
-          });
+    "/remove",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        if (req.body.code && req.body.name) {
+            const key = {
+                code: { S: req.body.code },
+                name: { S: req.body.name },
+            };
+            DynamoDBData.removeItem(AWS, tablename, key, (err, response) => {
+                if (err) {
+                    res.status(400).json({
+                        success: false,
+                        msg: "Error: " + err,
+                    });
+                } else {
+                    res.json({
+                        success: true,
+                        msg: "Removed",
+                    });
+                }
+            });
         } else {
-          res.json({
-            success: true,
-            msg: "Removed",
-          });
+            res.status(400).json({
+                success: false,
+                msg: "Error: No key provided",
+            });
         }
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        msg: "Error: No key provided",
-      });
     }
-  }
 );
 
 module.exports = router;

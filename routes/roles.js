@@ -8,7 +8,6 @@ const DIULibrary = require("diu-data-functions");
 const RoleModel = new DIULibrary.Models.RoleModel();
 const RoleLinkModel = new DIULibrary.Models.RoleLinkModel();
 const CapabilityLinkModel = new DIULibrary.Models.CapabilityLinkModel();
-const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -33,14 +32,14 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         description: A list of available roles
  */
 router.get("/", passport.authenticate("jwt", { session: false }), (req, res, next) => {
-  RoleModel.get((err, result) => {
-    //Return data
-    if (err) {
-      res.status(500).json({ success: false, msg: err });
-    } else {
-      res.json(result);
-    }
-  });
+    RoleModel.get((err, result) => {
+        // Return data
+        if (err) {
+            res.status(500).json({ success: false, msg: err });
+        } else {
+            res.json(result);
+        }
+    });
 });
 
 /**
@@ -87,55 +86,54 @@ router.get("/", passport.authenticate("jwt", { session: false }), (req, res, nex
  *         description: The newly created role
  */
 router.post(
-  "/create",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const payload = req.body;
-    RoleModel.create(
-      {
-        name: payload.name,
-        description: payload.description,
-        authoriser: payload.authoriser,
-      },
-      (err, result) => {
-        //Error
-        if (err) {
-          res.status(500).json({ success: false, msg: err });
-          return;
-        }
+    "/create",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const payload = req.body;
+        RoleModel.create(
+            {
+                name: payload.name,
+                description: payload.description,
+                authoriser: payload.authoriser,
+            },
+            (err, result) => {
+                // Error
+                if (err) {
+                    res.status(500).json({ success: false, msg: err });
+                    return;
+                }
 
-        //Read jwt
-        const user = req.header("authorization");
-        const decodedToken = JWT.decode(user.replace("JWT ", ""));
+                // Read jwt
+                const user = req.header("authorization");
+                const decodedToken = JWT.decode(user.replace("JWT ", ""));
 
-        //Create capability links
-        let role = result[0];
-        payload.capabilities = payload.capabilities.map((c) => parseInt(c));
-        CapabilityLinkModel.link(
-          payload.capabilities,
-          {
-            id: role.id,
-            type: "role",
-            approved_by: decodedToken["email"],
-          },
-          (err, result) => {
-            //Return data
-            if (err) {
-              res.status(500).json({ success: false, msg: err });
-              return;
+                // Create capability links
+                const role = result[0];
+                payload.capabilities = payload.capabilities.map((c) => parseInt(c));
+                CapabilityLinkModel.link(
+                    payload.capabilities,
+                    {
+                        id: role.id,
+                        type: "role",
+                        approved_by: decodedToken["email"],
+                    },
+                    (errMethod) => {
+                        if (errMethod) {
+                            res.status(500).json({ success: false, msg: errMethod });
+                            return;
+                        }
+                        res.json({
+                            success: true,
+                            msg: "Role created",
+                            data: Object.assign(role, { capabilities: payload.capabilities }),
+                        });
+                    }
+                );
             }
-            res.json({
-              success: true,
-              msg: "Role created",
-              data: Object.assign(role, { capabilities: payload.capabilities }),
-            });
-          }
         );
-      }
-    );
-  }
+    }
 );
 
 /**
@@ -185,57 +183,56 @@ router.post(
  *         description: The updated role
  */
 router.post(
-  "/update",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    //Get all capabilities
-    const payload = req.body;
-    RoleModel.updateByPrimaryKey(
-      payload.id,
-      {
-        name: payload.name,
-        description: payload.description,
-        authoriser: payload.authoriser,
-      },
-      (err, result) => {
-        //Error
-        if (err) {
-          res.status(500).json({ success: false, msg: err });
-          return;
-        }
+    "/update",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        // Get all capabilities
+        const payload = req.body;
+        RoleModel.updateByPrimaryKey(
+            payload.id,
+            {
+                name: payload.name,
+                description: payload.description,
+                authoriser: payload.authoriser,
+            },
+            (err, result) => {
+                // Error
+                if (err) {
+                    res.status(500).json({ success: false, msg: err });
+                    return;
+                }
 
-        //Read jwt
-        const user = req.header("authorization");
-        const decodedToken = JWT.decode(user.replace("JWT ", ""));
+                // Read jwt
+                const user = req.header("authorization");
+                const decodedToken = JWT.decode(user.replace("JWT ", ""));
 
-        //Create role link
-        let role = result[0];
-        payload.capabilities = payload.capabilities.map((c) => parseInt(c));
-        CapabilityLinkModel.link(
-          payload.capabilities,
-          {
-            id: role.id,
-            type: "role",
-            approved_by: decodedToken["email"],
-          },
-          (err, result) => {
-            //Return data
-            if (err) {
-              res.status(500).json({ success: false, msg: err });
-              return;
+                // Create role link
+                const role = result[0];
+                payload.capabilities = payload.capabilities.map((c) => parseInt(c));
+                CapabilityLinkModel.link(
+                    payload.capabilities,
+                    {
+                        id: role.id,
+                        type: "role",
+                        approved_by: decodedToken["email"],
+                    },
+                    (linkError) => {
+                        if (linkError) {
+                            res.status(500).json({ success: false, msg: linkError });
+                            return;
+                        }
+                        res.json({
+                            success: true,
+                            msg: "Role updated",
+                            data: Object.assign(role, { capabilities: payload.capabilities }),
+                        });
+                    }
+                );
             }
-            res.json({
-              success: true,
-              msg: "Role updated",
-              data: Object.assign(role, { capabilities: payload.capabilities }),
-            });
-          }
         );
-      }
-    );
-  }
+    }
 );
 
 /**
@@ -277,35 +274,35 @@ router.post(
  *         description: Success status
  */
 router.post(
-  "/links/sync",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    //Get params
-    const payload = req.body;
+    "/links/sync",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        // Get params
+        const payload = req.body;
 
-    //Read jwt
-    const user = JWT.decode(req.header("authorization").replace("JWT ", ""));
+        // Read jwt
+        const user = JWT.decode(req.header("authorization").replace("JWT ", ""));
 
-    //Create role links
-    RoleLinkModel.link(
-      payload.roles,
-      {
-        id: payload.link_id,
-        type: payload.link_type,
-        approved_by: user["email"],
-      },
-      (err, result) => {
-        //Return data
-        if (err) {
-          res.status(500).json({ success: false, msg: err });
-          return;
-        }
-        res.json({ success: true, msg: "Role links synced!" });
-      }
-    );
-  }
+        // Create role links
+        RoleLinkModel.link(
+            payload.roles,
+            {
+                id: payload.link_id,
+                type: payload.link_type,
+                approved_by: user["email"],
+            },
+            (err, result) => {
+                // Return data
+                if (err) {
+                    res.status(500).json({ success: false, msg: err });
+                    return;
+                }
+                res.json({ success: true, msg: "Role links synced!" });
+            }
+        );
+    }
 );
 
 /**
@@ -340,35 +337,35 @@ router.post(
  *         description: Success status
  */
 router.post(
-  "/links/create",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    //Get params
-    const payload = req.body;
+    "/links/create",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        // Get params
+        const payload = req.body;
 
-    //Read jwt
-    const user = JWT.decode(req.header("authorization").replace("JWT ", ""));
+        // Read jwt
+        const user = JWT.decode(req.header("authorization").replace("JWT ", ""));
 
-    //Create role links
-    RoleLinkModel.create(
-      {
-        role_id: payload.role_id,
-        link_id: payload.link_id,
-        link_type: payload.link_type,
-        approved_by: user["email"],
-      },
-      (err, result) => {
-        //Return data
-        if (err) {
-          res.status(500).json({ success: false, msg: err });
-          return;
-        }
-        res.json({ success: true, msg: "Role link created!" });
-      }
-    );
-  }
+        // Create role links
+        RoleLinkModel.create(
+            {
+                role_id: payload.role_id,
+                link_id: payload.link_id,
+                link_type: payload.link_type,
+                approved_by: user["email"],
+            },
+            (err, result) => {
+                // Return data
+                if (err) {
+                    res.status(500).json({ success: false, msg: err });
+                    return;
+                }
+                res.json({ success: true, msg: "Role link created!" });
+            }
+        );
+    }
 );
 
 /**
@@ -403,24 +400,24 @@ router.post(
  *         description: Success status
  */
 router.delete(
-  "/links/delete",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    //Get params
-    const payload = req.body;
+    "/links/delete",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        // Get params
+        const payload = req.body;
 
-    //Create role links
-    RoleLinkModel.deleteByLinkable(payload.role_id, payload.link_type, payload.link_id, (err, result) => {
-      //Return data
-      if (err) {
-        res.status(500).json({ success: false, msg: err });
-        return;
-      }
-      res.json({ success: true, msg: "Role link deleted!" });
-    });
-  }
+        // Create role links
+        RoleLinkModel.deleteByLinkable(payload.role_id, payload.link_type, payload.link_id, (err, result) => {
+            // Return data
+            if (err) {
+                res.status(500).json({ success: false, msg: err });
+                return;
+            }
+            res.json({ success: true, msg: "Role link deleted!" });
+        });
+    }
 );
 
 /**
@@ -445,19 +442,19 @@ router.delete(
  *         description: The role
  */
 router.get(
-  "/:id",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    RoleModel.getByPrimaryKey(req.params.id, (err, result) => {
-      if (err) {
-        res.status(500).json({ success: false, msg: err });
-      } else {
-        res.json(result);
-      }
-    });
-  }
+    "/:id",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        RoleModel.getByPrimaryKey(req.params.id, (err, result) => {
+            if (err) {
+                res.status(500).json({ success: false, msg: err });
+            } else {
+                res.json(result);
+            }
+        });
+    }
 );
 
 /**
@@ -482,20 +479,20 @@ router.get(
  *         description: Role deletion status
  */
 router.delete(
-  "/:id/delete",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    //Get all capabilities
-    RoleModel.deleteByPrimaryKey(req.params.id, (err, result) => {
-      if (err) {
-        res.json({ success: false, msg: err });
-      } else {
-        res.json({ success: true, msg: "Role deleted successfully!" });
-      }
-    });
-  }
+    "/:id/delete",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        // Get all capabilities
+        RoleModel.deleteByPrimaryKey(req.params.id, (err, result) => {
+            if (err) {
+                res.json({ success: false, msg: err });
+            } else {
+                res.json({ success: true, msg: "Role deleted successfully!" });
+            }
+        });
+    }
 );
 
 module.exports = router;

@@ -46,38 +46,38 @@ const EmailHelper = require("diu-data-functions").Helpers.Email;
  *         description: Error in processing
  */
 router.post(
-  "/validate",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const item = req.body;
-    const code = item.code;
-    if (code) {
-      let jwt = req.header("authorization");
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      Codes.validateCode(decodedToken["email"], code, jwt, (err, response) => {
-        if (err) {
-          res.json({
-            success: false,
-            result: err,
-          });
-        } else {
-          if (response) {
-            Authenticate.upgradePassportwithOrganisation(decodedToken, true, (err, token) => {
-              if (err) console.log(err);
-              res.json({ status: 200, message: "Authorized", token: token });
+    "/validate",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const item = req.body;
+        const code = item.code;
+        if (code) {
+            const jwt = req.header("authorization");
+            const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+            Codes.validateCode(decodedToken["email"], code, jwt, (err, response) => {
+                if (err) {
+                    res.json({
+                        success: false,
+                        result: err,
+                    });
+                } else {
+                    if (response) {
+                        Authenticate.upgradePassportwithOrganisation(decodedToken, true, (errUpgrade, token) => {
+                            if (errUpgrade) console.log(errUpgrade);
+                            res.json({ status: 200, message: "Authorized", token });
+                        });
+                    } else {
+                        res.json({
+                            success: false,
+                            message: "Invalid Code",
+                        });
+                    }
+                }
             });
-          } else {
-            res.json({
-              success: false,
-              message: "Invalid Code",
-            });
-          }
         }
-      });
     }
-  }
 );
 
 /**
@@ -102,49 +102,48 @@ router.post(
  *         description: Error in processing
  */
 router.get(
-  "/generate",
+    "/generate",
     passport.authenticate("jwt", {
-      session: false,
+        session: false,
     }),
     (req, res, next) => {
-      //Parse JWT
-      let jwt = req.header("authorization");
-      let decodedToken = JWT.decode(jwt.replace("JWT ", ""));
-      const email = decodedToken["email"];
+        // Parse JWT
+        const jwt = req.header("authorization");
+        const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
+        const email = decodedToken["email"];
 
-      //Create new code for user
-      Codes.generateCode(email, jwt, (error, code) => {
-        if (error) {
-          res.status(500).json({ success: false, msg: "Failed, reason: " + error});
-        } else {
-          if (email) {
-            EmailHelper.sendMail(
-              {
-                to: email,
-                subject: "Temporary Access code for Nexus Intelligence",
-                message: `
+        // Create new code for user
+        Codes.generateCode(email, jwt, (error, code) => {
+            if (error) {
+                res.status(500).json({ success: false, msg: "Failed, reason: " + error });
+            } else {
+                if (email) {
+                    EmailHelper.sendMail(
+                        {
+                            to: email,
+                            subject: "Temporary Access code for Nexus Intelligence",
+                            message: `
                   <p>Please use this code to access the application: ${code}</p>
                   <p>This code will only work once and is linked directly to your account.</p>
                   <p>If you have received this without requesting it please contact our support team.</p>`,
-              },
-              (error, response) => {
-                if (error) {
-                  console.log(error);
-                  res.json({ success: false, msg: "Failed: " + error });
+                        },
+                        (mailError, response) => {
+                            if (mailError) {
+                                res.json({ success: false, msg: "Failed: " + mailError });
+                            } else {
+                                res.json({ success: true, msg: "Email sent" });
+                            }
+                        }
+                    );
                 } else {
-                  res.json({ success: true, msg: "Email sent" });
+                    res.status(400).json({
+                        success: false,
+                        msg: "Failed, no contact method provided",
+                    });
                 }
-              }
-            );
-          } else {
-            res.status(400).json({
-              success: false,
-              msg: "Failed, no contact method provided",
-            });
-          }
-      }
-    });
-  }
+            }
+        });
+    }
 );
 
 module.exports = router;

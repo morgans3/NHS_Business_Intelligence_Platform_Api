@@ -32,19 +32,19 @@ const PGConstruct = PostgresI.init(settings);
  *         description: All data
  */
 router.get(
-  "/",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    DynamoDBData.getAll(AWS, "mosaics", (err, result) => {
-      if (err) {
-        res.status(500).json({ success: false, msg: err });
-      } else {
-        res.json(result.Items);
-      }
-    });
-  }
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        DynamoDBData.getAll(AWS, "mosaics", (err, result) => {
+            if (err) {
+                res.status(500).json({ success: false, msg: err });
+            } else {
+                res.json(result.Items);
+            }
+        });
+    }
 );
 
 /**
@@ -75,22 +75,22 @@ router.get(
  *         description: Server Error Processing
  */
 router.get(
-  "/getCodefromPostCode",
-  passport.authenticate("jwt", {
-    session: false,
-  }),
-  (req, res, next) => {
-    const postcode = req.query.postcode;
-    res.type("application/json");
-    if (postcode === undefined || postcode === null) {
-      res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-    } else {
-      const query = `SELECT mostype FROM public.mosaicpostcode where postcode = '${postcode}'`;
-      PostgresI.getByQuery(PGConstruct, query, (response) => {
-        res.json(response);
-      });
+    "/getCodefromPostCode",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const postcode = req.query.postcode;
+        res.type("application/json");
+        if (postcode === undefined || postcode === null) {
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+        } else {
+            const query = `SELECT mostype FROM public.mosaicpostcode where postcode = '${postcode}'`;
+            PostgresI.getByQuery(PGConstruct, query, (response) => {
+                res.json(response);
+            });
+        }
     }
-  }
 );
 
 module.exports = router;
