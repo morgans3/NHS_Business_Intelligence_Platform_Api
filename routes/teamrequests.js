@@ -73,7 +73,7 @@ router.post(
             // see if users is already in team
             // IF rows
             if (teamRequestErr) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to register: " + teamRequestErr,
                 });
@@ -91,7 +91,7 @@ router.post(
                     }
                 }
                 if (blnInTeam) {
-                    res.json({
+                    res.status(400).json({
                         success: false,
                         msg: "Failed to register: User is already in this team",
                     });
@@ -99,7 +99,7 @@ router.post(
                     Requests.getRequestsByTeamCodeAndUser([req.body.teamcode, req.body.username], (requestRequestErr, requestRequest) => {
                         // see if users have any open requests
                         if (requestRequestErr) {
-                            res.json({
+                            res.status(500).json({
                                 success: false,
                                 msg: "Failed to register: " + requestRequestErr,
                             });
@@ -118,7 +118,7 @@ router.post(
                                 }
                             }
                             if (blnRequestMade) {
-                                res.json({
+                                res.status(400).json({
                                     success: false,
                                     msg: "Failed to register: User already has a request to this team, please contact team administrator",
                                 });
@@ -221,7 +221,7 @@ router.put(
         const id = req.query.request_id;
         Requests.getRequestById(id, function (err, result) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to update: " + err,
                 });
@@ -238,7 +238,7 @@ router.put(
 
                 Requests.update(app, function (updateError) {
                     if (updateError) {
-                        res.json({
+                        res.status(500).json({
                             success: false,
                             msg: "Failed to update: " + updateError,
                         });
@@ -249,7 +249,7 @@ router.put(
                     });
                 });
             } else {
-                res.json({
+                res.status(404).json({
                     success: false,
                     msg: "Can not find item in database",
                 });
@@ -288,7 +288,7 @@ router.put(
         const id = req.query.request_id;
         Requests.getRequestById(id, function (err, result) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to archive: " + err,
                 });
@@ -297,7 +297,7 @@ router.put(
                 const request = result.Items[0];
                 Requests.remove(request["_id"], request.teamcode, function (requestRemoveErr) {
                     if (requestRemoveErr) {
-                        res.json({
+                        res.status(500).json({
                             success: false,
                             msg: "Failed to archive: " + requestRemoveErr,
                         });
@@ -308,7 +308,7 @@ router.put(
                     });
                 });
             } else {
-                res.json({
+                res.status(404).json({
                     success: false,
                     msg: "Can not find item in database",
                 });
@@ -347,7 +347,7 @@ router.get(
         const id = req.query.request_id;
         Requests.getRequestById(id, function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -382,7 +382,7 @@ router.get(
     (req, res, next) => {
         Requests.getAll(function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -424,7 +424,7 @@ router.get(
         const username = req.query.username;
         Requests.getRequestsByUsername(username, function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -466,7 +466,7 @@ router.get(
         const code = req.query.code;
         Requests.getRequestsByTeamCode(code, function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -501,7 +501,7 @@ router.get(
     (req, res, next) => {
         Requests.getOutstandingRequests(function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));

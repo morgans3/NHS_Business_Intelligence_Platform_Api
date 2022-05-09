@@ -42,12 +42,12 @@ router.get(
         if (req.params.type) {
             CapabilitiesModel.getByLinkId(req.params.type.toLowerCase(), req.params.id, (err, capabilities) => {
                 if (err) {
-                    res.json({ success: false, msg: "Error: " + err });
+                    res.status(500).json({ success: false, msg: "Error: " + err });
                 } else {
                     if (capabilities.length > 0) {
                         res.json(capabilities);
                     } else {
-                        res.json({
+                        res.status(204).json({
                             success: false,
                             msg: "Error: Unable to find any capabilities assigned to this " + req.params.type.toLowerCase(),
                         });
@@ -55,7 +55,7 @@ router.get(
                 }
             });
         } else {
-            res.json({ success: false, msg: "Error: You must provide a type." });
+            res.status(400).json({ success: false, msg: "Error: You must provide a type." });
         }
     }
 );
@@ -95,12 +95,12 @@ router.get(
         if (req.params.type) {
             RoleModel.getByLinkId(req.params.type.toLowerCase(), req.params.id, (err, roles) => {
                 if (err) {
-                    res.json({ success: false, msg: "Error: " + err });
+                    res.status(500).json({ success: false, msg: "Error: " + err });
                 } else {
                     if (roles.length > 0) {
                         res.json(roles);
                     } else {
-                        res.json({
+                        res.status(204).json({
                             success: false,
                             msg: "Error: Unable to find any roles assigned to this " + req.params.type.toLowerCase(),
                         });
@@ -108,7 +108,7 @@ router.get(
                 }
             });
         } else {
-            res.json({ success: false, msg: "Error: You must provide a type." });
+            res.status(500).json({ success: false, msg: "Error: You must provide a type." });
         }
     }
 );

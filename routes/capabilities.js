@@ -41,7 +41,7 @@ router.get(
         CapabilitiesModel.get((err, result) => {
             // Return data
             if (err) {
-                res.json({ success: false, msg: err });
+                res.status(500).json({ success: false, msg: err });
             } else {
                 res.json(result);
             }
@@ -108,7 +108,7 @@ router.post(
         };
         CapabilitiesModel.create(newCapability, (err) => {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + err,
                 });
@@ -187,7 +187,7 @@ router.post(
         };
         CapabilitiesModel.getByPrimaryKey(req.body.id, function (err, data) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + err,
                 });
@@ -195,7 +195,7 @@ router.post(
                 if (data.length > 0) {
                     CapabilitiesModel.updateByPrimaryKey(req.body.id, newCapability, (errUpdate, user) => {
                         if (errUpdate) {
-                            res.json({
+                            res.status(500).json({
                                 success: false,
                                 msg: "Error: " + errUpdate,
                             });
@@ -208,7 +208,7 @@ router.post(
                         }
                     });
                 } else {
-                    res.json({
+                    res.status(404).json({
                         success: false,
                         msg: "Error: Unable to find item with the primary key entered.",
                     });
@@ -247,7 +247,7 @@ router.delete(
     (req, res, next) => {
         CapabilitiesModel.getByPrimaryKey(req.body.id, function (err, data) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + err,
                 });
@@ -255,7 +255,7 @@ router.delete(
                 if (data.length > 0) {
                     CapabilitiesModel.deleteByPrimaryKey(req.body.id, (errDelete, user) => {
                         if (errDelete) {
-                            res.json({
+                            res.status(500).json({
                                 success: false,
                                 msg: "Error: " + errDelete,
                             });
@@ -267,7 +267,7 @@ router.delete(
                         }
                     });
                 } else {
-                    res.json({
+                    res.status(404).json({
                         success: false,
                         msg: "Error: Unable to find item with the primary key entered.",
                     });
@@ -307,7 +307,7 @@ router.get(
         console.log(req);
         CapabilitiesModel.getByPrimaryKey(req.query.id, function (err, data) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + err,
                 });
@@ -315,7 +315,7 @@ router.get(
                 if (data.length > 0) {
                     res.json(data[0]);
                 } else {
-                    res.json({
+                    res.status(404).json({
                         success: false,
                         msg: "Error: Unable to find item with the primary key entered.",
                     });
@@ -354,7 +354,7 @@ router.get(
     (req, res, next) => {
         CapabilitiesModel.getByTag(req.query.tags, function (err, data) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Error: " + err,
                 });
@@ -362,7 +362,7 @@ router.get(
                 if (data.length > 0) {
                     res.json(data);
                 } else {
-                    res.json({
+                    res.status(204).json({
                         success: false,
                         msg: "Error: Unable to find items with the tag assigned.",
                     });
@@ -405,7 +405,7 @@ router.get(
         if (req.query.tags) {
             CapabilitiesModel.getByTagsAnd(req.query.tags, function (err, data) {
                 if (err) {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         msg: "Error: " + err,
                     });
@@ -413,7 +413,7 @@ router.get(
                     if (data.length > 0) {
                         res.json(data);
                     } else {
-                        res.json({
+                        res.status(204).json({
                             success: false,
                             msg: "Error: Unable to find items with all of the tags assigned.",
                         });
@@ -421,7 +421,7 @@ router.get(
                 }
             });
         } else {
-            res.json({
+            res.status(400).json({
                 success: false,
                 msg: "Error: You must provide at least 1 tag.",
             });
@@ -462,7 +462,7 @@ router.get(
         if (req.query.tags) {
             CapabilitiesModel.getByTagsOr(req.query.tags, function (err, data) {
                 if (err) {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         msg: "Error: " + err,
                     });
@@ -470,7 +470,7 @@ router.get(
                     if (data.length > 0) {
                         res.json(data);
                     } else {
-                        res.json({
+                        res.status(204).json({
                             success: false,
                             msg: "Error: Unable to find any items with at least one of the tags assigned.",
                         });
@@ -478,7 +478,7 @@ router.get(
                 }
             });
         } else {
-            res.json({
+            res.status(400).json({
                 success: false,
                 msg: "Error: You must provide at least 1 tag.",
             });
@@ -541,7 +541,7 @@ router.post(
             (err, result) => {
                 // Return data
                 if (err) {
-                    res.json({ success: false, msg: err });
+                    res.status(500).json({ success: false, msg: err });
                     return;
                 }
                 res.json({ success: true, msg: "Capability links synced!" });
@@ -696,7 +696,7 @@ router.get(
         if (roleName) {
             RoleModel.getByName(roleName, function (err, data) {
                 if (err) {
-                    res.json({ success: false, msg: "Error: " + err });
+                    res.status(500).json({ success: false, msg: "Error: " + err });
                 } else {
                     if (data.length > 0) {
                         const arrRoleID = data.map((a) => {
@@ -704,7 +704,7 @@ router.get(
                         });
                         CapabilitiesModel.getByLinkIds("role", arrRoleID, function (errLinks, capabilitiesData) {
                             if (errLinks) {
-                                res.json({
+                                res.status(500).json({
                                     success: false,
                                     msg: "Error: " + errLinks,
                                 });
@@ -712,7 +712,7 @@ router.get(
                                 if (capabilitiesData.length > 0) {
                                     res.json(capabilitiesData);
                                 } else {
-                                    res.json({
+                                    res.status(204).json({
                                         success: false,
                                         msg: "Error: Unable to find any capabilities assigned to this role.",
                                     });
@@ -720,7 +720,7 @@ router.get(
                             }
                         });
                     } else {
-                        res.json({
+                        res.status(204).json({
                             success: false,
                             msg: "Error: Unable to find any roles with this name.",
                         });
@@ -728,7 +728,7 @@ router.get(
                 }
             });
         } else {
-            res.json({
+            res.status(400).json({
                 success: false,
                 msg: "Error: You must provide a role name.",
             });
@@ -774,7 +774,7 @@ router.get(
         if (teamIDs) {
             CapabilitiesModel.getByLinkIds("team", teamIDs, function (err, capabilitiesData) {
                 if (err) {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         msg: "Error: " + err,
                     });
@@ -782,7 +782,7 @@ router.get(
                     if (capabilitiesData.length > 0) {
                         res.json(capabilitiesData);
                     } else {
-                        res.json({
+                        res.status(204).json({
                             success: false,
                             msg: "Error: Unable to find any capabilities assigned to the teams provided.",
                         });
@@ -790,7 +790,7 @@ router.get(
                 }
             });
         } else {
-            res.json({
+            res.status(400).json({
                 success: false,
                 msg: "Error: You must provide a teamname.",
             });
@@ -838,7 +838,7 @@ router.post(
             // Get all team roles
             CapabilitiesModel.getAllCapabilitiesFromTeamArrayAndUserID(teamname, username, function (err, capabilitiesData) {
                 if (err) {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         msg: "Error: " + err,
                     });
@@ -847,7 +847,7 @@ router.post(
                 }
             });
         } else {
-            res.json({
+            res.status(400).json({
                 success: false,
                 msg: "Error: You must provide a username.",
             });

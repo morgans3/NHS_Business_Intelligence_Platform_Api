@@ -89,7 +89,7 @@ router.post(
             },
             (err, data) => {
                 if (err) {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         msg: "Failed to register: " + err,
                     });
@@ -150,7 +150,7 @@ router.post(
     (req, res) => {
         DynamoDBData.updateItem(AWS, tablename, ["destination", "type"], req.body, (err, app) => {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to update: " + err,
                 });
@@ -202,7 +202,7 @@ router.delete(
             };
             DynamoDBData.removeItem(AWS, tablename, key, (err, response) => {
                 if (err) {
-                    res.status(400).json({
+                    res.status(500).json({
                         success: false,
                         msg: "Error: " + err,
                     });

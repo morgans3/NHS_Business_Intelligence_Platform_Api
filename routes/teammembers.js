@@ -37,7 +37,7 @@ router.get(
         TeamMemberModel.get((err, result) => {
             // Return data
             if (err) {
-                res.json({ success: false, msg: err });
+                res.status(500).json({ success: false, msg: err });
             } else {
                 res.json(result.Items);
             }
@@ -104,7 +104,7 @@ router.post(
         // Persist in database
         TeamMemberModel.create(member, (err, result) => {
             if (err) {
-                res.json({ success: false, msg: "Failed to create " + err });
+                res.status(500).json({ success: false, msg: "Failed to create " + err });
             } else {
                 res.json({ success: true, msg: "Team member created successfully!", data: member });
             }
@@ -172,7 +172,7 @@ router.post(
             member,
             (err, result) => {
                 if (err) {
-                    res.json({ success: false, msg: "Failed to update " + err });
+                    res.status(500).json({ success: false, msg: "Failed to update " + err });
                 } else {
                     res.json({ success: true, msg: "Team member updated successfully!", data: member });
                 }
@@ -211,7 +211,7 @@ router.get(
         const code = req.query.code;
         TeamMemberModel.getByTeamCode(code, function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -253,7 +253,7 @@ router.get(
         const username = req.query.username;
         TeamMemberModel.getByUsername(username, function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -294,7 +294,7 @@ router.put(
     (req, res) => {
         TeamMemberModel.getByKeys({ _id: req.query.id }, (err, result) => {
             if (err) {
-                res.json({ success: false, msg: "Failed to find item: " + err });
+                res.status(500).json({ success: false, msg: "Failed to find item: " + err });
             }
             if (result.Items && result.Items.length > 0) {
                 const member = result.Items[0];
@@ -305,14 +305,14 @@ router.put(
                     },
                     (memberDeleteErr) => {
                         if (err) {
-                            res.json({ success: false, msg: "Failed to archive: " + memberDeleteErr });
+                            res.status(500).json({ success: false, msg: "Failed to archive: " + memberDeleteErr });
                         } else {
                             res.json({ success: true, msg: "Archived" });
                         }
                     }
                 );
             } else {
-                res.json({ success: false, msg: "Can not find item in database." });
+                res.status(404).json({ success: false, msg: "Can not find item in database." });
             }
         });
     }

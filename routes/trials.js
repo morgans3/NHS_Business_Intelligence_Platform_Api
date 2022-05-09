@@ -9,7 +9,7 @@ const ClinicalTrialModel = new DIULibrary.Models.ClinicalTrialModel();
 /**
  * @swagger
  * tags:
- *   name: AACT
+ *   name: Trials
  *   description: Queries for AACT Clinical Trials Database
  */
 
@@ -21,7 +21,7 @@ const ClinicalTrialModel = new DIULibrary.Models.ClinicalTrialModel();
  *      - JWT: []
  *     description: Get Clinical Trials List
  *     tags:
- *      - AACT
+ *      - Trials
  *     produces:
  *      - application/json
  *     responses:
@@ -36,7 +36,7 @@ router.get(
     (req, res, next) => {
         ClinicalTrialModel.get(function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.rows) {
                     res.send(JSON.stringify(result.rows));
@@ -56,7 +56,7 @@ router.get(
  *      - JWT: []
  *     description: Get Clinical Trials List
  *     tags:
- *      - AACT
+ *      - Trials
  *     produces:
  *      - application/json
  *     parameters:
@@ -75,6 +75,7 @@ router.get(
  *         in: formData
  *         required: true
  *         type: string
+ *         format: date-time
  *     responses:
  *       200:
  *         description: Clinical Trials List
@@ -90,7 +91,7 @@ router.post(
         const minDate = req.body.minDate;
         ClinicalTrialModel.getSearchTop1000(query, phases, minDate, function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.rows) {
                     res.send(JSON.stringify(result.rows));

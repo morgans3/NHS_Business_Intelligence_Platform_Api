@@ -255,7 +255,7 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
-        url: "/pcninformation/getData",
+        url: "/pcninformation/",
         type: "JWT",
         method: "get",
     },

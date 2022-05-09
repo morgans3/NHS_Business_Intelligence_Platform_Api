@@ -58,7 +58,7 @@ router.post("/update", (req, res, next) => {
     if (payload && payload.username && payload.authmethod && payload.newpassword) {
         // Check organisation auth method
         if (payload.authmethod !== "Demo") {
-            res.json({
+            res.status(500).json({
                 success: false,
                 msg: "Please contact your IT Department if you wish to change your password.",
             });
@@ -70,7 +70,7 @@ router.post("/update", (req, res, next) => {
             VerificationCodeModel.getCode(payload.code, payload.username, (err, result) => {
                 if (err) {
                     console.error(err);
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         msg: "Failed: " + err,
                     });
@@ -81,7 +81,7 @@ router.post("/update", (req, res, next) => {
                         UserModel.updateUser(payload.username, payload.newpassword, (updateErr, updateRes) => {
                             if (updateErr) {
                                 console.error(updateErr);
-                                res.json({
+                                res.status(500).json({
                                     success: false,
                                     msg: "Failed: " + updateErr,
                                 });
@@ -90,7 +90,7 @@ router.post("/update", (req, res, next) => {
                             VerificationCodeModel.deleteCode(payload.code, payload.username, (delErr, delRes) => {
                                 if (delErr) {
                                     console.error(delErr);
-                                    res.json({
+                                    res.status(500).json({
                                         success: false,
                                         msg: "Failed: " + delRes,
                                     });
@@ -99,7 +99,7 @@ router.post("/update", (req, res, next) => {
                                 Authenticate.authenticateDemo(updateRes, (boolErr, strToken) => {
                                     if (boolErr) {
                                         console.error(boolErr);
-                                        res.json({
+                                        res.status(500).json({
                                             success: false,
                                             msg: "Failed: " + strToken,
                                         });
@@ -113,13 +113,13 @@ router.post("/update", (req, res, next) => {
                             });
                         });
                     } else {
-                        res.json({
+                        res.status(400).json({
                             success: false,
                             msg: "Use code sent to previously validated Email address",
                         });
                     }
                 } else {
-                    res.json({
+                    res.status(400).json({
                         success: false,
                         msg: "Use code sent to previously validated Email address",
                     });

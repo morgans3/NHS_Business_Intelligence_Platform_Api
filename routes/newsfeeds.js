@@ -65,7 +65,7 @@ router.post(
             },
             (err, data) => {
                 if (err) {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         msg: "Failed to register: " + err,
                     });
@@ -120,7 +120,7 @@ router.post(
     (req, res) => {
         DynamoDBData.updateItem(AWS, tablename, ["destination", "type"], req.body, (err, app) => {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to update: " + err,
                 });
@@ -163,7 +163,7 @@ router.get(
         const destination = req.query.destination;
         DynamoDBData.getItemByIndex(AWS, tablename, "destination", destination, (err, result) => {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -198,7 +198,7 @@ router.get(
     (req, res, next) => {
         DynamoDBData.getAll(AWS, tablename, (err, result) => {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -249,7 +249,7 @@ router.delete(
             };
             DynamoDBData.removeItem(AWS, tablename, key, (err, response) => {
                 if (err) {
-                    res.status(400).json({
+                    res.status(500).json({
                         success: false,
                         msg: "Error: " + err,
                     });

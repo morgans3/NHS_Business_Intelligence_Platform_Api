@@ -199,7 +199,7 @@ router.post("/register", (req, res, next) => {
     if (req.body.key === credentials.secretkey) {
         UserModel.addUser(newUser, req.body.password, (err, user) => {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to register user",
                 });
@@ -211,7 +211,7 @@ router.post("/register", (req, res, next) => {
             }
         });
     } else {
-        res.json({
+        res.status(401).json({
             success: false,
             msg: "Unauthorized",
         });
@@ -378,7 +378,7 @@ router.delete(
  *   post:
  *     description: Send code to email address
  *     tags:
- *      - Email
+ *      - Users
  *     produces:
  *      - application/json
  *     parameters:
@@ -403,7 +403,7 @@ router.post("/send-code", (req, res, next) => {
         (saveErr, savedCode) => {
             // Check for errors
             if (saveErr) {
-                res.json({ success: false, msg: "Failed: " + saveErr });
+                res.status(500).json({ success: false, msg: "Failed: " + saveErr });
                 return;
             }
 
@@ -417,7 +417,7 @@ router.post("/send-code", (req, res, next) => {
                 (err, response) => {
                     if (err) {
                         console.log(err);
-                        res.json({ success: false, msg: "Failed: " + err });
+                        res.status(500).json({ success: false, msg: "Failed: " + err });
                     } else {
                         res.json({ success: true, msg: "Code has been sent to the provided email address" });
                     }
@@ -433,7 +433,7 @@ router.post("/send-code", (req, res, next) => {
  *   post:
  *     description: Verify code sent to an email address
  *     tags:
- *      - Email
+ *      - Users
  *     produces:
  *      - application/json
  *     parameters:
@@ -457,7 +457,7 @@ router.post("/verify-code", (req, res, next) => {
     VerificationCodeModel.getCode(payload.code, payload.email, (codeErr, codeRes) => {
         // Return error
         if (codeErr) {
-            res.json({ success: false, msg: "Failed: " + codeErr });
+            res.status(500).json({ success: false, msg: "Failed: " + codeErr });
             return;
         }
 
@@ -467,7 +467,7 @@ router.post("/verify-code", (req, res, next) => {
             // passwordModel.deleteCode(payload.code, payload.email, () => {
             res.json({ success: true, msg: "Code is valid." });
         } else {
-            res.json({ success: false, msg: "Code not valid." });
+            res.status(404).json({ success: false, msg: "Code not valid." });
         }
     });
 });

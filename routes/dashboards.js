@@ -100,7 +100,7 @@ router.post(
 
         Dashboards.addDashboard(newDashboard, (err, user) => {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to register: " + err,
                 });
@@ -191,7 +191,7 @@ router.put(
         const id = req.query.dashboard_name;
         Dashboards.getDashboardByName(id, function (err, app) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to update: " + err,
                 });
@@ -209,7 +209,7 @@ router.put(
 
             Dashboards.updateDashboard(scannedItem, function (errUpdate, data) {
                 if (errUpdate) {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         msg: "Failed to update: " + errUpdate,
                     });
@@ -325,7 +325,7 @@ router.put(
         const id = req.query.dashboard_name;
         Dashboards.getDashboardByName(id, function (err, app) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to archive: " + err,
                 });
@@ -333,7 +333,7 @@ router.put(
             const scannedItem = app.Items[0];
             Dashboards.removeDashboard(scannedItem.name, scannedItem.environment, function (errRemove, data) {
                 if (errRemove) {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         msg: "Failed to update: " + errRemove,
                     });

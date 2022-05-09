@@ -96,7 +96,7 @@ router.post(
             ...((req.body.im_id) && { im_id: req.body.im_id }),
         }, (err, data) => {
             if (err) {
-                res.json({ success: false, msg: "Failed to register: " + err });
+                res.status(500).json({ success: false, msg: "Failed to register: " + err });
             } else {
                 res.json({ success: true, msg: "Registered", _id: data["_id"], data });
             }
@@ -127,7 +127,7 @@ router.get(
     (req, res, next) => {
         Profiles.getAll(function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -186,7 +186,7 @@ router.get(
 
             // Organisation exists?
             if (data.Items.length === 0) {
-                res.send({ status: 404, message: "Organisation not found" });
+                res.status(404).send({ status: 404, message: "Organisation not found" });
                 return;
             }
 
@@ -199,19 +199,19 @@ router.get(
                 }
                 Profiles.getUserProfileByUsername(username, function (errUserProfile, result) {
                     if (errUserProfile) {
-                        res.send({ success: false, msg: errUserProfile });
+                        res.status(500).send({ success: false, msg: errUserProfile });
                         return;
                     }
                     if (result.Items.length > 0) {
                         UserModel.getUserByUsername(username, function (err2, result2) {
                             if (err2) {
-                                res.send({ success: false, msg: err2 });
+                                res.status(500).send({ success: false, msg: err2 });
                             } else {
                                 if (result2.Items.length === 0) {
                                     // @ts-ignore
                                     activeDirectory.findUser(username, function (errFindUser, user) {
                                         if (errFindUser) {
-                                            return res.json({
+                                            return res.status(500).json({
                                                 success: false,
                                                 err: JSON.stringify(errFindUser),
                                                 msg: "User not found",
@@ -220,7 +220,7 @@ router.get(
 
                                         if (!user) {
                                             // check if referral org (AD)
-                                            return res.json({
+                                            return res.status(400).json({
                                                 success: false,
                                                 msg: "User: " + username + " not found.",
                                             });
@@ -267,7 +267,7 @@ router.get(
                         // @ts-ignore
                         activeDirectory.findUser(username, function (errFindingUser, user) {
                             if (errFindingUser) {
-                                return res.json({
+                                return res.status(500).json({
                                     success: false,
                                     err: JSON.stringify(errFindingUser),
                                     msg: "User not found",
@@ -276,7 +276,7 @@ router.get(
 
                             if (!user) {
                                 // check if referral org (AD)
-                                return res.json({
+                                return res.status(400).json({
                                     success: false,
                                     msg: "User: " + username + " not found.",
                                 });
@@ -353,7 +353,7 @@ router.get(
 
             // Organisation exists?
             if (data.Items.length === 0) {
-                res.send({ status: 404, message: "Organisation not found" });
+                res.status(404).send({ status: 404, message: "Organisation not found" });
                 return;
             }
 
@@ -419,7 +419,7 @@ router.get(
                             // Find user in active directory
                             activeDirectory.findUser(username, (errFUser, user) => {
                                 if (errFUser) {
-                                    return res.json({ success: false, err: JSON.stringify(errFUser), msg: "User not found" });
+                                    return res.status(500).json({ success: false, err: JSON.stringify(errFUser), msg: "User not found" });
                                 }
 
                                 // User found?
@@ -449,7 +449,7 @@ router.get(
                                         });
                                     });
                                 } else {
-                                    return res.json({ success: false, msg: "User: " + username + " not found." });
+                                    return res.status(400).json({ success: false, msg: "User: " + username + " not found." });
                                 }
                             });
                         });
@@ -490,7 +490,7 @@ router.put(
         const id = req.query.profile_id;
         Profiles.getUserProfileById(id, function (err, scan) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to archive: " + err,
                 });
@@ -499,7 +499,7 @@ router.put(
                 const profile = scan.Items[0];
                 Profiles.remove(profile, function (profileRemoveErr) {
                     if (profileRemoveErr) {
-                        res.json({
+                        res.status(500).json({
                             success: false,
                             msg: "Failed to remove: " + profileRemoveErr,
                         });
@@ -510,7 +510,7 @@ router.put(
                     });
                 });
             } else {
-                res.json({
+                res.status(404).json({
                     success: false,
                     msg: "Unable to find item in database",
                 });
@@ -586,7 +586,7 @@ router.put(
         const id = req.query.profile_id;
         Profiles.getUserProfileById(id, function (err, result) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to update: " + err,
                 });
@@ -603,7 +603,7 @@ router.put(
 
                 Profiles.updateUserProfile(profile, function (errUpdate) {
                     if (errUpdate) {
-                        res.json({
+                        res.status(500).json({
                             success: false,
                             msg: "Failed to update: " + errUpdate,
                         });
@@ -615,7 +615,7 @@ router.put(
                     });
                 });
             } else {
-                res.json({
+                res.status(404).json({
                     success: false,
                     msg: "Can not find item in database",
                 });

@@ -38,7 +38,7 @@ router.get(
         TeamModel.get((err, result) => {
             // Return data
             if (err) {
-                res.json({ success: false, msg: err });
+                res.status(500).json({ success: false, msg: err });
             } else {
                 res.json(result.Items);
             }
@@ -108,7 +108,7 @@ router.post(
         // Persist in database
         TeamModel.create(team, (err, result) => {
             if (err) {
-                res.json({ success: false, msg: "Failed to create " + err });
+                res.status(500).json({ success: false, msg: "Failed to create " + err });
             } else {
                 res.json({ success: true, msg: "Team created successfully!", data: team });
             }
@@ -244,7 +244,7 @@ router.get(
         const code = req.query.code;
         TeamModel.getByCode(code, function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -286,7 +286,7 @@ router.get(
         const orgcode = req.query.orgcode;
         TeamModel.getByOrg(orgcode, function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -332,7 +332,7 @@ router.get(
             },
             function (err, result) {
                 if (err) {
-                    res.send({ success: false, msg: err });
+                    res.status(500).send({ success: false, msg: err });
                 } else {
                     if (result.Items) {
                         res.send(JSON.stringify(result.Items));
@@ -386,7 +386,7 @@ router.get(
             },
             function (err, result) {
                 if (err) {
-                    res.send({ success: false, msg: err });
+                    res.status(500).send({ success: false, msg: err });
                 } else {
                     if (result.Items) {
                         res.send(JSON.stringify(result.Items));
@@ -430,7 +430,7 @@ router.put(
         TeamModel.getByKeys({ _id: id }, (err, result) => {
             // Output error
             if (err) {
-                res.json({ success: false, msg: "Failed to archive: " + err });
+                res.status(500).json({ success: false, msg: "Failed to archive: " + err });
             }
 
             // Item exists?
@@ -438,12 +438,12 @@ router.put(
                 // Delete item
                 TeamModel.delete({ _id: id }, (deleteError) => {
                     if (deleteError) {
-                        res.json({ success: false, msg: "Failed to remove: " + deleteError });
+                        res.status(500).json({ success: false, msg: "Failed to remove: " + deleteError });
                     }
                     res.json({ success: true, msg: "Profile removed" });
                 });
             } else {
-                res.json({ success: false, msg: "Can not find item in database" });
+                res.status(404).json({ success: false, msg: "Can not find item in database" });
             }
         });
     }
@@ -489,7 +489,7 @@ router.delete(
             },
             (err, result) => {
                 if (err) {
-                    res.json({ success: false, msg: err });
+                    res.status(500).json({ success: false, msg: err });
                 } else {
                     res.json({ success: true, msg: "Team deleted successfully!" });
                 }

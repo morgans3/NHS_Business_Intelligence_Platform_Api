@@ -56,7 +56,7 @@ router.get(
                 const userroles = decodedToken["capabilities"];
                 history.getPersonsPopulationHistoryByNHSNumber(nhsNumber, userroles, function (access, err, result) {
                     if (err) {
-                        res.status(400).send(
+                        res.status(500).send(
                             JSON.stringify({
                                 reason: "Error: " + err,
                             })
@@ -120,7 +120,7 @@ router.get(
                 const userroles = decodedToken["capabilities"];
                 history.getPersonsDistrictHistoryByNHSNumber(nhsNumber, userroles, function (access, err, result) {
                     if (err) {
-                        res.status(400).send(
+                        res.status(500).send(
                             JSON.stringify({
                                 reason: "Error: " + err,
                             })

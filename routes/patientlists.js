@@ -53,7 +53,7 @@ router.get(
             const userroles = decodedToken["capabilities"];
             patients.getAll(limit, userroles, function (access, err, result) {
                 if (err) {
-                    res.status(400).send(
+                    res.status(500).send(
                         JSON.stringify({
                             reason: "Error: " + err,
                         })
@@ -64,7 +64,7 @@ router.get(
                     if (result.length > 0) {
                         res.send(JSON.stringify(result));
                     } else {
-                        res.status(400).send(
+                        res.status(404).send(
                             JSON.stringify({
                                 reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
                             })

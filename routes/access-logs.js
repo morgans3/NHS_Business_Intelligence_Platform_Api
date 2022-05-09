@@ -28,6 +28,7 @@ const momentLib = require("moment");
  *        description: Date to filter by, defaults to current
  *        in: query
  *        type: string
+ *        format: date
  *      - name: type
  *        description: Type to filter by
  *        in: query
@@ -88,6 +89,7 @@ router.get(
  *        description: Date to filter by, defaults to current
  *        in: query
  *        type: string
+ *        format: date
  *      - name: pageKey
  *        description: Start page from item with this key
  *        in: query
@@ -131,10 +133,12 @@ router.get(
  *        description: Date to get the statistics from
  *        in: query
  *        type: string
+ *        format: date
  *      - name: date_to
  *        description: Date to get the statistics to
  *        in: query
  *        type: string
+ *        format: date
  *     produces:
  *      - application/json
  *     responses:
@@ -277,7 +281,7 @@ router.post(
             (err, data) => {
                 // Return status
                 if (err) {
-                    res.json({ status: 500, error: err });
+                    res.status(500).json({ status: 500, error: err });
                 } else {
                     res.json({ status: 200, msg: "Log stored successfully", data });
                 }

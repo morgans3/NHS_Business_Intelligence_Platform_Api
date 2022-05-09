@@ -29,7 +29,7 @@ const SystemAlerts = require("../models/systemalerts");
 router.get("/", (req, res, next) => {
     SystemAlerts.getAll(function (err, result) {
         if (err) {
-            res.send({ success: false, msg: err });
+            res.status(500).send({ success: false, msg: err });
         } else {
             if (result.Items) {
                 res.send(JSON.stringify(result.Items));
@@ -63,7 +63,7 @@ router.get(
     (req, res, next) => {
         SystemAlerts.getActiveSystemAlerts(new Date(), function (err, result) {
             if (err) {
-                res.send({ success: false, msg: err });
+                res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items) {
                     res.send(JSON.stringify(result.Items));
@@ -157,7 +157,7 @@ router.put(
         };
         SystemAlerts.updateSystemAlert(newAlert, function (err) {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to update: " + err,
                 });
@@ -248,7 +248,7 @@ router.post(
 
         SystemAlerts.addSystemAlert(newSystemAlerts, (err, event) => {
             if (err) {
-                res.json({
+                res.status(500).json({
                     success: false,
                     msg: "Failed to register: " + err,
                 });

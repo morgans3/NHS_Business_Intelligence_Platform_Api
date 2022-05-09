@@ -14,7 +14,7 @@ const JWT = require("jsonwebtoken");
 
 /**
  * @swagger
- * /virtualward_decision/getAll?Limit={limit}:
+ * /virtualward_decision/?Limit={limit}:
  *   get:
  *     security:
  *      - JWT: []
@@ -39,7 +39,7 @@ const JWT = require("jsonwebtoken");
  *         description: Server Error Processing
  */
 router.get(
-    "/getAll",
+    "/",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -58,7 +58,7 @@ router.get(
             const userroles = decodedToken["capabilities"];
             virtualwardDecision.getAll(numCheck.toString(), userroles, function (err, access, result) {
                 if (err) {
-                    res.status(400).send(
+                    res.status(500).send(
                         JSON.stringify({
                             reason: "Error: " + err,
                         })
@@ -69,7 +69,7 @@ router.get(
                     if (result.length > 0) {
                         res.send(JSON.stringify(result));
                     } else {
-                        res.status(400).send(
+                        res.status(404).send(
                             JSON.stringify({
                                 reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
                             })
@@ -136,7 +136,7 @@ router.post(
             const userroles = decodedToken["capabilities"];
             virtualwardDecision.getAllByStatus(status, userroles, numCheck.toString(), (err, access, result) => {
                 if (err) {
-                    res.status(400).send(
+                    res.status(500).send(
                         JSON.stringify({
                             reason: "Error: " + err,
                         })
@@ -147,7 +147,7 @@ router.post(
                     if (result.length > 0) {
                         res.send(JSON.stringify(result));
                     } else {
-                        res.status(400).send(
+                        res.status(404).send(
                             JSON.stringify({
                                 reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
                             })
@@ -210,7 +210,7 @@ router.post(
             const nonreferralReason = req.body.nonreferral_reason || null;
             virtualwardDecision.updateStatus(id, status, nonreferralReason, (err, data) => {
                 if (err) {
-                    res.status(400).send(
+                    res.status(500).send(
                         JSON.stringify({
                             reason: "Error: " + err,
                         })
@@ -274,7 +274,7 @@ router.get(
             const userroles = decodedToken["capabilities"];
             virtualwardDecision.getAllActioned(numCheck.toString(), userroles, function (access, err, result) {
                 if (err) {
-                    res.status(400).send(
+                    res.status(500).send(
                         JSON.stringify({
                             reason: "Error: " + err,
                         })
@@ -285,7 +285,7 @@ router.get(
                     if (result.length > 0) {
                         res.send(JSON.stringify(result));
                     } else {
-                        res.status(400).send(
+                        res.status(404).send(
                             JSON.stringify({
                                 reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
                             })
@@ -345,7 +345,7 @@ router.post(
             const contact = req.body.contact;
             virtualwardDecision.updateContactInfo(id, contact, (err, data) => {
                 if (err) {
-                    res.status(400).send(
+                    res.status(500).send(
                         JSON.stringify({
                             reason: "Error: " + err,
                         })
@@ -406,7 +406,7 @@ router.post(
             const id = req.body.id;
             virtualwardDecision.removeContactInfo(id, (err, data) => {
                 if (err) {
-                    res.status(400).send(
+                    res.status(500).send(
                         JSON.stringify({
                             reason: "Error: " + err,
                         })
@@ -470,7 +470,7 @@ router.post(
             const notes = req.body.notes;
             virtualwardDecision.updateNotes(id, notes, (err, data) => {
                 if (err) {
-                    res.status(400).send(
+                    res.status(500).send(
                         JSON.stringify({
                             reason: "Error: " + err,
                         })
@@ -531,7 +531,7 @@ router.post(
             const id = req.body.id;
             virtualwardDecision.removeNotes(id, (err, data) => {
                 if (err) {
-                    res.status(400).send(
+                    res.status(500).send(
                         JSON.stringify({
                             reason: "Error: " + err,
                         })
