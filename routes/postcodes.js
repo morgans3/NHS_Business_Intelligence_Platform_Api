@@ -46,4 +46,35 @@ router.get(
     }
 );
 
+/**
+ * @swagger
+ *  /postcodes/postcode-lookup/:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns the entire collection
+ *     tags:
+ *      - PostCodes
+ *     produces:
+ *      - application/json
+ *     responses:
+ *       200:
+ *         description: Full List
+ */
+router.get(
+    "/postcode-lookup",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        postcodes.getPostcodeLookups((error, results) => {
+            if (error) {
+                res.status(500).json("Error: " + error);
+            } else {
+                res.json(results);
+            }
+        });
+    }
+);
+
 module.exports = router;

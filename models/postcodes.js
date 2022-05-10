@@ -1,4 +1,5 @@
 const pool = require("../config/database").pool;
+const lookups = require("./data/postcodelookups.json");
 
 module.exports.getPostcodes = function (callback) {
     const pcgeoquery = `SELECT
@@ -13,4 +14,8 @@ module.exports.getPostcodes = function (callback) {
             mosaicpostcode AS lg)
     AS f`;
     pool.query(pcgeoquery, callback);
+};
+
+module.exports.getPostcodeLookups = function (callback) {
+    callback(null, lookups);
 };
