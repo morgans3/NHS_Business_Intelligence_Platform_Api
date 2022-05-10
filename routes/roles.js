@@ -459,7 +459,7 @@ router.get(
 
 /**
  * @swagger
- * /roles/{id}/delete:
+ * /roles/delete:
  *   delete:
  *     security:
  *      - JWT: []
@@ -469,7 +469,7 @@ router.get(
  *     parameters:
  *       - name: id
  *         description: Role id to update
- *         in: path
+ *         in: formData
  *         required: true
  *         type: integer
  *     produces:
@@ -479,13 +479,13 @@ router.get(
  *         description: Role deletion status
  */
 router.delete(
-    "/:id/delete",
+    "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res, next) => {
         // Get all capabilities
-        RoleModel.deleteByPrimaryKey(req.params.id, (err, result) => {
+        RoleModel.deleteByPrimaryKey(req.body.id, (err, result) => {
             if (err) {
                 res.status(500).json({ success: false, msg: err });
             } else {

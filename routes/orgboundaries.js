@@ -16,7 +16,7 @@ const PGConstruct = PostgresI.init(settings);
 
 /**
  * @swagger
- * /orgboundaries/getTopoJSON:
+ * /orgboundaries/topo-json:
  *   get:
  *     security:
  *      - JWT: []
@@ -30,7 +30,7 @@ const PGConstruct = PostgresI.init(settings);
  *         description: Full List
  */
 router.get(
-    "/getTopoJSON",
+    "/topo-json",
     passport.authenticate("jwt", {
         session: false,
     }),

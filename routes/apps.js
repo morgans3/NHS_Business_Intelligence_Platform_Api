@@ -14,7 +14,7 @@ const App = require("../models/apps");
 
 /**
  * @swagger
- * /apps/register:
+ * /apps/create:
  *   post:
  *     security:
  *      - JWT: []
@@ -75,7 +75,7 @@ const App = require("../models/apps");
  *         description: Confirmation of App Registration
  */
 router.post(
-    "/register",
+    "/create",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -233,6 +233,11 @@ router.put(
  *     description: Returns the entire collection
  *     tags:
  *      - Application
+ *     parameters:
+ *       - name: app_name
+ *         description: App's Name
+ *         in: query
+ *         type: string
  *     produces:
  *      - application/json
  *     responses:
@@ -240,7 +245,8 @@ router.put(
  *         description: Full List
  */
 router.get("/", (req, res, next) => {
-    App.getAll(function (err, result) {
+    // Declare callback
+    const callback = (err, result) => {
         if (err) {
             res.send({ success: false, msg: err });
         } else {
@@ -250,50 +256,15 @@ router.get("/", (req, res, next) => {
                 res.send("[]");
             }
         }
-    });
-});
+    };
 
-/**
- * @swagger
- * /apps/getByName?app_Name={app_Name}:
- *   get:
- *     security:
- *      - JWT: []
- *     description: Returns the entire collection
- *     tags:
- *      - Application
- *     produces:
- *      - application/json
- *     parameters:
- *       - name: app_Name
- *         description: App's Name
- *         in: query
- *         required: true
- *         type: string
- *     responses:
- *       200:
- *         description: Full List
- */
-router.get(
-    "/getByName",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res, next) => {
-        const id = req.query.app_name;
-        App.getAppByName(id, function (err, result) {
-            if (err) {
-                res.send({ success: false, msg: err });
-            } else {
-                if (result.Items) {
-                    res.send(JSON.stringify(result.Items));
-                } else {
-                    res.send("[]");
-                }
-            }
-        });
+    // Get by?
+    if (req.query.app_name) {
+        App.getAppByName(req.query.app_name, callback);
+    } else {
+        App.getAll(callback);
     }
-);
+});
 
 /**
  * @swagger

@@ -15,7 +15,7 @@ const TeamModel = new DIULibrary.Models.TeamModel();
 
 /**
  * @swagger
- * /searchs/searchTeams?searchterm={searchterm}:
+ * /searchs/teams?searchterm={searchterm}:
  *   get:
  *     security:
  *      - JWT: []
@@ -35,7 +35,7 @@ const TeamModel = new DIULibrary.Models.TeamModel();
  *         description: Search Results
  */
 router.get(
-    "/searchTeams",
+    "/teams",
     passport.authenticate("jwt", {
         session: false,
     }),

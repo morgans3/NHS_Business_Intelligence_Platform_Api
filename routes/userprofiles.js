@@ -24,7 +24,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
- * /userprofiles/register:
+ * /userprofiles/create:
  *   post:
  *     security:
  *      - JWT: []
@@ -76,7 +76,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         description: Confirmation of new Profile Registration
  */
 router.post(
-    "/register",
+    "/create",
     passport.authenticate("jwt", {
         session: false,
     }),

@@ -16,7 +16,7 @@ const PGConstruct = PostgresI.init(settings);
 
 /**
  * @swagger
- * /isochrone/getHousesWithinIsochrone:
+ * /isochrone/houses-within-isochrone:
  *   post:
  *     security:
  *      - JWT: []
@@ -36,7 +36,7 @@ const PGConstruct = PostgresI.init(settings);
  *         description: Household Statistics
  */
 router.post(
-    "/getHousesWithinIsochrone",
+    "/houses-within-isochrone",
     passport.authenticate("jwt", {
         session: false,
     }),

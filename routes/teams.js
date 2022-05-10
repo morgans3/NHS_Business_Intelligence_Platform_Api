@@ -451,7 +451,7 @@ router.put(
 
 /**
  * @swagger
- * /teams/{id}/delete:
+ * /teams/delete:
  *   delete:
  *     security:
  *      - JWT: []
@@ -476,7 +476,7 @@ router.put(
  *         description: Team deletion status
  */
 router.delete(
-    "/:id/delete",
+    "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),

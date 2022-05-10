@@ -16,7 +16,7 @@ const tablename = "newsfeeds";
 
 /**
  * @swagger
- * /newsfeeds/register:
+ * /newsfeeds/create:
  *   post:
  *     security:
  *      - JWT: []
@@ -46,7 +46,7 @@ const tablename = "newsfeeds";
  *         description: Confirmation of News Feed Registration
  */
 router.post(
-    "/register",
+    "/create",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -136,48 +136,6 @@ router.post(
 
 /**
  * @swagger
- * /newsfeeds/getByID?destination={destination}:
- *   get:
- *     security:
- *      - JWT: []
- *     description: Returns the entire collection
- *     tags:
- *      - NewsFeeds
- *     produces:
- *      - application/json
- *     parameters:
- *       - name: destination
- *         description: News Feed's Destination
- *         in: query
- *         required: true
- *         type: string
- *     responses:
- *       200:
- *         description: Full List
- */
-router.get(
-    "/getByID",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res, next) => {
-        const destination = req.query.destination;
-        DynamoDBData.getItemByIndex(AWS, tablename, "destination", destination, (err, result) => {
-            if (err) {
-                res.status(500).send({ success: false, msg: err });
-            } else {
-                if (result.Items) {
-                    res.send(JSON.stringify(result.Items));
-                } else {
-                    res.send("[]");
-                }
-            }
-        });
-    }
-);
-
-/**
- * @swagger
  * /newsfeeds/:
  *   get:
  *     security:
@@ -185,6 +143,11 @@ router.get(
  *     description: Returns the entire collection
  *     tags:
  *      - NewsFeeds
+ *     parameters:
+ *       - name: destination
+ *         description: News Feed's Destination
+ *         in: query
+ *         type: string
  *     produces:
  *      - application/json
  *     responses:
@@ -197,7 +160,8 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        DynamoDBData.getAll(AWS, tablename, (err, result) => {
+        // Declare callback
+        const callback = (err, result) => {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
@@ -207,13 +171,20 @@ router.get(
                     res.send("[]");
                 }
             }
-        });
+        };
+
+        // Determine method
+        if (req.query.destination) {
+            DynamoDBData.getItemByIndex(AWS, tablename, "destination", req.query.destination, callback);
+        } else {
+            DynamoDBData.getAll(AWS, tablename, callback);
+        }
     }
 );
 
 /**
  * @swagger
- * /newsfeeds/remove:
+ * /newsfeeds/delete:
  *   delete:
  *     description: Remove a newsfeed
  *     security:
@@ -238,7 +209,7 @@ router.get(
  *         description: Confirmation of removal
  */
 router.delete(
-    "/remove",
+    "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),

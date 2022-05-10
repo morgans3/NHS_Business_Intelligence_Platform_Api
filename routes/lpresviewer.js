@@ -14,7 +14,7 @@ const jwt = require("jsonwebtoken");
 
 /**
  * @swagger
- * /lpresviewer/getValidationKey:
+ * /lpresviewer/generate-validation-key:
  *   post:
  *     security:
  *      - JWT: []
@@ -34,7 +34,7 @@ const jwt = require("jsonwebtoken");
  *         description: Open Source Audit List
  */
 router.post(
-    "/getValidationKey",
+    "/generate-validation-key",
     passport.authenticate("jwt", {
         session: false,
     }),

@@ -173,7 +173,7 @@ router.put(
 
 /**
  * @swagger
- * /systemalerts/register:
+ * /systemalerts/create:
  *   post:
  *     security:
  *      - JWT: []
@@ -230,7 +230,7 @@ router.put(
  *         description: Confirmation of Alert Registered
  */
 router.post(
-    "/register",
+    "/create",
     passport.authenticate("jwt", {
         session: false,
     }),

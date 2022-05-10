@@ -51,9 +51,9 @@ router.get(
 
 /**
  * @swagger
- * /capabilities/register:
+ * /capabilities/create:
  *   post:
- *     description: Registers a capability
+ *     description: Create a capability
  *     security:
  *      - JWT: []
  *     tags:
@@ -94,7 +94,7 @@ router.get(
  *         description: Confirmation of Account Registration
  */
 router.post(
-    "/register",
+    "/create",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -220,9 +220,9 @@ router.post(
 
 /**
  * @swagger
- * /capabilities/removeByID:
+ * /capabilities/delete:
  *   delete:
- *     description: Remove a capability
+ *     description: Delete a capability
  *     security:
  *      - JWT: []
  *     tags:
@@ -240,7 +240,7 @@ router.post(
  *         description: Confirmation of Account Registration
  */
 router.delete(
-    "/removeByID",
+    "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),

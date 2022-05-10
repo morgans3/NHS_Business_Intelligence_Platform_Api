@@ -15,7 +15,7 @@ const Members = require("../models/teammembers");
 
 /**
  * @swagger
- * /teamrequests/register:
+ * /teamrequests/create:
  *   post:
  *     security:
  *      - JWT: []
@@ -64,7 +64,7 @@ const Members = require("../models/teammembers");
  *         description: Confirmation of Request Registration
  */
 router.post(
-    "/register",
+    "/create",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -319,7 +319,7 @@ router.put(
 
 /**
  * @swagger
- * /teamrequests/getByID?request_id={request_id}:
+ * /teamrequests/{id}:
  *   get:
  *     security:
  *      - JWT: []
@@ -329,9 +329,9 @@ router.put(
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: request_id
+ *       - name: id
  *         description: Request's ID
- *         in: query
+ *         in: path
  *         required: true
  *         type: string
  *     responses:
@@ -339,13 +339,12 @@ router.put(
  *         description: Full List
  */
 router.get(
-    "/getByID",
+    "/:id",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res, next) => {
-        const id = req.query.request_id;
-        Requests.getRequestById(id, function (err, result) {
+        Requests.getRequestById(req.params.id, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
