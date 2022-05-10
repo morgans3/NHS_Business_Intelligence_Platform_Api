@@ -50,7 +50,7 @@ router.get(
 
 /**
  * @swagger
- * /trials/getSearchTop1000:
+ * /trials/search-top-100:
  *   post:
  *     security:
  *      - JWT: []
@@ -81,7 +81,7 @@ router.get(
  *         description: Clinical Trials List
  */
 router.post(
-    "/getSearchTop1000",
+    "/search-top-100",
     passport.authenticate("jwt", {
         session: false,
     }),

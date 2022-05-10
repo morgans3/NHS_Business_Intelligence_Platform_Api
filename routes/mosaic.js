@@ -25,6 +25,12 @@ const PGConstruct = PostgresI.init(settings);
  *     description: Get all Information
  *     tags:
  *      - Mosaic
+ *     parameters:
+ *       - name: postcode
+ *         description: Post Code
+ *         in: query
+ *         required: true
+ *         type: string
  *     produces:
  *      - application/json
  *     responses:
@@ -37,58 +43,36 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        DynamoDBData.getAll(AWS, "mosaics", (err, result) => {
-            if (err) {
-                res.status(500).json({ success: false, msg: err });
-            } else {
-                res.json(result.Items);
-            }
-        });
-    }
-);
-
-/**
- * @swagger
- * /mosaic/getCodefromPostCode?postcode={postcode}:
- *   get:
- *     security:
- *      - JWT: []
- *     description: Provides Mosaic code from the provided post code
- *     tags:
- *      - Mosaic
- *     produces:
- *      - application/json
- *     parameters:
- *       - name: postcode
- *         description: Post Code
- *         in: query
- *         required: true
- *         type: string
- *     responses:
- *       200:
- *         description: Mosaic Code
- *       400:
- *         description: Bad Request
- *       401:
- *         description: Unauthorised
- *       500:
- *         description: Server Error Processing
- */
-router.get(
-    "/getCodefromPostCode",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res, next) => {
-        const postcode = req.query.postcode;
-        res.type("application/json");
-        if (postcode === undefined || postcode === null) {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-        } else {
-            const query = `SELECT mostype FROM public.mosaicpostcode where postcode = '${postcode}'`;
-            PostgresI.getByQuery(PGConstruct, query, (response) => {
-                res.json(response);
+        // Get all mosaics
+        const getMosaics = () => {
+            DynamoDBData.getAll(AWS, "mosaics", (err, result) => {
+                if (err) {
+                    res.status(500).json({ success: false, msg: err });
+                } else {
+                    res.json(result.Items);
+                }
             });
+        };
+
+        // Get mosaics by postcode
+        const getMosaicsByPostcode = () => {
+            const postcode = req.query.postcode;
+            res.type("application/json");
+            if (postcode === undefined || postcode === null) {
+                res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+            } else {
+                const query = `SELECT mostype FROM public.mosaicpostcode where postcode = '${postcode}'`;
+                PostgresI.getByQuery(PGConstruct, query, (response) => {
+                    res.json(response);
+                });
+            }
+        };
+
+        // Determine method?
+        if (req.query.postcode) {
+            getMosaicsByPostcode();
+        } else {
+            getMosaics();
         }
     }
 );

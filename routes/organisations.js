@@ -39,7 +39,7 @@ router.get("/", (req, res, next) => {
 
 /**
  * @swagger
- * /organisations/register:
+ * /organisations/create:
  *   post:
  *     description: Registers a new Organisation
  *     tags:
@@ -72,7 +72,7 @@ router.get("/", (req, res, next) => {
  *         description: Confirmation of Registration
  */
 router.post(
-    "/register",
+    "/create",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -165,7 +165,7 @@ router.post(
 
 /**
  * @swagger
- * /organisations/remove:
+ * /organisations/delete:
  *   delete:
  *     description: Remove an organisation
  *     security:
@@ -190,7 +190,7 @@ router.post(
  *         description: Confirmation of removal
  */
 router.delete(
-    "/remove",
+    "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),

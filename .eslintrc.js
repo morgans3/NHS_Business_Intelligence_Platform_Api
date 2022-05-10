@@ -1,3 +1,6 @@
+const CustomRulesPlugin = require("eslint-plugin-rulesdir");
+CustomRulesPlugin.RULES_DIR = ".eslint/rules";
+
 module.exports = {
     env: {
         browser: true,
@@ -10,6 +13,7 @@ module.exports = {
     parserOptions: {
         ecmaVersion: "latest",
     },
+    plugins: ["rulesdir"],
     rules: {
         "arrow-parens": ["off", "always"],
         "comma-dangle": "off",

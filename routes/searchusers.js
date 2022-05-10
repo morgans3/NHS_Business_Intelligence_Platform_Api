@@ -17,7 +17,7 @@ const StringHelper = DIULibrary.Helpers.StringMethods;
 
 /**
  * @swagger
- * /searchusers/searchUserProfiles?searchterm={searchterm}:
+ * /searchusers/profiles?searchterm={searchterm}:
  *   get:
  *     security:
  *      - JWT: []
@@ -37,7 +37,7 @@ const StringHelper = DIULibrary.Helpers.StringMethods;
  *         description: Search Results
  */
 router.get(
-    "/searchUserProfiles",
+    "/profiles",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -69,7 +69,7 @@ router.get(
 
 /**
  * @swagger
- * /searchusers/searchOrgUserProfiles?searchterm={searchterm}&organisation={organisation}:
+ * /searchusers/org-profiles?searchterm={searchterm}&organisation={organisation}:
  *   get:
  *     security:
  *      - JWT: []
@@ -94,7 +94,7 @@ router.get(
  *         description: Search Results
  */
 router.get(
-    "/searchOrgUserProfiles",
+    "/org-profiles",
     passport.authenticate("jwt", {
         session: false,
     }),

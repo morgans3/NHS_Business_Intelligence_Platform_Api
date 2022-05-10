@@ -14,7 +14,7 @@ const Dashboards = require("../models/dashboards");
 
 /**
  * @swagger
- * /dashboards/register:
+ * /dashboards/create:
  *   post:
  *     security:
  *      - JWT: []
@@ -75,7 +75,7 @@ const Dashboards = require("../models/dashboards");
  *         description: Confirmation of Dashboard Registration
  */
 router.post(
-    "/register",
+    "/create",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -117,7 +117,7 @@ router.post(
 
 /**
  * @swagger
- * /dashboards/update?dashboard_name={dashboard_name}:
+ * /dashboards/update:
  *   put:
  *     security:
  *      - JWT: []
@@ -233,6 +233,11 @@ router.put(
  *     description: Returns the entire collection
  *     tags:
  *      - Dashboards
+ *     parameters:
+ *       - name: dashboard_name
+ *         description: Dashboard's Name
+ *         in: query
+ *         type: string
  *     produces:
  *      - application/json
  *     responses:
@@ -240,60 +245,26 @@ router.put(
  *         description: Full List
  */
 router.get("/", (req, res, next) => {
-    Dashboards.getAll(function (err, result) {
+    // Declare callback
+    const callback = (err, result) => {
         if (err) {
-            res.send({ success: false, msg: err });
+            res.json({ success: false, msg: err });
         } else {
             if (result.Items) {
-                res.send(JSON.stringify(result.Items));
+                res.json(result.Items);
             } else {
-                res.send("[]");
+                res.json([]);
             }
         }
-    });
-});
+    };
 
-/**
- * @swagger
- * /dashboards/getByName?dashboard_Name={dashboard_Name}:
- *   get:
- *     security:
- *      - JWT: []
- *     description: Returns the entire collection
- *     tags:
- *      - Dashboards
- *     produces:
- *      - application/json
- *     parameters:
- *       - name: dashboard_Name
- *         description: Dashboard's Name
- *         in: query
- *         required: true
- *         type: string
- *     responses:
- *       200:
- *         description: Full List
- */
-router.get(
-    "/getByName",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res, next) => {
-        const id = req.query.dashboard_name;
-        Dashboards.getDashboardByName(id, function (err, result) {
-            if (err) {
-                res.send({ success: false, msg: err });
-            } else {
-                if (result.Items) {
-                    res.send(JSON.stringify(result.Items));
-                } else {
-                    res.send("[]");
-                }
-            }
-        });
+    // Determine method
+    if (req.query.dashboard_name) {
+        Dashboards.getDashboardByName(req.query.dashboard_name, callback);
+    } else {
+        Dashboards.getAll(callback);
     }
-);
+});
 
 /**
  * @swagger

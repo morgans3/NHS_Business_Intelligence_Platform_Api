@@ -163,7 +163,7 @@ router.post(
 
 /**
  * @swagger
- * /virtualward_decision/updateStatus:
+ * /virtualward_decision/status/update:
  *   post:
  *     security:
  *      - JWT: []
@@ -198,7 +198,7 @@ router.post(
  *         description: Server Error Processing Result
  */
 router.post(
-    "/updateStatus",
+    "/status/update",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -301,7 +301,7 @@ router.get(
 
 /**
  * @swagger
- * /virtualward_decision/updateContact:
+ * /virtualward_decision/contact/update:
  *   post:
  *     security:
  *      - JWT: []
@@ -334,7 +334,7 @@ router.get(
  *         description: Server Error Processing Result
  */
 router.post(
-    "/updateContact",
+    "/contact/update",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -365,7 +365,7 @@ router.post(
 
 /**
  * @swagger
- * /virtualward_decision/clearContact:
+ * /virtualward_decision/contact/clear:
  *   post:
  *     security:
  *      - JWT: []
@@ -396,7 +396,7 @@ router.post(
  *         description: Server Error Processing Result
  */
 router.post(
-    "/clearContact",
+    "/contact/clear",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -426,7 +426,7 @@ router.post(
 
 /**
  * @swagger
- * /virtualward_decision/updateNotes:
+ * /virtualward_decision/notes/update:
  *   post:
  *     security:
  *      - JWT: []
@@ -459,7 +459,7 @@ router.post(
  *         description: Server Error Processing Result
  */
 router.post(
-    "/updateNotes",
+    "/notes/update",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -490,7 +490,7 @@ router.post(
 
 /**
  * @swagger
- * /virtualward_decision/clearNotes:
+ * /virtualward_decision/notes/clear:
  *   post:
  *     security:
  *      - JWT: []
@@ -521,7 +521,7 @@ router.post(
  *         description: Server Error Processing Result
  */
 router.post(
-    "/clearNotes",
+    "/notes/clear",
     passport.authenticate("jwt", {
         session: false,
     }),

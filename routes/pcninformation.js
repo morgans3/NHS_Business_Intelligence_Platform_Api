@@ -15,7 +15,7 @@ const PGConstruct = PostgresI.init(settings);
 
 /**
  * @swagger
- * /pcninformation/getTopoJSON:
+ * /pcninformation/topo-json:
  *   get:
  *     security:
  *      - JWT: []
@@ -29,7 +29,7 @@ const PGConstruct = PostgresI.init(settings);
  *         description: Full List
  */
 router.get(
-    "/getTopoJSON",
+    "/topo-json",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -75,7 +75,7 @@ router.get(
 
 /**
  * @swagger
- * /pcninformation/getHexGeojson:
+ * /pcninformation/hexgeo-json:
  *   get:
  *     security:
  *      - JWT: []
@@ -89,7 +89,7 @@ router.get(
  *         description: Full List
  */
 router.get(
-    "/getHexGeojson",
+    "/hexgeo-json",
     passport.authenticate("jwt", {
         session: false,
     }),
