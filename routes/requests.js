@@ -27,7 +27,7 @@ const issuer = process.env.SITE_URL || "NHS BI Platform";
  *   get:
  *     security:
  *      - JWT: []
- *     description: Get all requests
+ *     description: Get all requests. Requires Hall Monitor
  *     tags:
  *      - Requests
  *     produces:
@@ -202,7 +202,7 @@ router.post("/account", (req, res, next) => {
         EmailHelper.sendMail(
             {
                 to: formSubmission.data.request_sponsor.email,
-                subject: "COVID 19 Data Hub Access",
+                subject: "BI Platform Access",
                 message: `<p>A member of your organisation has requested access to the BI Platform. Details of the request are below...</p>
             ${MessagesHelper.accountRequestTable(formSubmission)}
             <p>Please click below to authorise or deny this request...</p>`,
@@ -399,7 +399,7 @@ router.post("/account/complete", (req, res, next) => {
                 EmailHelper.sendMail(
                     {
                         to: userAccessRequest.data.email,
-                        subject: "COVID 19 Data Hub",
+                        subject: "BI Platform Access",
                         message: `
                 <p>Your access to ${issuer.replace("api.", "")} has not been approved.</p>
                 <p><b>Reason:</b> ${formData.reason}</p>`,

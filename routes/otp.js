@@ -121,7 +121,7 @@ router.get(
                     EmailHelper.sendMail(
                         {
                             to: email,
-                            subject: "Temporary Access code for Nexus Intelligence",
+                            subject: "Temporary Access code for BI Platform",
                             message: `
                   <p>Please use this code to access the application: ${code}</p>
                   <p>This code will only work once and is linked directly to your account.</p>

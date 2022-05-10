@@ -4,6 +4,8 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const App = require("../models/apps");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -18,7 +20,7 @@ const App = require("../models/apps");
  *   post:
  *     security:
  *      - JWT: []
- *     description: Registers an App
+ *     description: Registers an App. Requires Hall Monitor
  *     tags:
  *      - Application
  *     produces:
@@ -76,9 +78,12 @@ const App = require("../models/apps");
  */
 router.post(
     "/create",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         const newApp = {
             name: req.body.name,
@@ -108,7 +113,7 @@ router.post(
                 res.json({
                     success: true,
                     msg: "Registered",
-                    data: newApp
+                    data: newApp,
                 });
             }
         });
@@ -121,7 +126,7 @@ router.post(
  *   put:
  *     security:
  *      - JWT: []
- *     description: Updates an App
+ *     description: Updates an App. Requires Hall Monitor
  *     tags:
  *      - Application
  *     produces:
@@ -184,9 +189,12 @@ router.post(
  */
 router.put(
     "/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res) => {
         const id = req.query.app_name;
         App.getAppByName(id, function (err, app) {
@@ -272,7 +280,7 @@ router.get("/", (req, res, next) => {
  *   put:
  *     security:
  *      - JWT: []
- *     description: Archives an App
+ *     description: Archives an App. Requires Hall Monitor
  *     tags:
  *      - Application
  *     produces:
@@ -289,9 +297,12 @@ router.get("/", (req, res, next) => {
  */
 router.put(
     "/archive",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res) => {
         const id = req.query.app_name;
         App.getAppByName(id, function (err, app) {

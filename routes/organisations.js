@@ -4,7 +4,9 @@ const express = require("express");
 const router = express.Router();
 const AWS = require("../config/database").AWS;
 const passport = require("passport");
-const DynamoDBData = require("diu-data-functions").Methods.DynamoDBData;
+const DIULibrary = require("diu-data-functions");
+const DynamoDBData = DIULibrary.Methods.DynamoDBData;
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const tablename = "organisations";
 
 /**
@@ -41,7 +43,7 @@ router.get("/", (req, res, next) => {
  * @swagger
  * /organisations/create:
  *   post:
- *     description: Registers a new Organisation
+ *     description: Registers a new Organisation. Requires Hall Monitor
  *     tags:
  *      - Organisations
  *     produces:
@@ -73,11 +75,14 @@ router.get("/", (req, res, next) => {
  */
 router.post(
     "/create",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
-        (new AWS.DynamoDB()).putItem(
+        new AWS.DynamoDB().putItem(
             {
                 TableName: tablename,
                 Item: AWS.DynamoDB.Converter.marshall({
@@ -98,7 +103,7 @@ router.post(
                         success: true,
                         msg: "Registered",
                         id: req.body.code,
-                        data
+                        data,
                     });
                 }
             }
@@ -112,7 +117,7 @@ router.post(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Updates an Organisation
+ *     description: Updates an Organisation. Requires Hall Monitor
  *     tags:
  *      - Organisations
  *     produces:
@@ -144,9 +149,12 @@ router.post(
  */
 router.post(
     "/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res) => {
         DynamoDBData.updateItem(AWS, tablename, ["destination", "type"], req.body, (err, app) => {
             if (err) {
@@ -167,7 +175,7 @@ router.post(
  * @swagger
  * /organisations/delete:
  *   delete:
- *     description: Remove an organisation
+ *     description: Remove an organisation. Requires Hall Monitor
  *     security:
  *      - JWT: []
  *     tags:
@@ -191,9 +199,12 @@ router.post(
  */
 router.delete(
     "/delete",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         if (req.body.code && req.body.name) {
             const key = {

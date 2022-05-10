@@ -3,6 +3,8 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const SystemAlerts = require("../models/systemalerts");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -81,7 +83,7 @@ router.get(
  *   put:
  *     security:
  *      - JWT: []
- *     description: Updates a System Alert
+ *     description: Updates a System Alert. Requires Hall Monitor
  *     tags:
  *      - SystemAlerts
  *     produces:
@@ -140,9 +142,12 @@ router.get(
  */
 router.put(
     "/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res) => {
         const newAlert = {
             _id: req.body["_id"],
@@ -165,7 +170,7 @@ router.put(
             res.json({
                 success: true,
                 msg: "Alert updated",
-                data: newAlert
+                data: newAlert,
             });
         });
     }
@@ -177,7 +182,7 @@ router.put(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Sets up a System Alert
+ *     description: Sets up a System Alert. Requires Hall Monitor
  *     tags:
  *      - SystemAlerts
  *     produces:
@@ -231,9 +236,12 @@ router.put(
  */
 router.post(
     "/create",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         const newSystemAlerts = {
             name: { S: req.body.name },

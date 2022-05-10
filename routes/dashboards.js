@@ -4,6 +4,8 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const Dashboards = require("../models/dashboards");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -18,7 +20,7 @@ const Dashboards = require("../models/dashboards");
  *   post:
  *     security:
  *      - JWT: []
- *     description: Registers a Dashboard
+ *     description: Registers a Dashboard. Requires Hall Monitor
  *     tags:
  *      - Dashboards
  *     produces:
@@ -76,9 +78,12 @@ const Dashboards = require("../models/dashboards");
  */
 router.post(
     "/create",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         const newDashboard = {
             name: req.body.name,
@@ -108,7 +113,7 @@ router.post(
                 res.json({
                     success: true,
                     msg: "Registered",
-                    data: newDashboard
+                    data: newDashboard,
                 });
             }
         });
@@ -121,7 +126,7 @@ router.post(
  *   put:
  *     security:
  *      - JWT: []
- *     description: Updates an Dashboard
+ *     description: Updates an Dashboard. Requires Hall Monitor
  *     tags:
  *      - Dashboards
  *     produces:
@@ -184,9 +189,12 @@ router.post(
  */
 router.put(
     "/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res) => {
         const id = req.query.dashboard_name;
         Dashboards.getDashboardByName(id, function (err, app) {
@@ -217,7 +225,7 @@ router.put(
                 res.json({
                     success: true,
                     msg: "Dashboard updated",
-                    data: scannedItem
+                    data: scannedItem,
                 });
             });
         });
@@ -272,7 +280,7 @@ router.get("/", (req, res, next) => {
  *   put:
  *     security:
  *      - JWT: []
- *     description: Archives an Dashboard
+ *     description: Archives an Dashboard. Requires Hall Monitor
  *     tags:
  *      - Dashboards
  *     produces:
@@ -289,9 +297,12 @@ router.get("/", (req, res, next) => {
  */
 router.put(
     "/archive",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res) => {
         const id = req.query.dashboard_name;
         Dashboards.getDashboardByName(id, function (err, app) {

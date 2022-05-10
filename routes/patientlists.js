@@ -5,6 +5,8 @@ const passport = require("passport");
 const patients = require("../models/patients");
 const JWT = require("jsonwebtoken");
 const { sanitiseQueryLimit } = require("../helpers/routes");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -19,7 +21,7 @@ const { sanitiseQueryLimit } = require("../helpers/routes");
  *   get:
  *     security:
  *      - JWT: []
- *     description: Gets a list of Patients
+ *     description: Gets a list of Patients. Requires patientidentifiabledata
  *     tags:
  *      - PatientLists
  *     produces:
@@ -41,9 +43,12 @@ const { sanitiseQueryLimit } = require("../helpers/routes");
  */
 router.get(
     "/",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         const limit = sanitiseQueryLimit(req.query.Limit);
         res.type("application/json");
@@ -84,7 +89,7 @@ router.get(
  *   get:
  *     security:
  *      - JWT: []
- *     description: Provides patient information
+ *     description: Provides patient information. Requires patientidentifiabledata
  *     tags:
  *      - PatientLists
  *     produces:
@@ -107,9 +112,12 @@ router.get(
  */
 router.get(
     "/patientdetailsbynhsnumber",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         const nhsNumber = req.query.NHSNumber;
         res.type("application/json");
@@ -152,7 +160,7 @@ router.get(
  *   get:
  *     security:
  *      - JWT: []
- *     description: Gets a list of Patients by Cohort
+ *     description: Gets a list of Patients by Cohort. Requires patientidentifiabledata
  *     tags:
  *      - PatientLists
  *     produces:
@@ -178,9 +186,12 @@ router.get(
  */
 router.get(
     "/getPatientsByCohort",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         const cohort = req.query.cohort || "";
         res.type("application/json");

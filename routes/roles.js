@@ -8,6 +8,7 @@ const DIULibrary = require("diu-data-functions");
 const RoleModel = new DIULibrary.Models.RoleModel();
 const RoleLinkModel = new DIULibrary.Models.RoleLinkModel();
 const CapabilityLinkModel = new DIULibrary.Models.CapabilityLinkModel();
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -48,7 +49,7 @@ router.get("/", passport.authenticate("jwt", { session: false }), (req, res, nex
  *   post:
  *     security:
  *      - JWT: []
- *     description: Create a new role
+ *     description: Create a new role. Requires Hall Montior
  *     tags:
  *      - Roles
  *     consumes:
@@ -87,9 +88,12 @@ router.get("/", passport.authenticate("jwt", { session: false }), (req, res, nex
  */
 router.post(
     "/create",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         const payload = req.body;
         RoleModel.create(
@@ -142,7 +146,7 @@ router.post(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Update an existing role
+ *     description: Update an existing role. Requires Hall Montior
  *     tags:
  *      - Roles
  *     consumes:
@@ -184,9 +188,12 @@ router.post(
  */
 router.post(
     "/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         // Get all capabilities
         const payload = req.body;
@@ -241,7 +248,7 @@ router.post(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Sync an array of role ids to a link id and type combination
+ *     description: Sync an array of role ids to a link id and type combination. Requires Hall Montior
  *     tags:
  *      - Roles
  *     consumes:
@@ -275,9 +282,12 @@ router.post(
  */
 router.post(
     "/links/sync",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         // Get params
         const payload = req.body;
@@ -311,7 +321,7 @@ router.post(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Create a new role link
+ *     description: Create a new role link. Requires Hall Montior
  *     tags:
  *      - Roles
  *     parameters:
@@ -338,9 +348,12 @@ router.post(
  */
 router.post(
     "/links/create",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         // Get params
         const payload = req.body;
@@ -374,7 +387,7 @@ router.post(
  *   delete:
  *     security:
  *      - JWT: []
- *     description: Delete a role link
+ *     description: Delete a role link. Requires Hall Montior
  *     tags:
  *      - Roles
  *     parameters:
@@ -401,9 +414,12 @@ router.post(
  */
 router.delete(
     "/links/delete",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         // Get params
         const payload = req.body;
@@ -463,7 +479,7 @@ router.get(
  *   delete:
  *     security:
  *      - JWT: []
- *     description: Delete a role by it's id
+ *     description: Delete a role by it's id. Requires Hall Montior
  *     tags:
  *      - Roles
  *     parameters:
@@ -480,9 +496,12 @@ router.get(
  */
 router.delete(
     "/delete",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         // Get all capabilities
         RoleModel.deleteByPrimaryKey(req.body.id, (err, result) => {

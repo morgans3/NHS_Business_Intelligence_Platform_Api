@@ -19,7 +19,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *   get:
  *     security:
  *      - JWT: []
- *     description: Gets a list of Citizens for the Virtual Ward LTP. Requires populationjoined
+ *     description: Gets a list of Citizens for the Virtual Ward LTP. Requires patientidentifiabledata
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -45,7 +45,7 @@ router.get(
         passport.authenticate("jwt", {
             session: false,
         }),
-        MiddlewareHelper.userHasCapability("populationjoined"),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
     ],
     (req, res, next) => {
         const limit = req.query.Limit.toString() || "1000";
@@ -87,7 +87,7 @@ router.get(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Updates a Citizens record for the Virtual Ward LTP. Requires populationjoined
+ *     description: Updates a Citizens record for the Virtual Ward LTP. Requires patientidentifiabledata
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -152,7 +152,7 @@ router.post(
         passport.authenticate("jwt", {
             session: false,
         }),
-        MiddlewareHelper.userHasCapability("populationjoined"),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
     ],
     (req, res) => {
         const item = req.body;

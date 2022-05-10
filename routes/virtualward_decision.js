@@ -4,6 +4,8 @@ const router = express.Router();
 const passport = require("passport");
 const virtualwardDecision = require("../models/virtualward_decision");
 const JWT = require("jsonwebtoken");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -18,7 +20,7 @@ const JWT = require("jsonwebtoken");
  *   get:
  *     security:
  *      - JWT: []
- *     description: Gets a list of Patients
+ *     description: Gets a list of Patients. Requires patientidentifiabledata
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -40,9 +42,12 @@ const JWT = require("jsonwebtoken");
  */
 router.get(
     "/",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         const limit = req.query.Limit.toString() || "1000";
         let numCheck;
@@ -89,7 +94,7 @@ router.get(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Gets a list of Patients by status
+ *     description: Gets a list of Patients by status. Requires patientidentifiabledata
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -117,9 +122,12 @@ router.get(
  */
 router.post(
     "/getAllByStatus",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         const status = req.body.status;
         const limit = req.query.Limit.toString() || "1000";
@@ -167,7 +175,7 @@ router.post(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Updates the Status
+ *     description: Updates the Status. Requires patientidentifiabledata
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -199,9 +207,12 @@ router.post(
  */
 router.post(
     "/status/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         res.type("application/json");
         if (req.body && req.body.status && req.body.id) {
@@ -234,7 +245,7 @@ router.post(
  *   get:
  *     security:
  *      - JWT: []
- *     description: Gets a list of Patients
+ *     description: Gets a list of Patients. Requires patientidentifiabledata
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -256,9 +267,12 @@ router.post(
  */
 router.get(
     "/getAllActioned",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         const limit = req.query.Limit.toString() || "1000";
         let numCheck;
@@ -305,7 +319,7 @@ router.get(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Updates the Preferred Contact information
+ *     description: Updates the Preferred Contact information. Requires patientidentifiabledata
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -335,9 +349,12 @@ router.get(
  */
 router.post(
     "/contact/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         res.type("application/json");
         if (req.body && req.body.contact && req.body.id) {
@@ -369,7 +386,7 @@ router.post(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Clears the VW preferred contact info
+ *     description: Clears the VW preferred contact info. Requires patientidentifiabledata
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -397,9 +414,12 @@ router.post(
  */
 router.post(
     "/contact/clear",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         res.type("application/json");
         if (req.body && req.body.id) {
@@ -430,7 +450,7 @@ router.post(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Updates the VW notes
+ *     description: Updates the VW notes. Requires patientidentifiabledata
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -460,9 +480,12 @@ router.post(
  */
 router.post(
     "/notes/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         res.type("application/json");
         if (req.body && req.body.notes && req.body.id) {
@@ -494,7 +517,7 @@ router.post(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Clears the VW notes
+ *     description: Clears the VW notes. Requires patientidentifiabledata
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -522,9 +545,12 @@ router.post(
  */
 router.post(
     "/notes/clear",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         res.type("application/json");
         if (req.body && req.body.id) {
