@@ -3,6 +3,8 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const virtualward = require("../models/virtualward");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -17,7 +19,7 @@ const virtualward = require("../models/virtualward");
  *   get:
  *     security:
  *      - JWT: []
- *     description: Gets a list of Citizens
+ *     description: Gets a list of Citizens for the Virtual Ward LTP. Requires populationjoined
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -39,9 +41,12 @@ const virtualward = require("../models/virtualward");
  */
 router.get(
     "/",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("populationjoined"),
+    ],
     (req, res, next) => {
         const limit = req.query.Limit.toString() || "1000";
         let numCheck;
@@ -67,7 +72,7 @@ router.get(
                     res.status(404).send(
                         JSON.stringify({
                             reason: `Unable to find patients, there may not exist patients who match
-                            this search or you may have insufficient permissions to view record.`,
+                            this search.`,
                         })
                     );
                 }
@@ -82,7 +87,7 @@ router.get(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Updates an Installation Request
+ *     description: Updates a Citizens record for the Virtual Ward LTP. Requires populationjoined
  *     tags:
  *      - VirtualWards
  *     produces:
@@ -143,9 +148,12 @@ router.get(
  */
 router.post(
     "/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("populationjoined"),
+    ],
     (req, res) => {
         const item = req.body;
         virtualward.update("virtualward_lightertouchpathway", item, item.uid, function (err, data) {
@@ -158,7 +166,7 @@ router.post(
                 res.json({
                     success: true,
                     msg: "Item updated",
-                    data: item
+                    data: item,
                 });
             }
         });

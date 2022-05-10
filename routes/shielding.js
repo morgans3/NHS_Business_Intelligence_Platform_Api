@@ -5,6 +5,8 @@ const passport = require("passport");
 const shielding = require("../models/shielding");
 const JWT = require("jsonwebtoken");
 const { sanitiseQueryLimit } = require("../helpers/routes");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -19,7 +21,7 @@ const { sanitiseQueryLimit } = require("../helpers/routes");
  *   get:
  *     security:
  *      - JWT: []
- *     description: Gets a list of citizens enrolled on the National Shielding Service System
+ *     description: Gets a list of citizens enrolled on the National Shielding Service System. Requires populationshielding
  *     tags:
  *      - ShieldingList
  *     produces:
@@ -41,9 +43,12 @@ const { sanitiseQueryLimit } = require("../helpers/routes");
  */
 router.get(
     "/",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("populationshielding"),
+    ],
     (req, res, next) => {
         const limit = sanitiseQueryLimit(req.query.Limit);
         res.type("application/json");
