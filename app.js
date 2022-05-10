@@ -40,9 +40,13 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerdocs, swaggerBrowse
 app.use(APILogging(apiname, AWSSettings));
 
 // SETTINGS FOR OUR API
+let limitOfRates = 50;
+if (process.env.DEV) {
+    limitOfRates = 1000;
+}
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
-    max: 50,
+    max: limitOfRates,
 });
 app.use(limiter);
 app.use(cors());

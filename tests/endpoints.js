@@ -25,7 +25,7 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
-        url: "/capabilities/register",
+        url: "/capabilities/create",
         type: "JWT",
         method: "post",
     },
@@ -35,14 +35,9 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
-        url: "/capabilities/removeById",
+        url: "/capabilities/delete",
         type: "JWT",
         method: "delete",
-    },
-    {
-        url: "/capabilities/getById",
-        type: "JWT",
-        method: "get",
     },
     {
         url: "/capabilities/getByTag",
@@ -185,7 +180,7 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
-        url: "/lpresviewer/getValidationKey",
+        url: "/lpresviewer/generate-validation-key",
         type: "JWT",
         method: "post",
     },
@@ -240,7 +235,7 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
-        url: "/patientlists/getPatients",
+        url: "/patientlists/",
         type: "JWT",
         method: "get",
     },
@@ -285,24 +280,19 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
-        url: "/teamrequests/register",
+        url: "/teamrequests/create",
         type: "JWT",
         method: "post",
     },
     {
-        url: "/teamrequests/archive",
+        url: "/teamrequests/delete",
         type: "JWT",
-        method: "put",
+        method: "delete",
     },
     {
         url: "/teamrequests/update",
         type: "JWT",
         method: "put",
-    },
-    {
-        url: "/teamrequests/getByID",
-        type: "JWT",
-        method: "get",
     },
     {
         url: "/teamrequests/",
@@ -375,17 +365,17 @@ module.exports.SecureEndpoints = [
     //     method: "delete",
     // },
     {
-        url: "/searchs/searchTeams",
+        url: "/searchs/teams",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/searchusers/searchUserProfiles",
+        url: "/searchusers/profiles",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/searchusers/searchOrgUserProfiles",
+        url: "/searchusers/org-profiles",
         type: "JWT",
         method: "get",
     },
@@ -395,12 +385,12 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
-        url: "/shielding/getCitizens",
+        url: "/shielding/",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/teammembers/register",
+        url: "/teammembers/create",
         type: "JWT",
         method: "post",
     },
@@ -425,50 +415,10 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
-        url: "/teammembers/archive",
+        url: "/teammembers/delete",
         type: "JWT",
-        method: "put",
+        method: "delete",
     },
-    // {
-    //   url: `/teamprofiles/register`,
-    //   type: "JWT",
-    //   method: "post",
-    // },
-    // {
-    //   url: `/teamprofiles/`,
-    //   type: "JWT",
-    //   method: "get",
-    // },
-    {
-        url: "/teamprofiles/getTeamByCode",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/teamprofiles/getTeamsByOrgCode",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/teamprofiles/getTeamsByPartialTeamName",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/teamprofiles/getTeamsByPartialTeamNameAndOrgCode",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/teamprofiles/archive",
-        type: "JWT",
-        method: "put",
-    },
-    // {
-    //   url: `/teamprofiles/update`,
-    //   type: "JWT",
-    //   method: "put",
-    // },
     {
         url: "/teams",
         type: "JWT",
@@ -495,12 +445,12 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
-        url: "/trials/getSearchTop1000",
+        url: "/trials/search-top-100",
         type: "JWT",
         method: "post",
     },
     {
-        url: "/userprofiles/register",
+        url: "/userprofiles/create",
         type: "JWT",
         method: "post",
     },
@@ -515,9 +465,9 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
-        url: "/userprofiles/archive",
+        url: "/userprofiles/delete",
         type: "JWT",
-        method: "put",
+        method: "delete",
     },
     {
         url: "/userprofiles/update",
@@ -586,22 +536,22 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
-        url: "/pcninformation/getHexGeojson",
+        url: "/pcninformation/hexgeo-json",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/pcninformation/getTopoJSON",
+        url: "/pcninformation/topo-json",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/orgboundaries/getTopoJSON",
+        url: "/orgboundaries/topo-json",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/isochrone/getHousesWithinIsochrone",
+        url: "/isochrone/houses-within-isochrone",
         type: "JWT",
         method: "post",
     },
@@ -626,7 +576,7 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
-        url: "/mosaic/getCodefromPostCode",
+        url: "/mosaic/",
         type: "JWT",
         method: "get",
     },
@@ -636,17 +586,37 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
-        url: "/payloads/",
+        url: "/atomic/payloads/",
         type: "JWT",
         method: "get",
     },
+    {
+        url: "/atomic/payloads/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/atomic/payloads/update",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/atomic/payloads/delete",
+        type: "JWT",
+        method: "delete",
+    },
+    // {
+    //     url: "/atomic/payloads/{id}",
+    //     type: "JWT",
+    //     method: "get",
+    // },
     {
         url: "/organisations/remove",
         type: "JWT",
         method: "delete",
     },
     {
-        url: "/organisations/register",
+        url: "/organisations/create",
         type: "JWT",
         method: "post",
     },
@@ -666,7 +636,7 @@ module.exports.SecureEndpoints = [
         method: "delete",
     },
     {
-        url: "/newsfeeds/register",
+        url: "/newsfeeds/create",
         type: "JWT",
         method: "post",
     },
@@ -681,11 +651,6 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
-        url: "/newsfeeds/getByID",
-        type: "JWT",
-        method: "get",
-    },
-    {
         url: "/systemalerts/",
         type: null,
         method: "get",
@@ -696,7 +661,7 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
-        url: "/systemalerts/register",
+        url: "/systemalerts/create",
         type: "JWT",
         method: "post",
     },
@@ -711,12 +676,7 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
-        url: "/apps/getByName",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/apps/register",
+        url: "/apps/create",
         type: "JWT",
         method: "post",
     },
@@ -726,8 +686,28 @@ module.exports.SecureEndpoints = [
         method: "put",
     },
     {
-        url: "/apps/archive",
+        url: "/apps/delete",
+        type: "JWT",
+        method: "delete",
+    },
+    {
+        url: "/dashboards/",
+        type: null,
+        method: "get",
+    },
+    {
+        url: "/dashboards/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/dashboards/update",
         type: "JWT",
         method: "put",
+    },
+    {
+        url: "/dashboards/delete",
+        type: "JWT",
+        method: "delete",
     },
 ];

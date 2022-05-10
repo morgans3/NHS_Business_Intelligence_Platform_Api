@@ -276,11 +276,11 @@ router.get("/", (req, res, next) => {
 
 /**
  * @swagger
- * /dashboards/archive?dashboard_name={dashboard_name}:
- *   put:
+ * /dashboards/delete:
+ *   delete:
  *     security:
  *      - JWT: []
- *     description: Archives an Dashboard. Requires Hall Monitor
+ *     description: Deletes an Dashboard. Requires Hall Monitor
  *     tags:
  *      - Dashboards
  *     produces:
@@ -288,7 +288,7 @@ router.get("/", (req, res, next) => {
  *     parameters:
  *       - name: dashboard_name
  *         description: Dashboard's ID
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *     responses:
@@ -296,7 +296,7 @@ router.get("/", (req, res, next) => {
  *         description: Confirmation of Dashboard being Archived
  */
 router.put(
-    "/archive",
+    "/delete",
     [
         passport.authenticate("jwt", {
             session: false,
@@ -312,19 +312,26 @@ router.put(
                     msg: "Failed to archive: " + err,
                 });
             }
-            const scannedItem = app.Items[0];
-            Dashboards.removeDashboard(scannedItem.name, scannedItem.environment, function (errRemove, data) {
-                if (errRemove) {
-                    res.status(500).json({
-                        success: false,
-                        msg: "Failed to update: " + errRemove,
+            if (app.Items && app.Items.length > 0) {
+                const scannedItem = app.Items[0];
+                Dashboards.removeDashboard(scannedItem.name, scannedItem.environment, function (errRemove, data) {
+                    if (errRemove) {
+                        res.status(500).json({
+                            success: false,
+                            msg: "Failed to update: " + errRemove,
+                        });
+                    }
+                    res.json({
+                        success: true,
+                        msg: "Dashboard removed",
                     });
-                }
-                res.json({
-                    success: true,
-                    msg: "Dashboard removed",
                 });
-            });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    msg: "Dashboard not found",
+                });
+            }
         });
     }
 );

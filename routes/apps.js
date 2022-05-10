@@ -276,11 +276,11 @@ router.get("/", (req, res, next) => {
 
 /**
  * @swagger
- * /apps/archive?app_name={app_name}:
- *   put:
+ * /apps/delete:
+ *   delete:
  *     security:
  *      - JWT: []
- *     description: Archives an App. Requires Hall Monitor
+ *     description: Deletes an App. Requires Hall Monitor
  *     tags:
  *      - Application
  *     produces:
@@ -288,7 +288,7 @@ router.get("/", (req, res, next) => {
  *     parameters:
  *       - name: app_name
  *         description: App's ID
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *     responses:
@@ -296,7 +296,7 @@ router.get("/", (req, res, next) => {
  *         description: Confirmation of App being Archived
  */
 router.put(
-    "/archive",
+    "/delete",
     [
         passport.authenticate("jwt", {
             session: false,
@@ -312,19 +312,26 @@ router.put(
                     msg: "Failed to archive: " + err,
                 });
             }
-            const scannedItem = app.Items[0];
-            App.removeApp(scannedItem.name, scannedItem.environment, function (errRemove, data) {
-                if (errRemove) {
-                    res.status(500).json({
-                        success: false,
-                        msg: "Failed to update: " + errRemove,
+            if (app.Items && app.Items.length > 0) {
+                const scannedItem = app.Items[0];
+                App.removeApp(scannedItem.name, scannedItem.environment, function (errRemove, data) {
+                    if (errRemove) {
+                        res.status(500).json({
+                            success: false,
+                            msg: "Failed to update: " + errRemove,
+                        });
+                    }
+                    res.json({
+                        success: true,
+                        msg: "App removed",
                     });
-                }
-                res.json({
-                    success: true,
-                    msg: "App removed",
                 });
-            });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    msg: "App not found",
+                });
+            }
         });
     }
 );
