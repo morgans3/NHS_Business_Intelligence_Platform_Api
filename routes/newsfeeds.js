@@ -4,7 +4,9 @@ const express = require("express");
 const router = express.Router();
 const AWS = require("../config/database").AWS;
 const passport = require("passport");
-const DynamoDBData = require("diu-data-functions").Methods.DynamoDBData;
+const DIULibrary = require("diu-data-functions");
+const DynamoDBData = DIULibrary.Methods.DynamoDBData;
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const tablename = "newsfeeds";
 
 /**
@@ -20,7 +22,7 @@ const tablename = "newsfeeds";
  *   post:
  *     security:
  *      - JWT: []
- *     description: Registers a new News Feed
+ *     description: Registers a new News Feed. Requires Hall Monitor
  *     tags:
  *      - NewsFeeds
  *     produces:
@@ -47,9 +49,12 @@ const tablename = "newsfeeds";
  */
 router.post(
     "/create",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         // Create item
         const newNewsFeed = {
@@ -59,7 +64,7 @@ router.post(
         };
 
         // Persist
-        (new AWS.DynamoDB()).putItem(
+        new AWS.DynamoDB().putItem(
             {
                 TableName: tablename,
                 Item: AWS.DynamoDB.Converter.marshall(newNewsFeed),
@@ -88,7 +93,7 @@ router.post(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Updates a News Feed
+ *     description: Updates a News Feed. Requires Hall Monitor
  *     tags:
  *      - NewsFeeds
  *     produces:
@@ -115,9 +120,12 @@ router.post(
  */
 router.post(
     "/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res) => {
         DynamoDBData.updateItem(AWS, tablename, ["destination", "type"], req.body, (err, app) => {
             if (err) {
@@ -186,7 +194,7 @@ router.get(
  * @swagger
  * /newsfeeds/delete:
  *   delete:
- *     description: Remove a newsfeed
+ *     description: Remove a newsfeed. Requires Hall Monitor
  *     security:
  *      - JWT: []
  *     tags:
@@ -210,9 +218,12 @@ router.get(
  */
 router.delete(
     "/delete",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         if (req.body.destination && req.body.type) {
             const key = {

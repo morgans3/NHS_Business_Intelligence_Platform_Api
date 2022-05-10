@@ -8,6 +8,7 @@ const DIULibrary = require("diu-data-functions");
 const CapabilitiesModel = new DIULibrary.Models.CapabilityModel();
 const CapabilityLinkModel = new DIULibrary.Models.CapabilityLinkModel();
 const RoleModel = new DIULibrary.Models.RoleModel();
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -53,7 +54,7 @@ router.get(
  * @swagger
  * /capabilities/create:
  *   post:
- *     description: Create a capability
+ *     description: Create a capability. Requires Hall Montior
  *     security:
  *      - JWT: []
  *     tags:
@@ -95,9 +96,12 @@ router.get(
  */
 router.post(
     "/create",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         const newCapability = {
             name: req.body.name,
@@ -116,7 +120,7 @@ router.post(
                 res.json({
                     success: true,
                     msg: "Capability registered",
-                    data: newCapability
+                    data: newCapability,
                 });
             }
         });
@@ -127,7 +131,7 @@ router.post(
  * @swagger
  * /capabilities/update:
  *   post:
- *     description: Updates a capability
+ *     description: Updates a capability. Requires Hall Montior
  *     security:
  *      - JWT: []
  *     tags:
@@ -174,9 +178,12 @@ router.post(
  */
 router.post(
     "/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         const newCapability = {
             name: req.body.name,
@@ -203,7 +210,7 @@ router.post(
                             res.json({
                                 success: true,
                                 msg: "Capability updated",
-                                data: newCapability
+                                data: newCapability,
                             });
                         }
                     });
@@ -222,7 +229,7 @@ router.post(
  * @swagger
  * /capabilities/delete:
  *   delete:
- *     description: Delete a capability
+ *     description: Delete a capability. Requires Hall Montior
  *     security:
  *      - JWT: []
  *     tags:
@@ -241,9 +248,12 @@ router.post(
  */
 router.delete(
     "/delete",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         CapabilitiesModel.getByPrimaryKey(req.body.id, function (err, data) {
             if (err) {
@@ -492,7 +502,7 @@ router.get(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Sync an array of capability ids to a link id and type combination
+ *     description: Sync an array of capability ids to a link id and type combination. Requires Hall Montior
  *     tags:
  *      - Capabilities
  *     parameters:
@@ -520,9 +530,12 @@ router.get(
  */
 router.post(
     "/links/sync",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         // Get params
         const payload = req.body;
@@ -556,7 +569,7 @@ router.post(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Create a new capability link
+ *     description: Create a new capability link. Requires Hall Montior
  *     tags:
  *      - Capabilities
  *     parameters:
@@ -583,9 +596,12 @@ router.post(
  */
 router.post(
     "/links/create",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         // Get params
         const payload = req.body;
@@ -619,7 +635,7 @@ router.post(
  *   delete:
  *     security:
  *      - JWT: []
- *     description: Delete a capability link
+ *     description: Delete a capability link. Requires Hall Montior
  *     tags:
  *      - Capabilities
  *     parameters:
@@ -646,9 +662,12 @@ router.post(
  */
 router.delete(
     "/links/delete",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         // Get params
         const payload = req.body;

@@ -4,6 +4,8 @@ const router = express.Router();
 const passport = require("passport");
 const history = require("../models/patienthistory");
 const JWT = require("jsonwebtoken");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -18,7 +20,7 @@ const JWT = require("jsonwebtoken");
  *   get:
  *     security:
  *      - JWT: []
- *     description: Provides patient history
+ *     description: Provides patient history. Requires patientidentifiabledata
  *     tags:
  *      - PatientHistory
  *     produces:
@@ -41,9 +43,12 @@ const JWT = require("jsonwebtoken");
  */
 router.get(
     "/patienthistorybynhsnumber",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         const nhsNumber = req.query.NHSNumber;
         res.type("application/json");
@@ -82,7 +87,7 @@ router.get(
  *   get:
  *     security:
  *      - JWT: []
- *     description: Provides citizen's district record history
+ *     description: Provides citizen's district record history. Requires patientidentifiabledata
  *     tags:
  *      - PatientHistory
  *     produces:
@@ -105,9 +110,12 @@ router.get(
  */
 router.get(
     "/districthistorybynhsnumber",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         const nhsNumber = req.query.NHSNumber;
         res.type("application/json");

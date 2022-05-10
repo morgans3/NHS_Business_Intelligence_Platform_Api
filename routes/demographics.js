@@ -5,7 +5,8 @@ const passport = require("passport");
 const demographics = require("../models/demographics");
 const patient = require("../models/patients");
 const JWT = require("jsonwebtoken");
-
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 /**
  * @swagger
  * tags:
@@ -19,7 +20,7 @@ const JWT = require("jsonwebtoken");
  *   get:
  *     security:
  *      - JWT: []
- *     description: Provides validation for a NHS Number using the Date of Birth
+ *     description: Provides validation for a NHS Number using the Date of Birth. Requires patientidentifiabledata
  *     tags:
  *      - Demographics
  *     produces:
@@ -42,9 +43,12 @@ const JWT = require("jsonwebtoken");
  */
 router.get(
     "/demographicsbynhsnumber",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         const nhsNumber = req.query.NHSNumber;
         res.type("application/json");
@@ -87,7 +91,7 @@ router.get(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Provides validation for a NHS Number using the Date of Birth
+ *     description: Provides validation for a NHS Number using the Date of Birth. Requires patientidentifiabledata
  *     tags:
  *      - Demographics
  *     produces:
@@ -118,9 +122,12 @@ router.get(
  */
 router.post(
     "/validateNHSNumber",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("patientidentifiabledata"),
+    ],
     (req, res, next) => {
         res.type("application/json");
         if (req.body && req.body.NHSNumber && req.body.DateOfBirth) {

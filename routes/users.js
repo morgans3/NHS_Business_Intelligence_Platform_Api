@@ -142,7 +142,7 @@ router.get(
  * @swagger
  * /users/register:
  *   post:
- *     description: Registers a User
+ *     description: Registers a User. Requires Hall Monitor
  *     tags:
  *      - Users
  *     produces:
@@ -187,36 +187,45 @@ router.get(
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.post("/register", (req, res, next) => {
-    const newUser = {
-        name: { S: req.body.name },
-        email: { S: req.body.email },
-        username: { S: req.body.username },
-        password: { S: req.body.password },
-        organisation: { S: req.body.organisation },
-        linemanager: { S: req.body.linemanager },
-    };
-    if (req.body.key === credentials.secretkey) {
-        UserModel.addUser(newUser, req.body.password, (err, user) => {
-            if (err) {
-                res.status(500).json({
-                    success: false,
-                    msg: "Failed to register user",
-                });
-            } else {
-                res.json({
-                    success: true,
-                    msg: "User registered",
-                });
-            }
-        });
-    } else {
-        res.status(401).json({
-            success: false,
-            msg: "Unauthorized",
-        });
+router.post(
+    "/register",
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
+    (req, res, next) => {
+        const newUser = {
+            name: { S: req.body.name },
+            email: { S: req.body.email },
+            username: { S: req.body.username },
+            password: { S: req.body.password },
+            organisation: { S: req.body.organisation },
+            linemanager: { S: req.body.linemanager },
+        };
+        if (req.body.key === credentials.secretkey) {
+            UserModel.addUser(newUser, req.body.password, (err, user) => {
+                if (err) {
+                    res.status(500).json({
+                        success: false,
+                        msg: "Failed to register user",
+                    });
+                } else {
+                    res.json({
+                        success: true,
+                        msg: "User registered",
+                    });
+                }
+            });
+        } else {
+            res.status(401).json({
+                success: false,
+                msg: "Unauthorized",
+            });
+        }
     }
-});
+);
 
 /**
  * @swagger
@@ -329,7 +338,7 @@ router.get(
  *   delete:
  *     security:
  *      - JWT: []
- *     description: Delete a Nexus user
+ *     description: Delete a Nexus user. Requires Hall Monitor
  *     tags:
  *      - Users
  *     produces:
@@ -351,9 +360,12 @@ router.get(
  */
 router.delete(
     "/delete",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         UserModel.delete(
             {

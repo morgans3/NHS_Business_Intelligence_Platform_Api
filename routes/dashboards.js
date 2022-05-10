@@ -4,6 +4,8 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const Dashboards = require("../models/dashboards");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -18,7 +20,7 @@ const Dashboards = require("../models/dashboards");
  *   post:
  *     security:
  *      - JWT: []
- *     description: Registers a Dashboard
+ *     description: Registers a Dashboard. Requires Hall Monitor
  *     tags:
  *      - Dashboards
  *     produces:
@@ -76,9 +78,12 @@ const Dashboards = require("../models/dashboards");
  */
 router.post(
     "/create",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res, next) => {
         const newDashboard = {
             name: req.body.name,
@@ -108,7 +113,7 @@ router.post(
                 res.json({
                     success: true,
                     msg: "Registered",
-                    data: newDashboard
+                    data: newDashboard,
                 });
             }
         });
@@ -121,7 +126,7 @@ router.post(
  *   put:
  *     security:
  *      - JWT: []
- *     description: Updates an Dashboard
+ *     description: Updates an Dashboard. Requires Hall Monitor
  *     tags:
  *      - Dashboards
  *     produces:
@@ -184,9 +189,12 @@ router.post(
  */
 router.put(
     "/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res) => {
         const id = req.query.dashboard_name;
         Dashboards.getDashboardByName(id, function (err, app) {
@@ -217,7 +225,7 @@ router.put(
                 res.json({
                     success: true,
                     msg: "Dashboard updated",
-                    data: scannedItem
+                    data: scannedItem,
                 });
             });
         });
@@ -268,11 +276,11 @@ router.get("/", (req, res, next) => {
 
 /**
  * @swagger
- * /dashboards/archive?dashboard_name={dashboard_name}:
- *   put:
+ * /dashboards/delete:
+ *   delete:
  *     security:
  *      - JWT: []
- *     description: Archives an Dashboard
+ *     description: Deletes an Dashboard. Requires Hall Monitor
  *     tags:
  *      - Dashboards
  *     produces:
@@ -280,7 +288,7 @@ router.get("/", (req, res, next) => {
  *     parameters:
  *       - name: dashboard_name
  *         description: Dashboard's ID
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *     responses:
@@ -288,10 +296,13 @@ router.get("/", (req, res, next) => {
  *         description: Confirmation of Dashboard being Archived
  */
 router.put(
-    "/archive",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    "/delete",
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
     (req, res) => {
         const id = req.query.dashboard_name;
         Dashboards.getDashboardByName(id, function (err, app) {
@@ -301,19 +312,26 @@ router.put(
                     msg: "Failed to archive: " + err,
                 });
             }
-            const scannedItem = app.Items[0];
-            Dashboards.removeDashboard(scannedItem.name, scannedItem.environment, function (errRemove, data) {
-                if (errRemove) {
-                    res.status(500).json({
-                        success: false,
-                        msg: "Failed to update: " + errRemove,
+            if (app.Items && app.Items.length > 0) {
+                const scannedItem = app.Items[0];
+                Dashboards.removeDashboard(scannedItem.name, scannedItem.environment, function (errRemove, data) {
+                    if (errRemove) {
+                        res.status(500).json({
+                            success: false,
+                            msg: "Failed to update: " + errRemove,
+                        });
+                    }
+                    res.json({
+                        success: true,
+                        msg: "Dashboard removed",
                     });
-                }
-                res.json({
-                    success: true,
-                    msg: "Dashboard removed",
                 });
-            });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    msg: "Dashboard not found",
+                });
+            }
         });
     }
 );
