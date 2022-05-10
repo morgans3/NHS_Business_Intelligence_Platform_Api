@@ -35,11 +35,6 @@ module.exports.getRequestsByTeamCodeAndUser = function (code, callback) {
     );
 };
 
-module.exports.getOutstandingRequests = function (callback) {
-    const filter = "attribute_not_exists(approveddate) and attribute_not_exists(refuseddate)";
-    DynamoDB.getAllByFilter(AWS, tablename, filter, callback);
-};
-
 module.exports.getAll = function (callback) {
     DynamoDB.getAll(AWS, tablename, callback);
 };

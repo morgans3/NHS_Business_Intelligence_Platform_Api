@@ -309,16 +309,6 @@ module.exports.SecureEndpoints = [
         type: "JWT",
         method: "get",
     },
-    {
-        url: "/teamrequests/getOutstandingRequests",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/teamrequests/getOutstandingRequests",
-        type: "JWT",
-        method: "get",
-    },
     // {
     //     url: `/{type}/{id}/roles`,
     //     type: "JWT",

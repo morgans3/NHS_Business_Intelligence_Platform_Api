@@ -267,8 +267,8 @@ router.get(
 
 /**
  * @swagger
- * /teammembers/archive:
- *   put:
+ * /teammembers/delete:
+ *   delete:
  *     security:
  *      - JWT: []
  *     description: Removes a Member from a Group
@@ -279,15 +279,15 @@ router.get(
  *     parameters:
  *       - name: id
  *         description: Team member id
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *     responses:
  *       200:
- *         description: Confirmation of Member being Archived
+ *         description: Confirmation of Member being deleted
  */
 router.put(
-    "/archive",
+    "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -305,9 +305,9 @@ router.put(
                     },
                     (memberDeleteErr) => {
                         if (err) {
-                            res.status(500).json({ success: false, msg: "Failed to archive: " + memberDeleteErr });
+                            res.status(500).json({ success: false, msg: "Failed to delete: " + memberDeleteErr });
                         } else {
-                            res.json({ success: true, msg: "Archived" });
+                            res.json({ success: true, msg: "Deleted" });
                         }
                     }
                 );

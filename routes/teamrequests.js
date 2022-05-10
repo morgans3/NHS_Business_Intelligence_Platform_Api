@@ -260,11 +260,11 @@ router.put(
 
 /**
  * @swagger
- * /teamrequests/archive?request_id={request_id}:
- *   put:
+ * /teamrequests/delete:
+ *   delete:
  *     security:
  *      - JWT: []
- *     description: Archives a Request
+ *     description: Delete a Request
  *     tags:
  *      - TeamRequests
  *     produces:
@@ -272,15 +272,15 @@ router.put(
  *     parameters:
  *       - name: request_id
  *         description: Request's ID
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *     responses:
  *       200:
- *         description: Confirmation of Request being Archived
+ *         description: Confirmation of Request being deleted
  */
-router.put(
-    "/archive",
+router.delete(
+    "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -290,7 +290,7 @@ router.put(
             if (err) {
                 res.status(500).json({
                     success: false,
-                    msg: "Failed to archive: " + err,
+                    msg: "Failed to delete: " + err,
                 });
             }
             if (result.Items.length > 0) {
@@ -299,12 +299,12 @@ router.put(
                     if (requestRemoveErr) {
                         res.status(500).json({
                             success: false,
-                            msg: "Failed to archive: " + requestRemoveErr,
+                            msg: "Failed to delete: " + requestRemoveErr,
                         });
                     }
                     res.json({
                         success: true,
-                        msg: "Request archived",
+                        msg: "Request deleted",
                     });
                 });
             } else {
@@ -464,41 +464,6 @@ router.get(
     (req, res, next) => {
         const code = req.query.code;
         Requests.getRequestsByTeamCode(code, function (err, result) {
-            if (err) {
-                res.status(500).send({ success: false, msg: err });
-            } else {
-                if (result.Items) {
-                    res.send(JSON.stringify(result.Items));
-                } else {
-                    res.send(JSON.stringify([]));
-                }
-            }
-        });
-    }
-);
-
-/**
- * @swagger
- * /teamrequests/getOutstandingRequests:
- *   get:
- *     security:
- *      - JWT: []
- *     description: Returns the entire collection
- *     tags:
- *      - TeamRequests
- *     produces:
- *      - application/json
- *     responses:
- *       200:
- *         description: Full List
- */
-router.get(
-    "/getOutstandingRequests",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res, next) => {
-        Requests.getOutstandingRequests(function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {

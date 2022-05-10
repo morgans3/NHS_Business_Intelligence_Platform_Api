@@ -401,56 +401,6 @@ router.get(
 
 /**
  * @swagger
- * /teams/archive?profile_id={profile_id}:
- *   put:
- *     security:
- *      - JWT: []
- *     description: Removes a Profile
- *     tags:
- *      - Teams
- *     produces:
- *      - application/json
- *     parameters:
- *       - name: profile_id
- *         description: Profile's ID
- *         in: query
- *         required: true
- *         type: string
- *     responses:
- *       200:
- *         description: Confirmation of Member being Archived
- */
-router.put(
-    "/archive",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res) => {
-        const id = req.query.profile_id;
-        TeamModel.getByKeys({ _id: id }, (err, result) => {
-            // Output error
-            if (err) {
-                res.status(500).json({ success: false, msg: "Failed to archive: " + err });
-            }
-
-            // Item exists?
-            if (result.Items.length > 0) {
-                // Delete item
-                TeamModel.delete({ _id: id }, (deleteError) => {
-                    if (deleteError) {
-                        res.status(500).json({ success: false, msg: "Failed to remove: " + deleteError });
-                    }
-                    res.json({ success: true, msg: "Profile removed" });
-                });
-            } else {
-                res.status(404).json({ success: false, msg: "Can not find item in database" });
-            }
-        });
-    }
-);
-
-/**
- * @swagger
  * /teams/delete:
  *   delete:
  *     security:
