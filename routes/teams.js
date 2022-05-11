@@ -55,33 +55,37 @@ router.get(
  *     description: Create a new team
  *     tags:
  *      - Teams
+ *     consumes:
+ *      - application/json
  *     parameters:
- *       - name: code
- *         description: Team code
- *         in: formData
- *         required: true
- *         type: string
- *       - name: name
- *         description: Team name
- *         in: formData
- *         required: true
- *         type: string
- *       - name: description
- *         description: Team description
- *         in: formData
- *         required: true
- *         type: string
- *       - name: organisationcode
- *         description: Team organisation code
- *         in: formData
- *         required: true
- *         type: string
- *       - name: responsiblepeople
- *         description: Array of responsible people for the team
- *         in: formData
- *         type: array
- *         items:
- *           type: string
+ *      - in: body
+ *        name: team
+ *        description: The team details
+ *        schema:
+ *          type: object
+ *          required:
+ *            - code
+ *            - name
+ *            - description
+ *            - organisationcode
+ *          properties:
+ *            code:
+ *              type: string
+ *              description: Unique team code
+ *            name:
+ *              type: string
+ *              description: Team name
+ *            description:
+ *              type: string
+ *              description: Team description
+ *            organisationcode:
+ *              type: string
+ *              description: Organisation code
+ *            responsiblepeople:
+ *              type: array
+ *              items:
+ *                type: string
+ *                description: Array of responsible people for the team
  *     produces:
  *      - application/json
  *     responses:
@@ -102,7 +106,7 @@ router.post(
             description: payload.description,
             name: payload.name,
             organisationcode: payload.organisationcode,
-            responsiblepeople: payload.responsiblepeople ? payload.responsiblepeople.split(",") : [],
+            responsiblepeople: payload.responsiblepeople || [],
         };
 
         // Persist in database
@@ -125,53 +129,41 @@ router.post(
  *     description: Update an existing team
  *     tags:
  *      - Teams
+ *     consumes:
+ *      - application/json
  *     parameters:
- *       - name: id
- *         description: Id of team to update
- *         in: formData
- *         required: true
- *         type: string
- *       - name: code
- *         description: Code of team to update
- *         in: formData
- *         required: true
- *         type: string
- *       - name: name
- *         description: Team name
- *         in: formData
- *         required: true
- *         type: string
- *       - name: description
- *         description: Team description
- *         in: formData
- *         required: true
- *         type: string
- *       - name: organisationcode
- *         description: Team organisation code
- *         in: formData
- *         required: true
- *         type: string
- *       - name: responsiblepeople
- *         description: Array of responsible people for the team
- *         in: formData
- *         type: array
- *         explode: true
- *         items:
- *           type: string
- *       - name: roles
- *         description: Array of role ids for the team
- *         in: formData
- *         type: array
- *         explode: true
- *         items:
- *           type: integer
- *       - name: capabilities
- *         description: Array of capability ids for the team
- *         in: formData
- *         type: array
- *         explode: true
- *         items:
- *           type: integer
+ *      - in: body
+ *        name: team
+ *        description: The team details
+ *        schema:
+ *          type: object
+ *          required:
+ *            - _id
+ *            - code
+ *            - name
+ *            - description
+ *            - organisationcode
+ *          properties:
+ *            _id:
+ *              type: string
+ *              description: Id of team to update
+ *            code:
+ *              type: string
+ *              description: Unique team code
+ *            name:
+ *              type: string
+ *              description: Team name
+ *            description:
+ *              type: string
+ *              description: Team description
+ *            organisationcode:
+ *              type: string
+ *              description: Organisation code
+ *            responsiblepeople:
+ *              type: array
+ *              items:
+ *                type: string
+ *                description: Array of responsible people for the team
  *     produces:
  *      - application/json
  *     responses:
@@ -188,13 +180,10 @@ router.all(
         // Get params
         const payload = req.body;
 
-        // For teamprofile update redirect
-        payload.id = req.query.profile_id;
-
         // Update team
         TeamModel.update(
             {
-                _id: payload.id,
+                _id: payload["_id"],
                 code: payload.code,
             },
             {
@@ -459,7 +448,7 @@ router.put(
  *     tags:
  *      - Teams
  *     parameters:
- *       - name: id
+ *       - name: _id
  *         description: Id of team to delete
  *         in: formData
  *         required: true
@@ -484,7 +473,7 @@ router.delete(
         // Get all capabilities
         TeamModel.delete(
             {
-                _id: req.body.id,
+                _id: req.body["_id"],
                 code: req.body.code,
             },
             (err, result) => {
