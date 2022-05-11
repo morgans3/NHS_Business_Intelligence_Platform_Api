@@ -6,7 +6,8 @@ const HashHelper = DIULibrary.Helpers.Hash;
 const StringHelper = DIULibrary.Helpers.StringMethods;
 const UserModel = new DIULibrary.Models.UserModel();
 const AccessLogModel = new DIULibrary.Models.AccessLog();
-const ActiveDirectoryModel = new DIULibrary.Models.ActiveDirectoryModel();
+const ADModel = require("../models/activedirectory");
+const ActiveDirectoryModel = new ADModel();
 const TeamMembersModel = require("../models/teammembers");
 const nexusAuthMethods = ["Demo", "Nexus"];
 
