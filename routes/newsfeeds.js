@@ -219,8 +219,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of removal
- *      403:
- *       description: Forbidden due to capability requirements
+ *       403:
+ *         description: Forbidden due to capability requirements
  */
 router.delete(
     "/delete",
