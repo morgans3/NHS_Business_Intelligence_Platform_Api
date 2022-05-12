@@ -9,6 +9,7 @@ const getConfigurationFromDatabase = async (callback) => {
         } else {
             if (results.Items.length > 0) {
                 loadedConfiguration = results.Items[0].config;
+                console.log(loadedConfiguration);
                 callback(null, loadedConfiguration);
             } else {
                 callback(null, null);
@@ -17,8 +18,12 @@ const getConfigurationFromDatabase = async (callback) => {
     });
 };
 
+const returnLoadedConfig = () => {
+    return loadedConfiguration;
+};
+
 module.exports = {
-    loadedConfiguration,
+    returnLoadedConfig,
     getConfigurationFromDatabase,
     configureApis: async () => {
         // To-do: Check for local .env file first
