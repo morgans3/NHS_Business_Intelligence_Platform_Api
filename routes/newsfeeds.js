@@ -46,6 +46,8 @@ const tablename = "newsfeeds";
  *     responses:
  *       200:
  *         description: Confirmation of News Feed Registration
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/create",
@@ -117,6 +119,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of update
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/update",
@@ -215,6 +219,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of removal
+ *      403:
+ *       description: Forbidden due to capability requirements
  */
 router.delete(
     "/delete",

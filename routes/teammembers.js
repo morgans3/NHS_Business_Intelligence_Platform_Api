@@ -5,6 +5,8 @@ const router = express.Router();
 const passport = require("passport");
 const DIULibrary = require("diu-data-functions");
 const TeamMemberModel = new DIULibrary.Models.TeamMemberModel();
+const JWT = require("jsonwebtoken");
+const RoleFunctions = require("../helpers/role_functions");
 
 /**
  * @swagger
@@ -92,22 +94,35 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
-        // TODO: check if user is allowed to update team
-        // Create item
-        const member = {
-            teamcode: req.body.teamcode,
-            username: req.body.username,
-            joindate: req.body.joindate,
-        };
-        if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
-        if (req.body.enddate) member["enddate"] = req.body.enddate;
-
-        // Persist in database
-        TeamMemberModel.create(member, (err, result) => {
-            if (err) {
-                res.status(500).json({ success: false, msg: "Failed to create " + err });
+        // Check if the user has the correct permissions
+        const token = req.header("authorization");
+        const decodedToken = JWT.decode(token.replace("JWT ", ""));
+        const username = decodedToken["username"];
+        RoleFunctions.checkTeamAdmin(username, { code: req.body.teamcode }, (errCheck, resultCheck) => {
+            if (errCheck) {
+                res.status(500).send({ success: false, msg: errCheck });
+                return;
+            }
+            if (!resultCheck) {
+                res.status(403).send({ success: false, msg: "User not authorized to update team" });
             } else {
-                res.json({ success: true, msg: "Team member created successfully!", data: member });
+                // Create item
+                const member = {
+                    teamcode: req.body.teamcode,
+                    username: req.body.username,
+                    joindate: req.body.joindate,
+                };
+                if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
+                if (req.body.enddate) member["enddate"] = req.body.enddate;
+
+                // Persist in database
+                TeamMemberModel.create(member, (err, result) => {
+                    if (err) {
+                        res.status(500).json({ success: false, msg: "Failed to create " + err });
+                    } else {
+                        res.json({ success: true, msg: "Team member created successfully!", data: member });
+                    }
+                });
             }
         });
     }
@@ -159,27 +174,39 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
-        // TODO: check if user is allowed to update team
-        // Create item
-        const member = { username: req.body.username };
-        if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
-        if (req.body.enddate) member["enddate"] = req.body.enddate;
-
-        // Persist in database
-        TeamMemberModel.update(
-            {
-                _id: req.body.id,
-                teamcode: req.body.teamcode,
-            },
-            member,
-            (err, result) => {
-                if (err) {
-                    res.status(500).json({ success: false, msg: "Failed to update " + err });
-                } else {
-                    res.json({ success: true, msg: "Team member updated successfully!", data: member });
-                }
+        const token = req.header("authorization");
+        const decodedToken = JWT.decode(token.replace("JWT ", ""));
+        const username = decodedToken["username"];
+        RoleFunctions.checkTeamAdmin(username, { code: req.body.teamcode }, (errCheck, resultCheck) => {
+            if (errCheck) {
+                res.status(500).send({ success: false, msg: errCheck });
+                return;
             }
-        );
+            if (!resultCheck) {
+                res.status(403).send({ success: false, msg: "User not authorized to update team" });
+            } else {
+                // Create item
+                const member = { username: req.body.username };
+                if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
+                if (req.body.enddate) member["enddate"] = req.body.enddate;
+
+                // Persist in database
+                TeamMemberModel.update(
+                    {
+                        _id: req.body.id,
+                        teamcode: req.body.teamcode,
+                    },
+                    member,
+                    (err, result) => {
+                        if (err) {
+                            res.status(500).json({ success: false, msg: "Failed to update " + err });
+                        } else {
+                            res.json({ success: true, msg: "Team member updated successfully!", data: member });
+                        }
+                    }
+                );
+            }
+        });
     }
 );
 
@@ -288,7 +315,7 @@ router.get(
  *       200:
  *         description: Confirmation of Member being deleted
  */
-router.put(
+router.delete(
     "/delete",
     passport.authenticate("jwt", {
         session: false,

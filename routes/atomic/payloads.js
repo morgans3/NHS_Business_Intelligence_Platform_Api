@@ -128,6 +128,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Create a formdata item
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/create",
@@ -185,6 +187,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/update",
@@ -239,6 +243,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Success status
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.delete(
     "/delete",

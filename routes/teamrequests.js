@@ -5,6 +5,8 @@ const router = express.Router();
 const passport = require("passport");
 const Requests = require("../models/teamrequests");
 const Members = require("../models/teammembers");
+const JWT = require("jsonwebtoken");
+const RoleFunctions = require("../helpers/role_functions");
 
 /**
  * @swagger
@@ -159,7 +161,7 @@ router.post(
 
 /**
  * @swagger
- * /teamrequests/update?request_id={request_id}:
+ * /teamrequests/update:
  *   put:
  *     security:
  *      - JWT: []
@@ -169,9 +171,9 @@ router.post(
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: request_id
+ *       - name: id
  *         description: Request's ID
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *       - name: username
@@ -218,41 +220,53 @@ router.put(
         session: false,
     }),
     (req, res) => {
-        // TODO: check if user is allowed to update team
-        const id = req.query.request_id;
-        Requests.getRequestById(id, function (err, result) {
-            if (err) {
-                res.status(500).json({
-                    success: false,
-                    msg: "Failed to update: " + err,
-                });
+        const token = req.header("authorization");
+        const decodedToken = JWT.decode(token.replace("JWT ", ""));
+        const username = decodedToken["username"];
+        RoleFunctions.checkTeamAdmin(username, { code: req.body.teamcode }, (errCheck, resultCheck) => {
+            if (errCheck) {
+                res.status(500).send({ success: false, msg: errCheck });
+                return;
             }
-            if (result.Items.length > 0) {
-                const app = result.Items[0];
-                app.username = req.body.username;
-                app.teamcode = req.body.teamcode;
-                app.requestdate = req.body.requestdate;
-                if (req.body.requestor) app.requestor = req.body.requestor;
-                if (req.body.requestapprover) app.requestapprover = req.body.requestapprover;
-                if (req.body.approveddate) app.approveddate = req.body.approveddate;
-                if (req.body.refuseddate) app.refuseddate = req.body.refuseddate;
-
-                Requests.update(app, function (updateError) {
-                    if (updateError) {
+            if (!resultCheck) {
+                res.status(403).send({ success: false, msg: "User not authorized to update team" });
+            } else {
+                const id = req.body.id;
+                Requests.getRequestById(id, function (err, result) {
+                    if (err) {
                         res.status(500).json({
                             success: false,
-                            msg: "Failed to update: " + updateError,
+                            msg: "Failed to update: " + err,
                         });
                     }
-                    res.json({
-                        success: true,
-                        msg: "Install updated",
-                    });
-                });
-            } else {
-                res.status(404).json({
-                    success: false,
-                    msg: "Can not find item in database",
+                    if (result.Items.length > 0) {
+                        const app = result.Items[0];
+                        app.username = req.body.username;
+                        app.teamcode = req.body.teamcode;
+                        app.requestdate = req.body.requestdate;
+                        if (req.body.requestor) app.requestor = req.body.requestor;
+                        if (req.body.requestapprover) app.requestapprover = req.body.requestapprover;
+                        if (req.body.approveddate) app.approveddate = req.body.approveddate;
+                        if (req.body.refuseddate) app.refuseddate = req.body.refuseddate;
+
+                        Requests.update(app, function (updateError) {
+                            if (updateError) {
+                                res.status(500).json({
+                                    success: false,
+                                    msg: "Failed to update: " + updateError,
+                                });
+                            }
+                            res.json({
+                                success: true,
+                                msg: "Install updated",
+                            });
+                        });
+                    } else {
+                        res.status(404).json({
+                            success: false,
+                            msg: "Can not find item in database",
+                        });
+                    }
                 });
             }
         });
@@ -271,7 +285,7 @@ router.put(
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: request_id
+ *       - name: id
  *         description: Request's ID
  *         in: formData
  *         required: true
@@ -286,33 +300,45 @@ router.delete(
         session: false,
     }),
     (req, res) => {
-        // TODO: check if user is allowed to update team
-        const id = req.query.request_id;
-        Requests.getRequestById(id, function (err, result) {
-            if (err) {
-                res.status(500).json({
-                    success: false,
-                    msg: "Failed to delete: " + err,
-                });
+        const token = req.header("authorization");
+        const decodedToken = JWT.decode(token.replace("JWT ", ""));
+        const username = decodedToken["username"];
+        RoleFunctions.checkTeamAdmin(username, { code: req.body.teamcode }, (errCheck, resultCheck) => {
+            if (errCheck) {
+                res.status(500).send({ success: false, msg: errCheck });
+                return;
             }
-            if (result.Items.length > 0) {
-                const request = result.Items[0];
-                Requests.remove(request["_id"], request.teamcode, function (requestRemoveErr) {
-                    if (requestRemoveErr) {
+            if (!resultCheck) {
+                res.status(403).send({ success: false, msg: "User not authorized to update team" });
+            } else {
+                const id = req.body.id;
+                Requests.getRequestById(id, function (err, result) {
+                    if (err) {
                         res.status(500).json({
                             success: false,
-                            msg: "Failed to delete: " + requestRemoveErr,
+                            msg: "Failed to delete: " + err,
                         });
                     }
-                    res.json({
-                        success: true,
-                        msg: "Request deleted",
-                    });
-                });
-            } else {
-                res.status(404).json({
-                    success: false,
-                    msg: "Can not find item in database",
+                    if (result.Items.length > 0) {
+                        const request = result.Items[0];
+                        Requests.remove(request["_id"], request.teamcode, function (requestRemoveErr) {
+                            if (requestRemoveErr) {
+                                res.status(500).json({
+                                    success: false,
+                                    msg: "Failed to delete: " + requestRemoveErr,
+                                });
+                            }
+                            res.json({
+                                success: true,
+                                msg: "Request deleted",
+                            });
+                        });
+                    } else {
+                        res.status(404).json({
+                            success: false,
+                            msg: "Can not find item in database",
+                        });
+                    }
                 });
             }
         });

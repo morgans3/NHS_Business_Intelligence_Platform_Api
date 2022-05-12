@@ -43,6 +43,8 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: List of access logs
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.get(
     "/access-logs",
@@ -103,6 +105,8 @@ router.get(
  *     responses:
  *       200:
  *         description: List of access logs
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.get(
     "/:user/access-logs",
@@ -151,6 +155,8 @@ router.get(
  *     responses:
  *       200:
  *         description: List of access log statistics grouped by day
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.get(
     "/access-logs/statistics",

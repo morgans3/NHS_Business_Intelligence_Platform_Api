@@ -75,6 +75,8 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: Confirmation of Dashboard Registration
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/create",
@@ -186,6 +188,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Dashboard Registration
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.put(
     "/update",
@@ -294,8 +298,10 @@ router.get("/", (req, res, next) => {
  *     responses:
  *       200:
  *         description: Confirmation of Dashboard being Archived
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
-router.put(
+router.delete(
     "/delete",
     [
         passport.authenticate("jwt", {

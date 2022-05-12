@@ -5,7 +5,7 @@ const passport = require("passport");
 const JWT = require("jsonwebtoken");
 const DIULibrary = require("diu-data-functions");
 const CVICohortModel = new DIULibrary.Models.CVICohortModel();
-const RoleFunctions = require("../helpers/role-functions");
+const RoleFunctions = require("../helpers/role_functions");
 
 /**
  * @swagger
@@ -261,21 +261,52 @@ router.delete(
         session: false,
     }),
     (req, res, next) => {
-        // TODO: check if user is allowed to update team if teamcode included
-        CVICohortModel.delete(
-            {
-                cohortName: req.body.cohortName,
-                createdDT: req.body.createdDT,
-            },
-            (err, result) => {
-                // Return data
-                if (err) {
-                    res.status(500).json({ success: false, msg: err });
-                    return;
-                }
-                res.json({ success: true, msg: "Cohort deleted!" });
+        const key = {
+            cohortName: req.body.cohortName,
+            createdDT: req.body.createdDT,
+        };
+        CVICohortModel.getByKeys(key, (errGet, resultGet) => {
+            if (errGet) {
+                res.status(500).send({ success: false, msg: errGet });
+                return;
             }
-        );
+            if (resultGet.Items.length === 0) {
+                res.status(404).send({ success: false, msg: "Cohort not found" });
+                return;
+            }
+            if (resultGet[0].teamcode) {
+                const token = req.header("authorization");
+                const decodedToken = JWT.decode(token.replace("JWT ", ""));
+                const username = decodedToken["username"];
+                RoleFunctions.checkTeamAdmin(username, { code: resultGet[0].teamcode }, (errCheck, resultCheck) => {
+                    if (errCheck) {
+                        res.status(500).send({ success: false, msg: errCheck });
+                        return;
+                    }
+                    if (!resultCheck) {
+                        res.status(403).send({ success: false, msg: "User not authorized to update team" });
+                    } else {
+                        CVICohortModel.delete(key, (err, result) => {
+                            // Return data
+                            if (err) {
+                                res.status(500).json({ success: false, msg: err });
+                                return;
+                            }
+                            res.json({ success: true, msg: "Cohort deleted!" });
+                        });
+                    }
+                });
+            } else {
+                CVICohortModel.delete(key, (err, result) => {
+                    // Return data
+                    if (err) {
+                        res.status(500).json({ success: false, msg: err });
+                        return;
+                    }
+                    res.json({ success: true, msg: "Cohort deleted!" });
+                });
+            }
+        });
     }
 );
 

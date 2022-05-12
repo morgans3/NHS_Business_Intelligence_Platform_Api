@@ -186,6 +186,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/register",
@@ -357,6 +359,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Credentials valid
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.delete(
     "/delete",

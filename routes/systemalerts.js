@@ -139,6 +139,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Alert Update
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.put(
     "/update",
@@ -233,6 +235,8 @@ router.put(
  *     responses:
  *       200:
  *         description: Confirmation of Alert Registered
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/create",

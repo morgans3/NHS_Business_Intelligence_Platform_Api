@@ -75,6 +75,8 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: Confirmation of App Registration
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/create",
@@ -186,6 +188,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of App Registration
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.put(
     "/update",
@@ -294,6 +298,8 @@ router.get("/", (req, res, next) => {
  *     responses:
  *       200:
  *         description: Confirmation of App being Archived
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.delete(
     "/delete",

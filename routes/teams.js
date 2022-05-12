@@ -3,9 +3,10 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const uuid = require("uuid");
-
 const DIULibrary = require("diu-data-functions");
 const TeamModel = new DIULibrary.Models.TeamModel();
+const JWT = require("jsonwebtoken");
+const RoleFunctions = require("../helpers/role_functions");
 
 /**
  * @swagger
@@ -177,31 +178,42 @@ router.all(
         session: false,
     }),
     async (req, res, next) => {
-        // TODO: check if user is allowed to update team
-
-        // Get params
-        const payload = req.body;
-
-        // Update team
-        TeamModel.update(
-            {
-                _id: payload["_id"],
-                code: payload.code,
-            },
-            {
-                description: payload.description,
-                name: payload.name,
-                organisationcode: payload.organisationcode,
-                responsiblepeople: payload.responsiblepeople || [],
-            },
-            (err, team) => {
-                if (err) {
-                    res.json({ success: false, msg: "Failed to update " + err });
-                } else {
-                    res.json({ success: true, msg: "Team updated successfully!", data: team });
-                }
+        const token = req.header("authorization");
+        const decodedToken = JWT.decode(token.replace("JWT ", ""));
+        const username = decodedToken["username"];
+        RoleFunctions.checkTeamAdmin(username, { code: req.body.code }, (errCheck, resultCheck) => {
+            if (errCheck) {
+                res.status(500).send({ success: false, msg: errCheck });
+                return;
             }
-        );
+            if (!resultCheck) {
+                res.status(403).send({ success: false, msg: "User not authorized to update team" });
+            } else {
+                // Get params
+                const payload = req.body;
+
+                // Update team
+                TeamModel.update(
+                    {
+                        _id: payload["_id"],
+                        code: payload.code,
+                    },
+                    {
+                        description: payload.description,
+                        name: payload.name,
+                        organisationcode: payload.organisationcode,
+                        responsiblepeople: payload.responsiblepeople || [],
+                    },
+                    (err, team) => {
+                        if (err) {
+                            res.status(500).json({ success: false, msg: "Failed to update " + err });
+                        } else {
+                            res.json({ success: true, msg: "Team updated successfully!", data: team });
+                        }
+                    }
+                );
+            }
+        });
     }
 );
 
@@ -422,20 +434,32 @@ router.delete(
         session: false,
     }),
     (req, res, next) => {
-        // TODO: check if user is allowed to update team
-        TeamModel.delete(
-            {
-                _id: req.body["_id"],
-                code: req.body.code,
-            },
-            (err, result) => {
-                if (err) {
-                    res.status(500).json({ success: false, msg: err });
-                } else {
-                    res.json({ success: true, msg: "Team deleted successfully!" });
-                }
+        const token = req.header("authorization");
+        const decodedToken = JWT.decode(token.replace("JWT ", ""));
+        const username = decodedToken["username"];
+        RoleFunctions.checkTeamAdmin(username, { code: req.body.code }, (errCheck, resultCheck) => {
+            if (errCheck) {
+                res.status(500).send({ success: false, msg: errCheck });
+                return;
             }
-        );
+            if (!resultCheck) {
+                res.status(403).send({ success: false, msg: "User not authorized to update team" });
+            } else {
+                TeamModel.delete(
+                    {
+                        _id: req.body["_id"],
+                        code: req.body.code,
+                    },
+                    (err, result) => {
+                        if (err) {
+                            res.status(500).json({ success: false, msg: err });
+                        } else {
+                            res.json({ success: true, msg: "Team deleted successfully!" });
+                        }
+                    }
+                );
+            }
+        });
     }
 );
 
