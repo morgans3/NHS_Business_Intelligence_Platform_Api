@@ -20,14 +20,14 @@
             process.env.AWS_SECRETID = awsCredentials.secretid;
             process.env.AWS_SECRETKEY = awsCredentials.secretkey;
 
-            // Configure apis
-            await require("./config/app").configureApis();
-
             process.env.TZ = "Europe/London";
         } catch (error) {
             console.error(error);
         }
     }
+
+    // Configure apis
+    await require("./config/app").configureApis();
 
     const app = require("./app");
     const port = process.env.PORT || 8079;
