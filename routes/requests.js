@@ -44,6 +44,8 @@ const issuer = process.env.SITE_URL || "NHS BI Platform";
  *     responses:
  *       200:
  *         description: Full List
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.get(
     "/",

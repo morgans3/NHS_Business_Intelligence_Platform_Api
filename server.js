@@ -5,9 +5,6 @@
         require("dotenv").config();
         const AWSHelper = require("diu-data-functions").Helpers.Aws;
         try {
-            // Configure apis
-            await require("./config/app").configureApis();
-
             // Configure postgres
             const postgresCredentials = JSON.parse(await AWSHelper.getSecrets("postgres"));
             process.env.POSTGRES_UN = postgresCredentials.username;
@@ -22,6 +19,9 @@
             const awsCredentials = JSON.parse(await AWSHelper.getSecrets("awsdev"));
             process.env.AWS_SECRETID = awsCredentials.secretid;
             process.env.AWS_SECRETKEY = awsCredentials.secretkey;
+
+            // Configure apis
+            await require("./config/app").configureApis();
 
             process.env.TZ = "Europe/London";
         } catch (error) {

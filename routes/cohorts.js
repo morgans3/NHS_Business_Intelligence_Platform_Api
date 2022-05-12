@@ -2,9 +2,10 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-
+const RoleFunctions = require("../helpers/role_functions");
 const DIULibrary = require("diu-data-functions");
 const CohortModel = new DIULibrary.Models.CohortModel();
+const JWT = require("jsonwebtoken");
 
 /**
  * @swagger
@@ -44,14 +45,21 @@ const CohortModel = new DIULibrary.Models.CohortModel();
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.get("/", passport.authenticate("jwt", {
-    session: false,
-}), (req, res, next) => {
-    CohortModel.get(req.query, (err, result) => {
-        if (err) { res.status(500).send({ success: false, msg: err }); return; }
-        res.send(result.Items);
-    });
-});
+router.get(
+    "/",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        CohortModel.get(req.query, (err, result) => {
+            if (err) {
+                res.status(500).send({ success: false, msg: err });
+                return;
+            }
+            res.send(result.Items);
+        });
+    }
+);
 
 /**
  * @swagger
@@ -89,20 +97,29 @@ router.get("/", passport.authenticate("jwt", {
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.post("/create", passport.authenticate("jwt", {
-    session: false,
-}), (req, res, next) => {
-    CohortModel.create({
-        cohortName: req.body.cohortName,
-        cohorturl: req.body.cohorturl,
-        teamcode: req.body.teamcode,
-        user: req.body.username
-    }, (err, data) => {
-        if (err) { res.status(500).send({ success: false, msg: err }); return; }
-        res.send({ success: false, msg: "New cohort created!", data });
-    });
-});
-
+router.post(
+    "/create",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        CohortModel.create(
+            {
+                cohortName: req.body.cohortName,
+                cohorturl: req.body.cohorturl,
+                teamcode: req.body.teamcode,
+                user: req.body.username,
+            },
+            (err, data) => {
+                if (err) {
+                    res.status(500).send({ success: false, msg: err });
+                    return;
+                }
+                res.send({ success: false, msg: "New cohort created!", data });
+            }
+        );
+    }
+);
 
 /**
  * @swagger
@@ -145,21 +162,66 @@ router.post("/create", passport.authenticate("jwt", {
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.post("/update", passport.authenticate("jwt", {
-    session: false,
-}), (req, res, next) => {
-    CohortModel.update({
-        _id: req.body.id
-    }, {
-        cohortName: req.body.cohortName,
-        cohorturl: req.body.cohorturl,
-        teamcode: req.body.teamcode,
-        user: req.body.username
-    }, (err, data) => {
-        if (err) { res.status(500).send({ success: false, msg: err }); return; }
-        res.send({ success: false, msg: "Cohort updated!", data });
-    });
-});
+router.post(
+    "/update",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        if (req.body.teamcode) {
+            const token = req.header("authorization");
+            const decodedToken = JWT.decode(token.replace("JWT ", ""));
+            const username = decodedToken["username"];
+            RoleFunctions.checkTeamAdmin(username, { code: req.body.teamcode }, (errCheck, resultCheck) => {
+                if (errCheck) {
+                    res.status(500).send({ success: false, msg: errCheck });
+                    return;
+                }
+                if (!resultCheck) {
+                    res.status(403).send({ success: false, msg: "User not authorized to update team" });
+                } else {
+                    CohortModel.update(
+                        {
+                            _id: req.body.id,
+                        },
+                        {
+                            cohortName: req.body.cohortName,
+                            cohorturl: req.body.cohorturl,
+                            teamcode: req.body.teamcode,
+                            user: req.body.username,
+                        },
+                        (err, data) => {
+                            if (err) {
+                                res.status(500).send({ success: false, msg: err });
+                                return;
+                            }
+                            res.send({ success: false, msg: "Cohort updated!", data });
+                        }
+                    );
+                }
+            });
+        } else {
+            CohortModel.update(
+                {
+                    _id: req.body.id,
+                },
+                {
+                    cohortName: req.body.cohortName,
+                    cohorturl: req.body.cohorturl,
+                    teamcode: req.body.teamcode,
+                    user: req.body.username,
+                },
+                (err, data) => {
+                    if (err) {
+                        res.status(500).send({ success: false, msg: err });
+                        return;
+                    }
+                    res.send({ success: false, msg: "Cohort updated!", data });
+                }
+            );
+        }
+    }
+);
 
 /**
  * @swagger
@@ -182,21 +244,58 @@ router.post("/update", passport.authenticate("jwt", {
  *       200:
  *         description: Success status
  */
-router.delete("/delete", passport.authenticate("jwt", {
-    session: false,
-}), (req, res, next) => {
-    // Delete cohort by id
-    CohortModel.delete({
-        _id: req.body.id
-    }, (err, result) => {
-        // Return data
-        if (err) {
-            res.status(500).json({ success: false, msg: err });
-            return;
-        }
-        res.json({ success: true, msg: "Cohort deleted!" });
-    });
-}
+router.delete(
+    "/delete",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        const key = {
+            _id: req.body.id,
+        };
+        CohortModel.getByKeys(key, (errGet, resultGet) => {
+            if (errGet) {
+                res.status(500).send({ success: false, msg: errGet });
+                return;
+            }
+            if (resultGet.Items.length === 0) {
+                res.status(404).send({ success: false, msg: "Cohort not found" });
+                return;
+            }
+            if (resultGet[0].teamcode) {
+                const token = req.header("authorization");
+                const decodedToken = JWT.decode(token.replace("JWT ", ""));
+                const username = decodedToken["username"];
+                RoleFunctions.checkTeamAdmin(username, { code: resultGet[0].teamcode }, (errCheck, resultCheck) => {
+                    if (errCheck) {
+                        res.status(500).send({ success: false, msg: errCheck });
+                        return;
+                    }
+                    if (!resultCheck) {
+                        res.status(403).send({ success: false, msg: "User not authorized to update team" });
+                    } else {
+                        CohortModel.delete(key, (err, result) => {
+                            // Return data
+                            if (err) {
+                                res.status(500).json({ success: false, msg: err });
+                                return;
+                            }
+                            res.json({ success: true, msg: "Cohort deleted!" });
+                        });
+                    }
+                });
+            } else {
+                CohortModel.delete(key, (err, result) => {
+                    // Return data
+                    if (err) {
+                        res.status(500).json({ success: false, msg: err });
+                        return;
+                    }
+                    res.json({ success: true, msg: "Cohort deleted!" });
+                });
+            }
+        });
+    }
 );
 
 module.exports = router;

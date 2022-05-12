@@ -5,6 +5,7 @@ const passport = require("passport");
 
 const DIULibrary = require("diu-data-functions");
 const AtomicPayloadsModel = new DIULibrary.Models.AtomicPayloadsModel();
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -101,7 +102,7 @@ router.get(
  * @swagger
  * /atomic/payloads/create:
  *   post:
- *     description: Create a new payload
+ *     description: Create a new payload. Requires Hall Monitor or Creator capability
  *     security:
  *      - JWT: []
  *     tags:
@@ -127,12 +128,17 @@ router.get(
  *     responses:
  *       200:
  *         description: Create a formdata item
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/create",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
+    ],
     (req, res, next) => {
         AtomicPayloadsModel.create(
             {
@@ -155,7 +161,7 @@ router.post(
  * @swagger
  * /atomic/payloads/update:
  *   post:
- *     description: Update a payload
+ *     description: Update a payload. Requires Hall Monitor or Creator capability
  *     security:
  *      - JWT: []
  *     tags:
@@ -181,12 +187,17 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/update",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
+    ],
     (req, res, next) => {
         AtomicPayloadsModel.update(
             {
@@ -213,7 +224,7 @@ router.post(
  *   delete:
  *     security:
  *      - JWT: []
- *     description: Delete a payload
+ *     description: Delete a payload. Requires Hall Monitor or Creator capability
  *     tags:
  *      - AtomicPayloads
  *     parameters:
@@ -232,12 +243,17 @@ router.post(
  *     responses:
  *       200:
  *         description: Success status
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.delete(
     "/delete",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
+    ],
     (req, res, next) => {
         // Delete cohort by id
         AtomicPayloadsModel.delete(

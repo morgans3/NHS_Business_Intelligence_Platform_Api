@@ -10,7 +10,8 @@ const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
 const UserProfileModel = new DIULibrary.Models.UserProfileModel();
 const OrganisationModel = new DIULibrary.Models.OrganisationModel();
-const ActiveDirectoryModel = new DIULibrary.Models.ActiveDirectoryModel();
+const ADModel = require("../models/activedirectory");
+const ActiveDirectoryModel = new ADModel();
 const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
@@ -81,26 +82,31 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
-        Profiles.addUserProfile({
-            username: req.body.username,
-            ...((req.body.preferredcontactmethod && req.body.preferredcontactmethod.length > 0) && {
-                preferredcontactmethod: req.body.preferredcontactmethod
-            }),
-            ...((req.body.mobiledeviceids && req.body.mobiledeviceids.length > 0) && {
-                mobiledeviceids: req.body.mobiledeviceids
-            }),
-            ...((req.body.photobase64) && { photobase64: req.body.photobase64 }),
-            ...((req.body.contactnumber) && { contactnumber: req.body.contactnumber }),
-            ...((req.body.emailpreference) && { emailpreference: req.body.emailpreference }),
-            ...((req.body.impreference) && { impreference: req.body.impreference }),
-            ...((req.body.im_id) && { im_id: req.body.im_id }),
-        }, (err, data) => {
-            if (err) {
-                res.status(500).json({ success: false, msg: "Failed to register: " + err });
-            } else {
-                res.json({ success: true, msg: "Registered", _id: data["_id"], data });
+        Profiles.addUserProfile(
+            {
+                username: req.body.username,
+                ...(req.body.preferredcontactmethod &&
+                    req.body.preferredcontactmethod.length > 0 && {
+                        preferredcontactmethod: req.body.preferredcontactmethod,
+                    }),
+                ...(req.body.mobiledeviceids &&
+                    req.body.mobiledeviceids.length > 0 && {
+                        mobiledeviceids: req.body.mobiledeviceids,
+                    }),
+                ...(req.body.photobase64 && { photobase64: req.body.photobase64 }),
+                ...(req.body.contactnumber && { contactnumber: req.body.contactnumber }),
+                ...(req.body.emailpreference && { emailpreference: req.body.emailpreference }),
+                ...(req.body.impreference && { impreference: req.body.impreference }),
+                ...(req.body.im_id && { im_id: req.body.im_id }),
+            },
+            (err, data) => {
+                if (err) {
+                    res.status(500).json({ success: false, msg: "Failed to register: " + err });
+                } else {
+                    res.json({ success: true, msg: "Registered", _id: data["_id"], data });
+                }
             }
-        });
+        );
     }
 );
 
@@ -611,7 +617,7 @@ router.put(
                     res.json({
                         success: true,
                         msg: "Install updated",
-                        data: profile
+                        data: profile,
                     });
                 });
             } else {

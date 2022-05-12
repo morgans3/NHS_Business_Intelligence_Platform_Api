@@ -38,6 +38,8 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         description: Bad Request
  *       401:
  *         description: Unauthorised
+ *       403:
+ *        description: Forbidden due to capability requirements
  *       500:
  *         description: Server Error Processing
  */
@@ -105,6 +107,8 @@ router.get(
  *         description: Bad Request
  *       401:
  *         description: Unauthorised
+ *       403:
+ *        description: Forbidden due to capability requirements
  *       500:
  *         description: Server Error Processing
  */

@@ -39,3 +39,44 @@ module.exports.checkRole = function (alone, userroles, table) {
     }
     return whereclause;
 };
+
+module.exports.checkTeamAdmin = function (username, team, callback) {
+    const DIULibrary = require("diu-data-functions");
+    const TeamModel = new DIULibrary.Models.TeamModel();
+    if (!team.responsiblepeople) {
+        TeamModel.getByCode(team.code, (err, result) => {
+            if (err) {
+                callback(err);
+            } else {
+                if (result.Items) {
+                    const foundTeam = result.Items[0];
+                    if (foundTeam.responsiblepeople) {
+                        const user = foundTeam.responsiblepeople.find((person) => {
+                            return person === username;
+                        });
+                        if (user) {
+                            callback(null, true);
+                        } else {
+                            callback(null, false);
+                        }
+                    } else {
+                        callback(null, false);
+                    }
+                } else {
+                    callback(null, false);
+                }
+            }
+        });
+    } else if (team.responsiblepeople) {
+        const user = team.responsiblepeople.find((person) => {
+            return person === username;
+        });
+        if (user) {
+            callback(null, true);
+        } else {
+            callback(null, false);
+        }
+    } else {
+        callback(null, false);
+    }
+};

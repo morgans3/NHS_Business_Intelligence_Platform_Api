@@ -3,9 +3,10 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const uuid = require("uuid");
-
 const DIULibrary = require("diu-data-functions");
 const TeamModel = new DIULibrary.Models.TeamModel();
+const JWT = require("jsonwebtoken");
+const RoleFunctions = require("../helpers/role_functions");
 
 /**
  * @swagger
@@ -177,29 +178,42 @@ router.all(
         session: false,
     }),
     async (req, res, next) => {
-        // Get params
-        const payload = req.body;
-
-        // Update team
-        TeamModel.update(
-            {
-                _id: payload["_id"],
-                code: payload.code,
-            },
-            {
-                description: payload.description,
-                name: payload.name,
-                organisationcode: payload.organisationcode,
-                responsiblepeople: payload.responsiblepeople || [],
-            },
-            (err, team) => {
-                if (err) {
-                    res.json({ success: false, msg: "Failed to update " + err });
-                } else {
-                    res.json({ success: true, msg: "Team updated successfully!", data: team });
-                }
+        const token = req.header("authorization");
+        const decodedToken = JWT.decode(token.replace("JWT ", ""));
+        const username = decodedToken["username"];
+        RoleFunctions.checkTeamAdmin(username, { code: req.body.code }, (errCheck, resultCheck) => {
+            if (errCheck) {
+                res.status(500).send({ success: false, msg: errCheck });
+                return;
             }
-        );
+            if (!resultCheck) {
+                res.status(403).send({ success: false, msg: "User not authorized to update team" });
+            } else {
+                // Get params
+                const payload = req.body;
+
+                // Update team
+                TeamModel.update(
+                    {
+                        _id: payload["_id"],
+                        code: payload.code,
+                    },
+                    {
+                        description: payload.description,
+                        name: payload.name,
+                        organisationcode: payload.organisationcode,
+                        responsiblepeople: payload.responsiblepeople || [],
+                    },
+                    (err, team) => {
+                        if (err) {
+                            res.status(500).json({ success: false, msg: "Failed to update " + err });
+                        } else {
+                            res.json({ success: true, msg: "Team updated successfully!", data: team });
+                        }
+                    }
+                );
+            }
+        });
     }
 );
 
@@ -390,56 +404,6 @@ router.get(
 
 /**
  * @swagger
- * /teams/archive?profile_id={profile_id}:
- *   put:
- *     security:
- *      - JWT: []
- *     description: Removes a Profile
- *     tags:
- *      - Teams
- *     produces:
- *      - application/json
- *     parameters:
- *       - name: profile_id
- *         description: Profile's ID
- *         in: query
- *         required: true
- *         type: string
- *     responses:
- *       200:
- *         description: Confirmation of Member being Archived
- */
-router.put(
-    "/archive",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res) => {
-        const id = req.query.profile_id;
-        TeamModel.getByKeys({ _id: id }, (err, result) => {
-            // Output error
-            if (err) {
-                res.status(500).json({ success: false, msg: "Failed to archive: " + err });
-            }
-
-            // Item exists?
-            if (result.Items.length > 0) {
-                // Delete item
-                TeamModel.delete({ _id: id }, (deleteError) => {
-                    if (deleteError) {
-                        res.status(500).json({ success: false, msg: "Failed to remove: " + deleteError });
-                    }
-                    res.json({ success: true, msg: "Profile removed" });
-                });
-            } else {
-                res.status(404).json({ success: false, msg: "Can not find item in database" });
-            }
-        });
-    }
-);
-
-/**
- * @swagger
  * /teams/delete:
  *   delete:
  *     security:
@@ -470,20 +434,32 @@ router.delete(
         session: false,
     }),
     (req, res, next) => {
-        // Get all capabilities
-        TeamModel.delete(
-            {
-                _id: req.body["_id"],
-                code: req.body.code,
-            },
-            (err, result) => {
-                if (err) {
-                    res.status(500).json({ success: false, msg: err });
-                } else {
-                    res.json({ success: true, msg: "Team deleted successfully!" });
-                }
+        const token = req.header("authorization");
+        const decodedToken = JWT.decode(token.replace("JWT ", ""));
+        const username = decodedToken["username"];
+        RoleFunctions.checkTeamAdmin(username, { code: req.body.code }, (errCheck, resultCheck) => {
+            if (errCheck) {
+                res.status(500).send({ success: false, msg: errCheck });
+                return;
             }
-        );
+            if (!resultCheck) {
+                res.status(403).send({ success: false, msg: "User not authorized to update team" });
+            } else {
+                TeamModel.delete(
+                    {
+                        _id: req.body["_id"],
+                        code: req.body.code,
+                    },
+                    (err, result) => {
+                        if (err) {
+                            res.status(500).json({ success: false, msg: err });
+                        } else {
+                            res.json({ success: true, msg: "Team deleted successfully!" });
+                        }
+                    }
+                );
+            }
+        });
     }
 );
 

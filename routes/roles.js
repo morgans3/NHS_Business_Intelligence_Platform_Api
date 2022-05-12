@@ -85,6 +85,8 @@ router.get("/", passport.authenticate("jwt", { session: false }), (req, res, nex
  *     responses:
  *       200:
  *         description: The newly created role
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/create",
@@ -185,6 +187,8 @@ router.post(
  *     responses:
  *       200:
  *         description: The updated role
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/update",
@@ -279,6 +283,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Success status
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/links/sync",
@@ -345,6 +351,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Success status
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.post(
     "/links/create",
@@ -411,6 +419,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Success status
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.delete(
     "/links/delete",
@@ -493,6 +503,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Role deletion status
+ *       403:
+ *        description: Forbidden due to capability requirements
  */
 router.delete(
     "/delete",
