@@ -3,15 +3,16 @@ const ADClient = require("activedirectory");
 class ActiveDirectory {
     getInstance(authmethod, callback) {
         // Get the configuration
-        let configuration = require("../config/app").loadedConfiguration;
+        const configuration = require("../config/app").returnLoadedConfig();
         if (!configuration) {
             // No settings in database
-            configuration = { activedirectories: [] };
+            callback(new Error("No configuration found in database"));
+            return;
         }
         const activedirectories = configuration.activedirectories;
 
         const selectedOrganisation = activedirectories.find((organisation) => {
-            return organisation.authmethod === authmethod;
+            return organisation.authentication === authmethod;
         });
         if (!selectedOrganisation) {
             callback(new Error("No active directory configuration found for: " + authmethod));
