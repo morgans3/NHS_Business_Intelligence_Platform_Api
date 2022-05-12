@@ -2,9 +2,10 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-
+const JWT = require("jsonwebtoken");
 const DIULibrary = require("diu-data-functions");
 const CVICohortModel = new DIULibrary.Models.CVICohortModel();
+const RoleFunctions = require("../helpers/role-functions");
 
 /**
  * @swagger
@@ -173,25 +174,58 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
-        // TODO: check if user is allowed to update team if teamcode included
-        CVICohortModel.update(
-            {
-                cohortName: req.body.cohortName,
-                createdDT: req.body.createdDT,
-            },
-            {
-                cohorturl: req.body.cohorturl,
-                teamcode: req.body.teamcode,
-                username: req.body.username,
-            },
-            (err, data) => {
-                if (err) {
-                    res.status(500).send({ success: false, msg: err });
+        if (req.body.teamcode) {
+            const token = req.header("authorization");
+            const decodedToken = JWT.decode(token.replace("JWT ", ""));
+            const username = decodedToken["username"];
+            RoleFunctions.checkTeamAdmin(username, { code: req.body.teamcode }, (errCheck, resultCheck) => {
+                if (errCheck) {
+                    res.status(500).send({ success: false, msg: errCheck });
                     return;
                 }
-                res.send({ success: false, msg: "Cohort updated!", data });
-            }
-        );
+                if (!resultCheck) {
+                    res.status(403).send({ success: false, msg: "User not authorized to update team" });
+                } else {
+                    CVICohortModel.update(
+                        {
+                            cohortName: req.body.cohortName,
+                            createdDT: req.body.createdDT,
+                        },
+                        {
+                            cohorturl: req.body.cohorturl,
+                            teamcode: req.body.teamcode,
+                            username: req.body.username,
+                        },
+                        (err, data) => {
+                            if (err) {
+                                res.status(500).send({ success: false, msg: err });
+                                return;
+                            }
+                            res.send({ success: false, msg: "Cohort updated!", data });
+                        }
+                    );
+                }
+            });
+        } else {
+            CVICohortModel.update(
+                {
+                    cohortName: req.body.cohortName,
+                    createdDT: req.body.createdDT,
+                },
+                {
+                    cohorturl: req.body.cohorturl,
+                    teamcode: req.body.teamcode,
+                    username: req.body.username,
+                },
+                (err, data) => {
+                    if (err) {
+                        res.status(500).send({ success: false, msg: err });
+                        return;
+                    }
+                    res.send({ success: false, msg: "Cohort updated!", data });
+                }
+            );
+        }
     }
 );
 
