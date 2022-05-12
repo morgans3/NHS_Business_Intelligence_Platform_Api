@@ -218,6 +218,7 @@ router.put(
         session: false,
     }),
     (req, res) => {
+        // TODO: check if user is allowed to update team
         const id = req.query.request_id;
         Requests.getRequestById(id, function (err, result) {
             if (err) {
@@ -285,6 +286,7 @@ router.delete(
         session: false,
     }),
     (req, res) => {
+        // TODO: check if user is allowed to update team
         const id = req.query.request_id;
         Requests.getRequestById(id, function (err, result) {
             if (err) {

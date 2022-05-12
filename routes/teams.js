@@ -185,6 +185,8 @@ router.all(
         session: false,
     }),
     async (req, res, next) => {
+        // TODO: check if user is allowed to update team
+
         // Get params
         const payload = req.body;
 
@@ -431,7 +433,7 @@ router.delete(
         session: false,
     }),
     (req, res, next) => {
-        // Get all capabilities
+        // TODO: check if user is allowed to update team
         TeamModel.delete(
             {
                 _id: req.body.id,

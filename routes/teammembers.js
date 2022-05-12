@@ -92,6 +92,7 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        // TODO: check if user is allowed to update team
         // Create item
         const member = {
             teamcode: req.body.teamcode,
@@ -158,6 +159,7 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        // TODO: check if user is allowed to update team
         // Create item
         const member = { username: req.body.username };
         if (req.body.rolecode) member["rolecode"] = req.body.rolecode;

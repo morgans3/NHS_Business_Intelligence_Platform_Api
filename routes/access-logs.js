@@ -6,6 +6,7 @@ const passport = require("passport");
 const DIULibrary = require("diu-data-functions");
 const AccessLogModel = new DIULibrary.Models.AccessLog();
 const momentLib = require("moment");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -20,7 +21,7 @@ const momentLib = require("moment");
  *   get:
  *     security:
  *      - JWT: []
- *     description: Get access logs
+ *     description: Get access logs. Requires Hall Monitor or Inspection
  *     tags:
  *      - AccessLogs
  *     parameters:
@@ -45,9 +46,12 @@ const momentLib = require("moment");
  */
 router.get(
     "/access-logs",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability(["Hall Monitor", "Inspection"]),
+    ],
     (req, res, next) => {
         // Set callback
         const callback = (error, data) => {
@@ -76,7 +80,7 @@ router.get(
  *   get:
  *     security:
  *      - JWT: []
- *     description: Get access logs by username
+ *     description: Get access logs by username. Requires Hall Monitor or Inspection
  *     tags:
  *      - AccessLogs
  *     parameters:
@@ -102,9 +106,12 @@ router.get(
  */
 router.get(
     "/:user/access-logs",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability(["Hall Monitor", "Inspection"]),
+    ],
     (req, res, next) => {
         AccessLogModel.getByUser(Object.assign({}, req.params, req.query), (error, data) => {
             // Check for error
@@ -125,7 +132,7 @@ router.get(
  *   get:
  *     security:
  *      - JWT: []
- *     description: Get access log statistics
+ *     description: Get access log statistics. Requires Hall Monitor or Inspection
  *     tags:
  *      - AccessLogs
  *     parameters:
@@ -147,9 +154,12 @@ router.get(
  */
 router.get(
     "/access-logs/statistics",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability(["Hall Monitor", "Inspection"]),
+    ],
     (req, res, next) => {
         const dateFrom = req.query.date_from.toString();
         const dateTo = req.query.date_to.toString();
