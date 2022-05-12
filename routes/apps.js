@@ -295,7 +295,7 @@ router.get("/", (req, res, next) => {
  *       200:
  *         description: Confirmation of App being Archived
  */
-router.put(
+router.delete(
     "/delete",
     [
         passport.authenticate("jwt", {
