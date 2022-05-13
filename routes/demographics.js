@@ -16,7 +16,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
- * /demographics/demographicsbynhsnumber?NHSNumber={NHSNumber}:
+ * /demographics/demographicsbynhsnumber:
  *   get:
  *     security:
  *      - JWT: []

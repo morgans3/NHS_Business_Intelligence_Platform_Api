@@ -15,7 +15,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
- * /virtualward/?Limit={limit}:
+ * /virtualward/:
  *   get:
  *     security:
  *      - JWT: []
@@ -86,7 +86,7 @@ router.get(
 /**
  * @swagger
  * /virtualward/update:
- *   post:
+ *   put:
  *     security:
  *      - JWT: []
  *     description: Updates a Citizens record for the Virtual Ward LTP. Requires patientidentifiabledata
@@ -150,7 +150,7 @@ router.get(
  *       403:
  *        description: Forbidden due to capability requirements
  */
-router.post(
+router.put(
     "/update",
     [
         passport.authenticate("jwt", {

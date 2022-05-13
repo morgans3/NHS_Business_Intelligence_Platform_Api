@@ -116,7 +116,7 @@ router.post(
 /**
  * @swagger
  * /organisations/update:
- *   post:
+ *   put:
  *     security:
  *      - JWT: []
  *     description: Updates an Organisation. Requires Hall Monitor
@@ -151,7 +151,7 @@ router.post(
  *       403:
  *         description: Forbidden due to capability requirements
  */
-router.post(
+router.put(
     "/update",
     [
         passport.authenticate("jwt", {

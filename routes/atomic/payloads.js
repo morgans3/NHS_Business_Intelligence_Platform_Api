@@ -34,6 +34,8 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: List of all atomic payloads
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -70,6 +72,12 @@ router.get(
  *     responses:
  *       200:
  *         description: List of all atomic payloads
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Item not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/:id",
@@ -87,7 +95,6 @@ router.get(
                     return;
                 }
 
-                // Found item?
                 if (result.Items.length === 0) {
                     res.status(404).json({ success: false, msg: "Payload not found!" });
                 } else {
@@ -128,8 +135,14 @@ router.get(
  *     responses:
  *       200:
  *         description: Create a formdata item
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -140,6 +153,10 @@ router.post(
         MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
     ],
     (req, res, next) => {
+        if (!req.body.id || !req.body.type || !req.body.config) {
+            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            return;
+        }
         AtomicPayloadsModel.create(
             {
                 id: req.body.id,
@@ -160,7 +177,7 @@ router.post(
 /**
  * @swagger
  * /atomic/payloads/update:
- *   post:
+ *   put:
  *     description: Update a payload. Requires Hall Monitor or Creator capability
  *     security:
  *      - JWT: []
@@ -187,10 +204,18 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: Item not found
+ *       500:
+ *         description: Internal Server Error
  */
-router.post(
+router.put(
     "/update",
     [
         passport.authenticate("jwt", {
@@ -199,6 +224,10 @@ router.post(
         MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
     ],
     (req, res, next) => {
+        if (!req.body.id || !req.body.type || !req.body.config) {
+            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            return;
+        }
         AtomicPayloadsModel.update(
             {
                 id: req.body.id,
@@ -243,8 +272,16 @@ router.post(
  *     responses:
  *       200:
  *         description: Success status
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       404:
+ *         description: Item not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -255,7 +292,10 @@ router.delete(
         MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
     ],
     (req, res, next) => {
-        // Delete cohort by id
+        if (!req.body.id || !req.body.type) {
+            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            return;
+        }
         AtomicPayloadsModel.delete(
             {
                 id: req.body.id,

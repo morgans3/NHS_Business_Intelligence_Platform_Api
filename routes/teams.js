@@ -124,7 +124,7 @@ router.post(
 /**
  * @swagger
  * /teams/update:
- *   post:
+ *   put:
  *     security:
  *      - JWT: []
  *     description: Update an existing team
@@ -219,7 +219,7 @@ router.all(
 
 /**
  * @swagger
- * /teams/getTeamByCode?code={code}:
+ * /teams/getTeamByCode:
  *   get:
  *     security:
  *      - JWT: []
@@ -261,7 +261,7 @@ router.get(
 
 /**
  * @swagger
- * /teams/getTeamsByOrgCode?orgcode={orgcode}:
+ * /teams/getTeamsByOrgCode:
  *   get:
  *     security:
  *      - JWT: []
@@ -303,7 +303,7 @@ router.get(
 
 /**
  * @swagger
- * /teams/getTeamsByPartialTeamName?partialteam={partialteam}:
+ * /teams/getTeamsByPartialTeamName:
  *   get:
  *     security:
  *      - JWT: []
@@ -350,7 +350,7 @@ router.get(
 
 /**
  * @swagger
- * /teams/getTeamsByPartialTeamNameAndOrgCode?orgcode={orgcode}&partialteam={partialteam}:
+ * /teams/getTeamsByPartialTeamNameAndOrgCode:
  *   get:
  *     security:
  *      - JWT: []

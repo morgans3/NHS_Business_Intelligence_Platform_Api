@@ -147,7 +147,7 @@ router.get(
 
 /**
  * @swagger
- * /userprofiles/getUserProfileByUsername?username={username}:
+ * /userprofiles/getUserProfileByUsername:
  *   get:
  *     security:
  *      - JWT: []
@@ -159,7 +159,7 @@ router.get(
  *     parameters:
  *       - name: username
  *         description: Unique Username
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *     responses:
@@ -174,7 +174,7 @@ router.get(
     (req, res, next) => {
         // Parse request
         let org = "global";
-        const username = req.query.username;
+        const username = req.body.username;
         if (req.header("authorization")) {
             const decodedToken = JWT.decode(req.header("authorization").replace("JWT ", ""));
             if (decodedToken["authentication"] === "nwas") {
@@ -468,8 +468,8 @@ router.get(
 
 /**
  * @swagger
- * /userprofiles/archive?profile_id={profile_id}:
- *   put:
+ * /userprofiles/delete:
+ *   delete:
  *     security:
  *      - JWT: []
  *     description: Removes a Profile
@@ -487,13 +487,13 @@ router.get(
  *       200:
  *         description: Confirmation of Member being Archived
  */
-router.put(
+router.delete(
     "/archive",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res) => {
-        const id = req.query.profile_id;
+        const id = req.body.profile_id;
         Profiles.getUserProfileById(id, function (err, scan) {
             if (err) {
                 res.status(500).json({
@@ -527,7 +527,7 @@ router.put(
 
 /**
  * @swagger
- * /userprofiles/update?profile_id={profile_id}:
+ * /userprofiles/update:
  *   put:
  *     security:
  *      - JWT: []
@@ -539,7 +539,7 @@ router.put(
  *     parameters:
  *       - name: profile_id
  *         description: Profile's ID
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *       - name: username
@@ -589,7 +589,7 @@ router.put(
         session: false,
     }),
     (req, res) => {
-        const id = req.query.profile_id;
+        const id = req.body.profile_id;
         Profiles.getUserProfileById(id, function (err, result) {
             if (err) {
                 res.status(500).json({

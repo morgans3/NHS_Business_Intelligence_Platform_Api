@@ -423,7 +423,7 @@ router.get(
 
 /**
  * @swagger
- * /teamrequests/getRequestsByUsername?username={username}:
+ * /teamrequests/getRequestsByUsername:
  *   get:
  *     security:
  *      - JWT: []
@@ -465,7 +465,7 @@ router.get(
 
 /**
  * @swagger
- * /teamrequests/getRequestsByTeamCode?code={code}:
+ * /teamrequests/getRequestsByTeamCode:
  *   get:
  *     security:
  *      - JWT: []

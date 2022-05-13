@@ -124,7 +124,7 @@ router.post(
 
 /**
  * @swagger
- * /apps/update?app_name={app_name}:
+ * /apps/update:
  *   put:
  *     security:
  *      - JWT: []
@@ -136,7 +136,7 @@ router.post(
  *     parameters:
  *       - name: app_name
  *         description: App's ID
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *       - name: name
@@ -200,7 +200,7 @@ router.put(
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
     (req, res) => {
-        const id = req.query.app_name;
+        const id = req.body.app_name;
         App.getAppByName(id, function (err, app) {
             if (err) {
                 res.status(500).json({

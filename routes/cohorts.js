@@ -115,7 +115,7 @@ router.post(
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: false, msg: "New cohort created!", data });
+                res.send({ success: true, msg: "New cohort created!", data });
             }
         );
     }
@@ -124,7 +124,7 @@ router.post(
 /**
  * @swagger
  * /cohorts/update:
- *   post:
+ *   put:
  *     description: Create a new cohort
  *     security:
  *      - JWT: []
@@ -162,7 +162,7 @@ router.post(
  *       200:
  *         description: Confirmation of Account Registration
  */
-router.post(
+router.put(
     "/update",
     passport.authenticate("jwt", {
         session: false,
@@ -195,7 +195,7 @@ router.post(
                                 res.status(500).send({ success: false, msg: err });
                                 return;
                             }
-                            res.send({ success: false, msg: "Cohort updated!", data });
+                            res.send({ success: true, msg: "Cohort updated!", data });
                         }
                     );
                 }
@@ -216,7 +216,7 @@ router.post(
                         res.status(500).send({ success: false, msg: err });
                         return;
                     }
-                    res.send({ success: false, msg: "Cohort updated!", data });
+                    res.send({ success: true, msg: "Cohort updated!", data });
                 }
             );
         }

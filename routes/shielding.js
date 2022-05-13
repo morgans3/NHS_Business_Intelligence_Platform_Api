@@ -17,7 +17,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
- * /shielding/?Limit={limit}:
+ * /shielding/:
  *   get:
  *     security:
  *      - JWT: []
