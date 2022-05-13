@@ -87,7 +87,7 @@ router.get(
 
                 // Found item?
                 if (result.Items.length === 0) {
-                    res.status(404).json({ success: false, msg: "Formdata not found!" });
+                    res.status(404).json({ success: false, msg: "Formdata not found" });
                 } else {
                     res.json(result.Items[0]);
                 }
@@ -154,7 +154,7 @@ router.post(
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: false, msg: "New formdata created!", data });
+                res.send({ success: true, msg: "New formdata created", data });
             }
         );
     }
@@ -222,7 +222,7 @@ router.put(
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: false, msg: "Formdata updated!", data });
+                res.send({ success: true, msg: "Formdata updated", data });
             }
         );
     }
@@ -283,7 +283,7 @@ router.delete(
                     res.status(500).json({ success: false, msg: err });
                     return;
                 }
-                res.json({ success: true, msg: "Formdata deleted!" });
+                res.json({ success: true, msg: "Formdata deleted" });
             }
         );
     }
