@@ -15,7 +15,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
- * /virtualward/?Limit={limit}:
+ * /virtualward/:
  *   get:
  *     security:
  *      - JWT: []

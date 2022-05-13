@@ -15,7 +15,7 @@ const TeamModel = new DIULibrary.Models.TeamModel();
 
 /**
  * @swagger
- * /searchs/teams?searchterm={searchterm}:
+ * /searchs/teams:
  *   get:
  *     security:
  *      - JWT: []

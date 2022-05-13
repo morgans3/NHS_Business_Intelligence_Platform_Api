@@ -79,7 +79,7 @@ router.get(
 
 /**
  * @swagger
- * /systemalerts/update?alert_id={alert_id}:
+ * /systemalerts/update:
  *   put:
  *     security:
  *      - JWT: []
@@ -89,9 +89,9 @@ router.get(
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: alert_id
+ *       - name: _id
  *         description: Alerts's ID
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *       - name: name

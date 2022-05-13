@@ -212,7 +212,7 @@ router.put(
 
 /**
  * @swagger
- * /teammembers/getTeamMembersByCode?code={code}:
+ * /teammembers/getTeamMembersByCode:
  *   get:
  *     security:
  *      - JWT: []
@@ -254,7 +254,7 @@ router.get(
 
 /**
  * @swagger
- * /teammembers/getTeamMembershipsByUsername?username={username}:
+ * /teammembers/getTeamMembershipsByUsername:
  *   get:
  *     security:
  *      - JWT: []

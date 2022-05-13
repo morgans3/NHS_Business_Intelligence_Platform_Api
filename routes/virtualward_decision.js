@@ -16,7 +16,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
- * /virtualward_decision/?Limit={limit}:
+ * /virtualward_decision/:
  *   get:
  *     security:
  *      - JWT: []
@@ -247,7 +247,7 @@ router.post(
 
 /**
  * @swagger
- * /virtualward_decision/getAllActioned?Limit={limit}:
+ * /virtualward_decision/getAllActioned:
  *   get:
  *     security:
  *      - JWT: []

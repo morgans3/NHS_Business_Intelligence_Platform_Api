@@ -17,7 +17,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
- * /patientlists/?Limit={limit}:
+ * /patientlists/:
  *   get:
  *     security:
  *      - JWT: []
@@ -87,7 +87,7 @@ router.get(
 
 /**
  * @swagger
- * /patientlists/patientdetailsbynhsnumber?NHSNumber={NHSNumber}:
+ * /patientlists/patientdetailsbynhsnumber:
  *   get:
  *     security:
  *      - JWT: []
@@ -160,7 +160,7 @@ router.get(
 
 /**
  * @swagger
- * /patientlists/getPatientsByCohort?limit={limit}&cohort={cohort}:
+ * /patientlists/getPatientsByCohort:
  *   get:
  *     security:
  *      - JWT: []

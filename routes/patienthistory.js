@@ -16,7 +16,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
- * /patienthistory/patienthistorybynhsnumber?NHSNumber={NHSNumber}:
+ * /patienthistory/patienthistorybynhsnumber:
  *   get:
  *     security:
  *      - JWT: []
@@ -85,7 +85,7 @@ router.get(
 
 /**
  * @swagger
- * /patienthistory/districthistorybynhsnumber?NHSNumber={NHSNumber}:
+ * /patienthistory/districthistorybynhsnumber:
  *   get:
  *     security:
  *      - JWT: []

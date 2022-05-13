@@ -18,7 +18,7 @@ const StringHelper = DIULibrary.Helpers.StringMethods;
 
 /**
  * @swagger
- * /searchusers/profiles?searchterm={searchterm}:
+ * /searchusers/profiles:
  *   get:
  *     security:
  *      - JWT: []
@@ -70,7 +70,7 @@ router.get(
 
 /**
  * @swagger
- * /searchusers/org-profiles?searchterm={searchterm}&organisation={organisation}:
+ * /searchusers/org-profiles:
  *   get:
  *     security:
  *      - JWT: []

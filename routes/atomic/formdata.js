@@ -27,6 +27,10 @@ const AtomicFormDataModel = new DIULibrary.Models.AtomicFormDataModel();
  *     responses:
  *       200:
  *         description: List of all formdata submitted
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *        description: Internal Server Error
  */
 router.get(
     "/",
@@ -58,6 +62,12 @@ router.get(
  *     responses:
  *       200:
  *         description: List of all formdata submitted
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Item not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/:id",
@@ -116,6 +126,12 @@ router.get(
  *     responses:
  *       200:
  *         description: Create a formdata item
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -170,6 +186,14 @@ router.post(
  *     responses:
  *       200:
  *         description: Formdata item updated
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Item not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -221,6 +245,14 @@ router.put(
  *     responses:
  *       200:
  *         description: Success status
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Item not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
