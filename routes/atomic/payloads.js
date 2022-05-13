@@ -95,7 +95,6 @@ router.get(
                     return;
                 }
 
-                // Found item?
                 if (result.Items.length === 0) {
                     res.status(404).json({ success: false, msg: "Payload not found!" });
                 } else {
@@ -154,6 +153,10 @@ router.post(
         MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
     ],
     (req, res, next) => {
+        if (!req.body.id || !req.body.type || !req.body.config) {
+            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            return;
+        }
         AtomicPayloadsModel.create(
             {
                 id: req.body.id,
@@ -221,6 +224,10 @@ router.put(
         MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
     ],
     (req, res, next) => {
+        if (!req.body.id || !req.body.type || !req.body.config) {
+            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            return;
+        }
         AtomicPayloadsModel.update(
             {
                 id: req.body.id,
@@ -285,7 +292,10 @@ router.delete(
         MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
     ],
     (req, res, next) => {
-        // Delete cohort by id
+        if (!req.body.id || !req.body.type) {
+            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            return;
+        }
         AtomicPayloadsModel.delete(
             {
                 id: req.body.id,

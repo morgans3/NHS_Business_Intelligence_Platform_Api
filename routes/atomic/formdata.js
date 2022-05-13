@@ -139,6 +139,10 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.id || !req.body.formid || !req.body.config) {
+            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            return;
+        }
         AtomicFormDataModel.create(
             {
                 id: req.body.id,
@@ -201,6 +205,10 @@ router.put(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.id || !req.body.formid || !req.body.config) {
+            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            return;
+        }
         AtomicFormDataModel.update(
             {
                 id: req.body.id,
@@ -260,7 +268,10 @@ router.delete(
         session: false,
     }),
     (req, res, next) => {
-        // Delete cohort by id
+        if (!req.body.id || !req.body.formid) {
+            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            return;
+        }
         AtomicFormDataModel.delete(
             {
                 id: req.body.id,
