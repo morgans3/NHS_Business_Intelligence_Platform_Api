@@ -96,7 +96,7 @@ router.get(
                 }
 
                 if (result.Items.length === 0) {
-                    res.status(404).json({ success: false, msg: "Payload not found!" });
+                    res.status(404).json({ success: false, msg: "Payload not found" });
                 } else {
                     res.json(result.Items[0]);
                 }
@@ -168,7 +168,7 @@ router.post(
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: false, msg: "New payload created!", data });
+                res.send({ success: true, msg: "New payload created", data });
             }
         );
     }
@@ -228,22 +228,27 @@ router.put(
             res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
             return;
         }
-        AtomicPayloadsModel.update(
-            {
-                id: req.body.id,
-                type: req.body.type,
-            },
-            {
-                config: req.body.config,
-            },
-            (err, data) => {
+        const keys = {
+            id: req.body.id,
+            type: req.body.type,
+        };
+        AtomicPayloadsModel.getByKeys(keys, (errGet, resultGet) => {
+            if (errGet) {
+                res.status(500).send({ success: false, msg: errGet });
+                return;
+            }
+            if (resultGet.Items.length === 0) {
+                res.status(404).json({ success: false, msg: "Payload not found" });
+                return;
+            }
+            AtomicPayloadsModel.update(keys, { config: req.body.config }, (err, data) => {
                 if (err) {
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: false, msg: "Payload updated!", data });
-            }
-        );
+                res.send({ success: true, msg: "Payload updated", data: req.body });
+            });
+        });
     }
 );
 
@@ -296,20 +301,27 @@ router.delete(
             res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
             return;
         }
-        AtomicPayloadsModel.delete(
-            {
-                id: req.body.id,
-                type: req.body.type,
-            },
-            (err, result) => {
-                // Return data
-                if (err) {
-                    res.status(500).json({ success: false, msg: err });
+        const keys = {
+            id: req.body.id,
+            type: req.body.type,
+        };
+        AtomicPayloadsModel.getByKeys(keys, (errGet, errResult) => {
+            if (errGet) {
+                res.status(500).send({ success: false, msg: errGet });
+                return;
+            }
+            if (errResult.Items.length === 0) {
+                res.status(404).json({ success: false, msg: "Payload not found" });
+                return;
+            }
+            AtomicPayloadsModel.delete(keys, (errDelete) => {
+                if (errDelete) {
+                    res.status(500).send({ success: false, msg: errDelete });
                     return;
                 }
-                res.json({ success: true, msg: "Payload deleted!" });
-            }
-        );
+                res.send({ success: true, msg: "Payload deleted", data: errResult.Items[0] });
+            });
+        });
     }
 );
 
