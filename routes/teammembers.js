@@ -131,7 +131,7 @@ router.post(
 /**
  * @swagger
  * /teammembers/update:
- *   post:
+ *   put:
  *     security:
  *      - JWT: []
  *     description: Update a Member
@@ -168,7 +168,7 @@ router.post(
  *       200:
  *         description: Confirmation of Member Registration
  */
-router.post(
+router.put(
     "/update",
     passport.authenticate("jwt", {
         session: false,

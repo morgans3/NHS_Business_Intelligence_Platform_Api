@@ -132,7 +132,7 @@ router.post(
 /**
  * @swagger
  * /capabilities/update:
- *   post:
+ *   put:
  *     description: Updates a capability. Requires Hall Montior
  *     security:
  *      - JWT: []
@@ -180,7 +180,7 @@ router.post(
  *       403:
  *        description: Forbidden due to capability requirements
  */
-router.post(
+router.put(
     "/update",
     [
         passport.authenticate("jwt", {

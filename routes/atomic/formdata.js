@@ -143,7 +143,7 @@ router.post(
 /**
  * @swagger
  * /atomic/formdata/update:
- *   post:
+ *   put:
  *     description: Update formdata
  *     security:
  *      - JWT: []
@@ -171,7 +171,7 @@ router.post(
  *       200:
  *         description: Formdata item updated
  */
-router.post(
+router.put(
     "/update",
     passport.authenticate("jwt", {
         session: false,

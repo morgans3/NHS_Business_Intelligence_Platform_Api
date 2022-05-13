@@ -145,7 +145,7 @@ router.post(
 /**
  * @swagger
  * /roles/update:
- *   post:
+ *   put:
  *     security:
  *      - JWT: []
  *     description: Update an existing role. Requires Hall Montior
@@ -190,7 +190,7 @@ router.post(
  *       403:
  *        description: Forbidden due to capability requirements
  */
-router.post(
+router.put(
     "/update",
     [
         passport.authenticate("jwt", {

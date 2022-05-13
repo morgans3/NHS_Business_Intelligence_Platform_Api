@@ -92,7 +92,7 @@ router.post(
 /**
  * @swagger
  * /newsfeeds/update:
- *   post:
+ *   put:
  *     security:
  *      - JWT: []
  *     description: Updates a News Feed. Requires Hall Monitor
@@ -122,7 +122,7 @@ router.post(
  *       403:
  *        description: Forbidden due to capability requirements
  */
-router.post(
+router.put(
     "/update",
     [
         passport.authenticate("jwt", {

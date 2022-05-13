@@ -124,7 +124,7 @@ router.post(
 /**
  * @swagger
  * /teams/update:
- *   post:
+ *   put:
  *     security:
  *      - JWT: []
  *     description: Update an existing team

@@ -18,7 +18,7 @@ const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
 /**
  * @swagger
  * /password/update:
- *   post:
+ *   put:
  *     security:
  *      - JWT: []
  *        required: false
@@ -52,7 +52,7 @@ const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
  *       200:
  *         description: Confirmation of Email Sent
  */
-router.post("/update", (req, res, next) => {
+router.put("/update", (req, res, next) => {
     // Check params
     const payload = req.body;
     if (payload && payload.username && payload.authmethod && payload.newpassword) {

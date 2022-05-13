@@ -143,6 +143,8 @@ router.get(
  * /users/register:
  *   post:
  *     description: Registers a User. Requires Hall Monitor
+ *     security:
+ *      - JWT: []
  *     tags:
  *      - Users
  *     produces:

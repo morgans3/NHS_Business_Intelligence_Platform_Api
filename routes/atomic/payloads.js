@@ -160,7 +160,7 @@ router.post(
 /**
  * @swagger
  * /atomic/payloads/update:
- *   post:
+ *   put:
  *     description: Update a payload. Requires Hall Monitor or Creator capability
  *     security:
  *      - JWT: []
@@ -190,7 +190,7 @@ router.post(
  *       403:
  *        description: Forbidden due to capability requirements
  */
-router.post(
+router.put(
     "/update",
     [
         passport.authenticate("jwt", {
