@@ -140,7 +140,7 @@ router.post(
     }),
     (req, res, next) => {
         if (!req.body.id || !req.body.formid || !req.body.config) {
-            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            res.status(400).json({ success: false, msg: "Not all parameters provided" });
             return;
         }
         AtomicFormDataModel.create(
@@ -206,7 +206,7 @@ router.put(
     }),
     (req, res, next) => {
         if (!req.body.id || !req.body.formid || !req.body.config) {
-            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            res.status(400).json({ success: false, msg: "Not all parameters provided" });
             return;
         }
         AtomicFormDataModel.update(
@@ -269,7 +269,7 @@ router.delete(
     }),
     (req, res, next) => {
         if (!req.body.id || !req.body.formid) {
-            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            res.status(400).json({ success: false, msg: "Not all parameters provided" });
             return;
         }
         AtomicFormDataModel.delete(

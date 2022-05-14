@@ -29,6 +29,8 @@ const ConfluenceModel = new DIULibrary.Models.ConfluenceModel();
  *     responses:
  *       200:
  *         description: Full list of guides
+ *       500:
+ *         description: Internal Server Error
  */
 router.get("/content/search", (req, res, next) => {
     ConfluenceModel.searchContent(req.query, (data) => {
@@ -57,8 +59,16 @@ router.get("/content/search", (req, res, next) => {
  *     responses:
  *       200:
  *         description: Confluence document
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal Server Error
  */
 router.get("/content/:id", (req, res, next) => {
+    if (!req.params.id) {
+        res.status(400).json({ message: "No id provided" });
+        return;
+    }
     ConfluenceModel.getContentById(req.params.id, (data) => {
         if (data) {
             res.json(data);

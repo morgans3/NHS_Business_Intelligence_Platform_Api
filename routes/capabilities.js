@@ -320,7 +320,6 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        console.log(req);
         CapabilitiesModel.getByPrimaryKey(req.query.id, function (err, data) {
             if (err) {
                 res.status(500).json({

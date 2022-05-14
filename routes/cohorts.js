@@ -44,6 +44,10 @@ const JWT = require("jsonwebtoken");
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -96,6 +100,12 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -103,6 +113,10 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.cohortName || !req.body.cohorturl) {
+            res.status(400).send({ success: false, msg: "Bad Request" });
+            return;
+        }
         CohortModel.create(
             {
                 cohortName: req.body.cohortName,
@@ -161,6 +175,14 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -168,6 +190,10 @@ router.put(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.cohortName || !req.body.cohorturl) {
+            res.status(400).send({ success: false, msg: "Bad Request" });
+            return;
+        }
         if (req.body.teamcode) {
             const token = req.header("authorization");
             const decodedToken = JWT.decode(token.replace("JWT ", ""));
@@ -243,6 +269,14 @@ router.put(
  *     responses:
  *       200:
  *         description: Success status
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -262,11 +296,11 @@ router.delete(
                 res.status(404).send({ success: false, msg: "Cohort not found" });
                 return;
             }
-            if (resultGet[0].teamcode) {
+            if (resultGet.Items[0].teamcode) {
                 const token = req.header("authorization");
                 const decodedToken = JWT.decode(token.replace("JWT ", ""));
                 const username = decodedToken["username"];
-                RoleFunctions.checkTeamAdmin(username, { code: resultGet[0].teamcode }, (errCheck, resultCheck) => {
+                RoleFunctions.checkTeamAdmin(username, { code: resultGet.Items[0].teamcode }, (errCheck, resultCheck) => {
                     if (errCheck) {
                         res.status(500).send({ success: false, msg: errCheck });
                         return;

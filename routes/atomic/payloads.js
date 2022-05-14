@@ -34,6 +34,8 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: List of all atomic payloads
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Internal Server Error
  */
@@ -154,7 +156,7 @@ router.post(
     ],
     (req, res, next) => {
         if (!req.body.id || !req.body.type || !req.body.config) {
-            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            res.status(400).json({ success: false, msg: "Not all parameters provided" });
             return;
         }
         AtomicPayloadsModel.create(
@@ -225,7 +227,7 @@ router.put(
     ],
     (req, res, next) => {
         if (!req.body.id || !req.body.type || !req.body.config) {
-            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            res.status(400).json({ success: false, msg: "Not all parameters provided" });
             return;
         }
         const keys = {
@@ -298,7 +300,7 @@ router.delete(
     ],
     (req, res, next) => {
         if (!req.body.id || !req.body.type) {
-            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
+            res.status(400).json({ success: false, msg: "Not all parameters provided" });
             return;
         }
         const keys = {
