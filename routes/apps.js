@@ -253,7 +253,7 @@ router.put(
                 res.json({
                     success: true,
                     msg: "App updated",
-                    data,
+                    data: scannedItem,
                 });
             });
         });
