@@ -46,8 +46,14 @@ const tablename = "newsfeeds";
  *     responses:
  *       200:
  *         description: Confirmation of News Feed Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -58,8 +64,12 @@ router.post(
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
     (req, res, next) => {
-        // Create item
-        const newNewsFeed = {
+        if (!req.body.destination || !req.body.type || !req.body.priority) {
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+            return;
+        }
+
+        const data = {
             destination: req.body.destination,
             type: req.body.type,
             priority: req.body.priority,
@@ -69,9 +79,9 @@ router.post(
         new AWS.DynamoDB().putItem(
             {
                 TableName: tablename,
-                Item: AWS.DynamoDB.Converter.marshall(newNewsFeed),
+                Item: AWS.DynamoDB.Converter.marshall(data),
             },
-            (err, data) => {
+            (err, resData) => {
                 if (err) {
                     res.status(500).json({
                         success: false,
@@ -81,6 +91,7 @@ router.post(
                     res.json({
                         success: true,
                         msg: "Registered",
+                        data,
                         id: req.body.destination,
                     });
                 }
@@ -103,24 +114,30 @@ router.post(
  *     parameters:
  *       - name: destination
  *         description: URL or link to Location of News Feed source
- *         in: body
+ *         in: formData
  *         required: true
  *         type: string
  *       - name: type
  *         description: Type of News Feed
- *         in: body
+ *         in: formData
  *         required: true
  *         type: string
  *       - name: priority
  *         description: Order of Feed in display
- *         in: body
+ *         in: formData
  *         required: true
  *         type: number
  *     responses:
  *       200:
  *         description: Confirmation of update
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -131,6 +148,10 @@ router.put(
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
     (req, res) => {
+        if (!req.body.destination || !req.body.type || !req.body.priority) {
+            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
+            return;
+        }
         DynamoDBData.updateItem(AWS, tablename, ["destination", "type"], req.body, (err, app) => {
             if (err) {
                 res.status(500).json({
@@ -141,6 +162,7 @@ router.put(
             res.json({
                 success: true,
                 msg: "Updated",
+                data: req.body,
             });
         });
     }
@@ -165,6 +187,10 @@ router.put(
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -208,19 +234,27 @@ router.get(
  *     parameters:
  *       - name: destination
  *         description: The ID of the newsfeed being updated.
- *         in: body
+ *         in: formData
  *         required: true
  *         type: string
  *       - name: type
  *         description: Type of News Feed
- *         in: body
+ *         in: formData
  *         required: true
  *         type: string
  *     responses:
  *       200:
  *         description: Confirmation of removal
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: App not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -233,22 +267,44 @@ router.delete(
     (req, res, next) => {
         if (req.body.destination && req.body.type) {
             const key = {
-                destination: { S: req.body.destination },
-                type: { S: req.body.type },
+                destination: req.body.destination,
+                type: req.body.type,
             };
-            DynamoDBData.removeItem(AWS, tablename, key, (err, response) => {
-                if (err) {
-                    res.status(500).json({
-                        success: false,
-                        msg: "Error: " + err,
-                    });
-                } else {
-                    res.json({
-                        success: true,
-                        msg: "Removed",
-                    });
+            DynamoDBData.getItemByKeys(
+                AWS,
+                tablename,
+                ["destination", "type"],
+                [req.body.destination, req.body.type],
+                (errGet, resultGet) => {
+                    if (errGet) {
+                        res.status(500).json({
+                            success: false,
+                            msg: "Failed to get: " + errGet,
+                        });
+                    } else {
+                        if (resultGet.Items && resultGet.Items.length > 0) {
+                            DynamoDBData.removeItem(AWS, tablename, key, (errRemove) => {
+                                if (errRemove) {
+                                    res.status(500).json({
+                                        success: false,
+                                        msg: "Error: " + errRemove,
+                                    });
+                                } else {
+                                    res.json({
+                                        success: true,
+                                        msg: "Removed",
+                                    });
+                                }
+                            });
+                        } else {
+                            res.status(404).json({
+                                success: false,
+                                msg: "News Feed Not Found",
+                            });
+                        }
+                    }
                 }
-            });
+            );
         } else {
             res.status(400).json({
                 success: false,
