@@ -61,6 +61,12 @@ function GetNICE(path, paramItems, callback) {
  *     responses:
  *       200:
  *         description: JSON containing response from NICE API
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/evidencesearch",
@@ -68,6 +74,10 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.search_query || !req.body.search_length) {
+            res.status(400).send({ success: false, msg: "Bad Request" });
+            return;
+        }
         GetNICE(req.body.search_query, req.body.search_length, (error, response, body) => {
             if (error) {
                 res.status(500).json({
