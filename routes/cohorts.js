@@ -269,6 +269,8 @@ router.put(
  *     responses:
  *       200:
  *         description: Success status
+ *       400:
+ *         description: Bad Request
  *       401:
  *         description: Unauthorized
  *       403:
@@ -284,6 +286,10 @@ router.delete(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.id) {
+            res.status(400).send({ success: false, msg: "Bad Request" });
+            return;
+        }
         const key = {
             _id: req.body.id,
         };

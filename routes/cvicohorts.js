@@ -44,6 +44,10 @@ const RoleFunctions = require("../helpers/role_functions");
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -101,6 +105,12 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -108,6 +118,10 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.cohortName || !req.body.createdDT || !req.body.cohorturl) {
+            res.status(400).json({ success: false, msg: "Not all parameters provided" });
+            return;
+        }
         CVICohortModel.create(
             {
                 cohortName: req.body.cohortName,
@@ -167,6 +181,14 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -174,6 +196,10 @@ router.put(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.cohortName || !req.body.cohorturl || !req.body.createdDT) {
+            res.status(400).send({ success: false, msg: "Bad Request" });
+            return;
+        }
         if (req.body.teamcode) {
             const token = req.header("authorization");
             const decodedToken = JWT.decode(token.replace("JWT ", ""));
@@ -254,6 +280,16 @@ router.put(
  *     responses:
  *       200:
  *         description: Success status
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -261,6 +297,10 @@ router.delete(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.cohortName || !req.body.createdDT) {
+            res.status(400).send({ success: false, msg: "Bad Request" });
+            return;
+        }
         const key = {
             cohortName: req.body.cohortName,
             createdDT: req.body.createdDT,
