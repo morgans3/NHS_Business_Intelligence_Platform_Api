@@ -29,6 +29,10 @@ const basePath = "https://10.164.36.166/mlcsu/production/gpinpatientapi/api/";
  *     responses:
  *       200:
  *         description: JWT Bearer Token for Querying Inpatients API
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/authenticate",
@@ -117,6 +121,12 @@ function sendGet(bthtoken, path, callback) {
  *     responses:
  *       200:
  *         description: BTH Inpatient Count Totals
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/inpatientcounts",
@@ -124,6 +134,13 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.token) {
+            res.status(400).json({
+                success: false,
+                msg: "No token provided",
+            });
+            return;
+        }
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/InpatientCounts", (error, response, body) => {
@@ -162,6 +179,12 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH Outpatient Count Totals
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/outpatientcounts",
@@ -169,6 +192,13 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.token) {
+            res.status(400).json({
+                success: false,
+                msg: "No token provided",
+            });
+            return;
+        }
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/OutpatientCounts", (error, response, body) => {
@@ -207,6 +237,12 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH AE Count Totals
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/aecounts",
@@ -214,6 +250,13 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.token) {
+            res.status(400).json({
+                success: false,
+                msg: "No token provided",
+            });
+            return;
+        }
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/AECounts", (error, response, body) => {
@@ -252,6 +295,12 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH ECS Count Totals
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/ecscounts",
@@ -259,6 +308,13 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.token) {
+            res.status(400).json({
+                success: false,
+                msg: "No token provided",
+            });
+            return;
+        }
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/ECSCounts", (error, response, body) => {
@@ -297,6 +353,12 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH EPC Count Totals
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/epccounts",
@@ -304,6 +366,13 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.token) {
+            res.status(400).json({
+                success: false,
+                msg: "No token provided",
+            });
+            return;
+        }
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/EPCCounts", (error, response, body) => {
@@ -342,6 +411,12 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH Inpatient GP Summary Figures
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/inpatientgpsummary",
@@ -349,6 +424,13 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.token) {
+            res.status(400).json({
+                success: false,
+                msg: "No token provided",
+            });
+            return;
+        }
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/InpatientsGPSummary", (error, response, body) => {
@@ -387,6 +469,12 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH AE GP Summary Figures
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/aegpsummary",
@@ -394,6 +482,13 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.token) {
+            res.status(400).json({
+                success: false,
+                msg: "No token provided",
+            });
+            return;
+        }
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/AEGPSummary", (error, response, body) => {

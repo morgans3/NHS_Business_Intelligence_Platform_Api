@@ -31,7 +31,13 @@ const jwt = require("jsonwebtoken");
  *         type: string
  *     responses:
  *       200:
- *         description: Open Source Audit List
+ *         description: Success
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/generate-validation-key",
@@ -39,6 +45,10 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.nhsnumber) {
+            res.status(400).send({ success: false, msg: "NHS Number not provided" });
+            return;
+        }
         const token = req.headers.authorization.replace("JWT ", "");
         const username = jwt.decode(token)["username"] || "test";
         const nhsnumber = req.body.nhsnumber;

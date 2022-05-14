@@ -26,6 +26,8 @@ const PGConstruct = PostgresI.init(settings);
  *     responses:
  *       200:
  *         description: Full List
+ *       500:
+ *         description: Internal Server Error
  */
 
 router.get("/", (req, res, next) => {
@@ -40,8 +42,12 @@ router.get("/", (req, res, next) => {
         whereclause: `WHERE lg.ccg in ('00Q', '00R', '00X', '01A', '01E', '01K', '02G', '02M')
       AND (LEFT(lg.organisation_code,1) != 'Y') OR lg.organisation_code='Y01008'`,
     };
-    PostgresI.getGeoJson(PGConstruct, params, (response) => {
-        res.json(response);
+    PostgresI.getGeoJson(PGConstruct, params, (err, response) => {
+        if (err) {
+            res.status(500).send({ success: false, msg: err });
+            return;
+        }
+        res.send(response);
     });
 });
 

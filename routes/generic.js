@@ -32,6 +32,14 @@ const RoleModel = new DIULibrary.Models.RoleModel();
  *     responses:
  *       200:
  *         description: List of capabilities for that type
+ *       204:
+ *         description: No capabilities for that type
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/:type/:id/capabilities",
@@ -85,6 +93,14 @@ router.get(
  *     responses:
  *       200:
  *         description: List of roles for that type
+ *       204:
+ *         description: No roles for that type
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/:type/:id/roles",
@@ -108,7 +124,7 @@ router.get(
                 }
             });
         } else {
-            res.status(500).json({ success: false, msg: "Error: You must provide a type." });
+            res.status(400).json({ success: false, msg: "Error: You must provide a type." });
         }
     }
 );

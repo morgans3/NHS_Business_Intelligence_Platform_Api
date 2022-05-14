@@ -26,6 +26,10 @@ const GrandIndex = require("../models/grandindex");
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",

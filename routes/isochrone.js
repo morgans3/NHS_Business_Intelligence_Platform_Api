@@ -34,6 +34,12 @@ const PGConstruct = PostgresI.init(settings);
  *     responses:
  *       200:
  *         description: Household Statistics
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/houses-within-isochrone",
@@ -41,12 +47,16 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
-        const query = req.body.isochrone_bounds;
-        const params = {
-            query,
-        };
-        PostgresI.getIsoChrone(PGConstruct, params, (response) => {
-            res.json(response);
+        if (!req.body.isochrone_bounds) {
+            res.status(400).send({ success: false, msg: "Isochrone bounds not provided" });
+            return;
+        }
+        PostgresI.getIsoChrone(PGConstruct, { query: req.body.isochrone_bounds }, (err, response) => {
+            if (err) {
+                res.status(500).send({ success: false, msg: err });
+                return;
+            }
+            res.send(response);
         });
     }
 );

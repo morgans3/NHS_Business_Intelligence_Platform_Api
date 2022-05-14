@@ -121,14 +121,16 @@ router.post("/acknowledgements/report", MiddlewareHelper.authenticateWithKey(cre
         result: item.result,
     };
     if (newItem.error) {
-    // Process File Error
+        // Process File Error
+        console.error(newItem.error);
     }
     if (newItem.result && newItem.result.length > 0) {
-    // Process row acknowledgements
+        // Process row acknowledgements
         newItem.result.forEach((result) => {
             result.importFileName = newItem.importFileName;
             if (result.error) {
                 // Flag error
+                console.error(result.error);
             }
         });
         let rowCount = 0;
