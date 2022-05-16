@@ -28,6 +28,8 @@ const tablename = "organisations";
  *     responses:
  *       200:
  *         description: All data
+ *       500:
+ *         description: Internal Server Error
  */
 router.get("/", (req, res, next) => {
     DynamoDBData.getAll(AWS, tablename, (err, result) => {
@@ -43,6 +45,8 @@ router.get("/", (req, res, next) => {
  * @swagger
  * /organisations/create:
  *   post:
+ *     security:
+ *      - JWT: []
  *     description: Registers a new Organisation. Requires Hall Monitor
  *     tags:
  *      - Organisations
@@ -72,8 +76,14 @@ router.get("/", (req, res, next) => {
  *     responses:
  *       200:
  *         description: Confirmation of Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *         description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -84,15 +94,20 @@ router.post(
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
     (req, res, next) => {
+        if (!req.body.code || !req.body.name || !req.body.authmethod || !req.body.contact) {
+            res.status(400).json({ success: false, msg: "Bad Request" });
+            return;
+        }
         new AWS.DynamoDB().putItem(
             {
                 TableName: tablename,
-                Item: AWS.DynamoDB.Converter.marshall({
+                Item: {
                     code: { S: req.body.code },
                     name: { S: req.body.name },
                     authmethod: { S: req.body.authmethod },
                     contact: { S: req.body.contact },
-                }),
+                },
+                ReturnValues: "ALL_OLD",
             },
             (err, data) => {
                 if (err) {
@@ -148,8 +163,14 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of update
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *         description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -160,7 +181,11 @@ router.put(
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
     (req, res) => {
-        DynamoDBData.updateItem(AWS, tablename, ["destination", "type"], req.body, (err, app) => {
+        if (!req.body.code || !req.body.name || !req.body.authmethod || !req.body.contact) {
+            res.status(400).json({ success: false, msg: "Bad Request" });
+            return;
+        }
+        DynamoDBData.updateItem(AWS, tablename, ["code", "name"], req.body, (err, app) => {
             if (err) {
                 res.status(500).json({
                     success: false,
@@ -200,8 +225,16 @@ router.put(
  *     responses:
  *       200:
  *         description: Confirmation of removal
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -214,21 +247,38 @@ router.delete(
     (req, res, next) => {
         if (req.body.code && req.body.name) {
             const key = {
-                code: { S: req.body.code },
-                name: { S: req.body.name },
+                code: req.body.code,
+                name: req.body.name,
             };
-            DynamoDBData.removeItem(AWS, tablename, key, (err, response) => {
-                if (err) {
+            DynamoDBData.getItemByKeys(AWS, tablename, ["code", "name"], [req.body.code, req.body.name], (errGet, resultGet) => {
+                if (errGet) {
                     res.status(500).json({
                         success: false,
-                        msg: "Error: " + err,
+                        msg: "Failed to get: " + errGet,
                     });
-                } else {
-                    res.json({
-                        success: true,
-                        msg: "Removed",
-                    });
+                    return;
                 }
+                if (resultGet.Items && resultGet.Items.length === 0) {
+                    res.status(404).json({
+                        success: false,
+                        msg: "Not found",
+                    });
+                    return;
+                }
+
+                DynamoDBData.removeItem(AWS, tablename, key, (err, response) => {
+                    if (err) {
+                        res.status(500).json({
+                            success: false,
+                            msg: "Error: " + err,
+                        });
+                    } else {
+                        res.json({
+                            success: true,
+                            msg: "Removed",
+                        });
+                    }
+                });
             });
         } else {
             res.status(400).json({
