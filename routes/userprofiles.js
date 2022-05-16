@@ -22,8 +22,6 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  */
 
 /**
-
-/**
  * @swagger
  * /userprofiles/create:
  *   post:
@@ -75,6 +73,12 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: Confirmation of new Profile Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -82,17 +86,15 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.username) {
+            res.status(400).json({ msg: "Missing Params" });
+            return;
+        }
         Profiles.addUserProfile(
             {
                 username: req.body.username,
-                ...(req.body.preferredcontactmethod &&
-                    req.body.preferredcontactmethod.length > 0 && {
-                        preferredcontactmethod: req.body.preferredcontactmethod,
-                    }),
-                ...(req.body.mobiledeviceids &&
-                    req.body.mobiledeviceids.length > 0 && {
-                        mobiledeviceids: req.body.mobiledeviceids,
-                    }),
+                ...(req.body.preferredcontactmethod && { preferredcontactmethod: req.body.preferredcontactmethod }),
+                ...(req.body.mobiledeviceids && { mobiledeviceids: req.body.mobiledeviceids }),
                 ...(req.body.photobase64 && { photobase64: req.body.photobase64 }),
                 ...(req.body.contactnumber && { contactnumber: req.body.contactnumber }),
                 ...(req.body.emailpreference && { emailpreference: req.body.emailpreference }),
@@ -124,6 +126,10 @@ router.post(
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -147,7 +153,7 @@ router.get(
 
 /**
  * @swagger
- * /userprofiles/getUserProfileByUsername:
+ * /userprofiles/username/{username}:
  *   get:
  *     security:
  *      - JWT: []
@@ -159,19 +165,31 @@ router.get(
  *     parameters:
  *       - name: username
  *         description: Unique Username
- *         in: formData
+ *         in: path
  *         required: true
  *         type: string
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getUserProfileByUsername",
+    "/username/:username",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res, next) => {
+        if (!req.params.username) {
+            res.status(400).json({ msg: "Missing Params" });
+            return;
+        }
         // Parse request
         let org = "global";
         const username = req.body.username;
@@ -330,6 +348,14 @@ router.get(
  *     responses:
  *       200:
  *         description: The user's profile
+ *       400:
+ *         description: Missing parameters
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal error
  */
 router.get(
     "/:userId",
@@ -346,6 +372,10 @@ router.get(
         }
     ),
     (req, res, next) => {
+        if (!req.params.userId) {
+            res.status(400).send({ success: false, msg: "No user id provided" });
+            return;
+        }
         // Parse request
         const username = req.params.userId.split("#")[0];
 
@@ -478,22 +508,34 @@ router.get(
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: profile_id
+ *       - name: id
  *         description: Profile's ID
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *     responses:
  *       200:
  *         description: Confirmation of Member being Archived
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
-    "/archive",
+    "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res) => {
-        const id = req.body.profile_id;
+        if (!req.body.id) {
+            res.status(400).send({ success: false, msg: "No id provided" });
+            return;
+        }
+        const id = req.body.id;
         Profiles.getUserProfileById(id, function (err, scan) {
             if (err) {
                 res.status(500).json({
@@ -582,6 +624,14 @@ router.delete(
  *     responses:
  *       200:
  *         description: Confirmation of App Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -589,6 +639,10 @@ router.put(
         session: false,
     }),
     (req, res) => {
+        if (!req.body.profile_id) {
+            res.status(400).send({ success: false, msg: "No id provided" });
+            return;
+        }
         const id = req.body.profile_id;
         Profiles.getUserProfileById(id, function (err, result) {
             if (err) {

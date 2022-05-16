@@ -93,7 +93,7 @@ router.post(
             } else {
                 let blnInTeam = false;
                 if (teamRequest) {
-                    if (teamRequest.Items.length) {
+                    if (teamRequest.Items.length > 0) {
                         // LOOP through teams and see if req.body.teamcode exists.
                         teamRequest.Items.forEach((team) => {
                             if (team.teamcode === req.body.teamcode) {
@@ -120,7 +120,7 @@ router.post(
                             let blnRequestMade = false;
                             if (requestRequest) {
                                 // IF rows
-                                if (requestRequest.Items.length) {
+                                if (requestRequest.Items.length > 0) {
                                     // LOOP through results and see if they have open requests
                                     requestRequest.Items.forEach((requestData) => {
                                         if (!requestData.approveddate) {
