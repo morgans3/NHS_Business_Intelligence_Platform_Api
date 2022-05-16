@@ -51,6 +51,12 @@ const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
  *     responses:
  *       200:
  *         description: Confirmation of Email Sent
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.put("/update", (req, res, next) => {
     // Check params
@@ -58,7 +64,7 @@ router.put("/update", (req, res, next) => {
     if (payload && payload.username && payload.authmethod && payload.newpassword) {
         // Check organisation auth method
         if (payload.authmethod !== "Demo") {
-            res.status(500).json({
+            res.status(400).json({
                 success: false,
                 msg: "Please contact your IT Department if you wish to change your password.",
             });
@@ -130,14 +136,14 @@ router.put("/update", (req, res, next) => {
             passport.authenticate("jwt", { session: false }, (err, authorisedUser) => {
                 if (err || authorisedUser === false) {
                     // User is not authenticated
-                    res.status(401).json({ success: false, msg: "Unauthenticated!" });
+                    res.status(401).json({ success: false, msg: "Unauthenticated" });
                 } else {
                     // Change user's password
                     UserModel.updateUser(authorisedUser.username, payload.newpassword, (updateErr, updateRes) => {
                         if (updateErr) console.error(updateErr);
                         res.json({
                             success: !updateErr,
-                            msg: updateErr ? "Failed to update password" : "Password has been updated!",
+                            msg: updateErr ? "Failed to update password" : "Password has been updated",
                         });
                     });
                 }

@@ -129,7 +129,7 @@ router.post(
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: true, msg: "New cohort created!", data });
+                res.send({ success: true, msg: "New cohort created", data });
             }
         );
     }
@@ -221,7 +221,7 @@ router.put(
                                 res.status(500).send({ success: false, msg: err });
                                 return;
                             }
-                            res.send({ success: true, msg: "Cohort updated!", data });
+                            res.send({ success: true, msg: "Cohort updated", data });
                         }
                     );
                 }
@@ -242,7 +242,7 @@ router.put(
                         res.status(500).send({ success: false, msg: err });
                         return;
                     }
-                    res.send({ success: true, msg: "Cohort updated!", data });
+                    res.send({ success: true, msg: "Cohort updated", data });
                 }
             );
         }
@@ -320,7 +320,7 @@ router.delete(
                                 res.status(500).json({ success: false, msg: err });
                                 return;
                             }
-                            res.json({ success: true, msg: "Cohort deleted!" });
+                            res.json({ success: true, msg: "Cohort deleted" });
                         });
                     }
                 });
@@ -331,7 +331,7 @@ router.delete(
                         res.status(500).json({ success: false, msg: err });
                         return;
                     }
-                    res.json({ success: true, msg: "Cohort deleted!" });
+                    res.json({ success: true, msg: "Cohort deleted" });
                 });
             }
         });

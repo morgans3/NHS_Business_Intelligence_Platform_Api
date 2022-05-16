@@ -412,7 +412,7 @@ router.get(
                         ActiveDirectoryModel.getInstance(organisation.authmethod, (getInstanceError, activeDirectory) => {
                             // Organisation has already been checked, username and org combination must be incorrect
                             if (getInstanceError === "Unknown organisation") {
-                                res.status(404).send({ success: false, message: "User not found!" });
+                                res.status(404).send({ success: false, message: "User not found" });
                                 return;
                             }
 

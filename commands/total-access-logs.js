@@ -77,7 +77,7 @@
                 if (err) {
                     console.log(err);
                 } else {
-                    console.log("Statistics logged to the database!");
+                    console.log("Statistics logged to the database");
                 }
                 process.exit();
             });

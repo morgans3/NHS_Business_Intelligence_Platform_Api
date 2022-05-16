@@ -57,7 +57,7 @@
                                 if (err) {
                                     console.log(err);
                                 }
-                                console.log("Credential created!");
+                                console.log("Credential created");
                                 process.exit();
                             }
                         );

@@ -27,6 +27,10 @@ const DynamoDBData = require("diu-data-functions").Methods.DynamoDBData;
  *     responses:
  *       200:
  *         description: All data
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",

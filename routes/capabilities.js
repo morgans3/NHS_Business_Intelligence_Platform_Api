@@ -564,7 +564,7 @@ router.post(
                     res.status(500).json({ success: false, msg: err });
                     return;
                 }
-                res.json({ success: true, msg: "Capability links synced!" });
+                res.json({ success: true, msg: "Capability links synced" });
             }
         );
     }
@@ -632,7 +632,7 @@ router.post(
                     res.status(500).json({ success: false, msg: err });
                     return;
                 }
-                res.json({ success: true, msg: "Capability link created!" });
+                res.json({ success: true, msg: "Capability link created" });
             }
         );
     }
@@ -690,7 +690,7 @@ router.delete(
                 res.status(500).json({ success: false, msg: err });
                 return;
             }
-            res.json({ success: true, msg: "Capability link deleted!" });
+            res.json({ success: true, msg: "Capability link deleted" });
         });
     }
 );

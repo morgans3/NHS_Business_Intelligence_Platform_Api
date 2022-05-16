@@ -64,6 +64,12 @@ const RoleFunctions = require("../helpers/role_functions");
  *     responses:
  *       200:
  *         description: Confirmation of Request Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -71,6 +77,10 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.username || !req.body.teamcode || !req.body.requestdate) {
+            res.status(400).json({ msg: "Bad Request" });
+            return;
+        }
         Members.getteamsByMember(req.body.username, (teamRequestErr, teamRequest) => {
             // see if users is already in team
             // IF rows
@@ -213,6 +223,16 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Request Update
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -220,6 +240,13 @@ router.put(
         session: false,
     }),
     (req, res) => {
+        if (!req.body.id || !req.body.username || !req.body.teamcode || !req.body.requestdate) {
+            res.status(400).json({
+                success: false,
+                msg: "Failed to update: Missing required fields",
+            });
+            return;
+        }
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
         const username = decodedToken["username"];
@@ -290,9 +317,24 @@ router.put(
  *         in: formData
  *         required: true
  *         type: string
+ *       - name: teamcode
+ *         description: Requesting Team
+ *         in: formData
+ *         type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Confirmation of Request being deleted
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -300,6 +342,13 @@ router.delete(
         session: false,
     }),
     (req, res) => {
+        if (!req.body.id || !req.body.teamcode) {
+            res.status(400).json({
+                success: false,
+                msg: "Failed to delete: Missing required fields",
+            });
+            return;
+        }
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
         const username = decodedToken["username"];
@@ -365,6 +414,14 @@ router.delete(
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/:id",
@@ -372,14 +429,21 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.params.id) {
+            res.status(400).json({
+                success: false,
+                msg: "Failed to get: Missing required fields",
+            });
+            return;
+        }
         Requests.getRequestById(req.params.id, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
-                if (result.Items) {
-                    res.send(JSON.stringify(result.Items));
+                if (result.Items.length > 0) {
+                    res.send(JSON.stringify(result.Items[0]));
                 } else {
-                    res.send(JSON.stringify([]));
+                    res.status(404).send({ success: false, msg: "Can not find item in database" });
                 }
             }
         });
@@ -400,6 +464,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -423,7 +491,7 @@ router.get(
 
 /**
  * @swagger
- * /teamrequests/getRequestsByUsername:
+ * /teamrequests/username/{username}:
  *   get:
  *     security:
  *      - JWT: []
@@ -435,28 +503,36 @@ router.get(
  *     parameters:
  *       - name: username
  *         description: User's Name
- *         in: query
+ *         in: path
  *         required: true
  *         type: string
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getRequestsByUsername",
+    "/username/:username",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res, next) => {
-        const username = req.query.username;
+        const username = req.params.username;
         Requests.getRequestsByUsername(username, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
-                if (result.Items) {
+                if (result.Items.length > 0) {
                     res.send(JSON.stringify(result.Items));
                 } else {
-                    res.send(JSON.stringify([]));
+                    res.status(404).json({ success: false, msg: "No requests found" });
                 }
             }
         });
@@ -465,7 +541,7 @@ router.get(
 
 /**
  * @swagger
- * /teamrequests/getRequestsByTeamCode:
+ * /teamrequests/teamcode/{code}:
  *   get:
  *     security:
  *      - JWT: []
@@ -477,28 +553,36 @@ router.get(
  *     parameters:
  *       - name: code
  *         description: Team's Code
- *         in: query
+ *         in: path
  *         required: true
  *         type: string
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getRequestsByTeamCode",
+    "/teamcode/:code",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res, next) => {
-        const code = req.query.code;
+        const code = req.params.code;
         Requests.getRequestsByTeamCode(code, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
-                if (result.Items) {
+                if (result.Items.length > 0) {
                     res.send(JSON.stringify(result.Items));
                 } else {
-                    res.send(JSON.stringify([]));
+                    res.status(404).json({ success: false, msg: "No requests found" });
                 }
             }
         });

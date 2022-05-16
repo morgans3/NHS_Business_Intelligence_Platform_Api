@@ -39,7 +39,9 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *       401:
  *         description: Unauthorised
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: Not Found
  *       500:
  *         description: Server Error Processing
  */
@@ -110,7 +112,9 @@ router.get(
  *       401:
  *         description: Unauthorised
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: Not Found
  *       500:
  *         description: Server Error Processing
  */
@@ -145,7 +149,7 @@ router.get(
                         if (result.length > 0) {
                             res.send(JSON.stringify(result[0]));
                         } else {
-                            res.status(400).send(
+                            res.status(404).send(
                                 JSON.stringify({
                                     reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
                                 })
@@ -186,7 +190,9 @@ router.get(
  *       401:
  *         description: Unauthorised
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: Not Found
  *       500:
  *         description: Server Error Processing
  */
@@ -217,7 +223,7 @@ router.get(
                     if (result.length > 0) {
                         res.send(JSON.stringify(result));
                     } else {
-                        res.status(400).send(
+                        res.status(404).send(
                             JSON.stringify({
                                 reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
                             })

@@ -36,6 +36,14 @@ const StringHelper = DIULibrary.Helpers.StringMethods;
  *     responses:
  *       200:
  *         description: Search Results
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ *       503:
+ *        description: Service Unavailable
  */
 router.get(
     "/profiles",
@@ -43,6 +51,10 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.query.searchterm) {
+            res.status(400).send({ success: false, msg: "Search Term Required" });
+            return;
+        }
         const search = req.query.searchterm;
         const searchresults = [];
         UserModel.getUserByPartialUsername(search, function (err, users) {
@@ -93,6 +105,14 @@ router.get(
  *     responses:
  *       200:
  *         description: Search Results
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ *       503:
+ *        description: Service Unavailable
  */
 router.get(
     "/org-profiles",
@@ -100,6 +120,10 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.query.searchterm || !req.query.organisation) {
+            res.status(400).send({ success: false, msg: "Search Term and Organisation Required" });
+            return;
+        }
         const search = req.query.searchterm;
         const organisation = req.query.organisation;
         const searchresults = [];

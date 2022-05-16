@@ -40,6 +40,8 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         description: Unauthorised
  *       403:
  *        description: Forbidden due to capability requirements
+ *       404:
+ *        description: Not Found
  *       500:
  *         description: Server Error Processing
  */
@@ -60,7 +62,7 @@ router.get(
             const userroles = decodedToken["capabilities"];
             shielding.getAll(limit, userroles, function (access, err, result) {
                 if (err) {
-                    res.status(400).send(
+                    res.status(500).send(
                         JSON.stringify({
                             reason: "Error: " + err,
                         })
@@ -71,7 +73,7 @@ router.get(
                     if (result.length > 0) {
                         res.send(JSON.stringify(result));
                     } else {
-                        res.status(400).send(
+                        res.status(404).send(
                             JSON.stringify({
                                 reason: "Unable to find any citizens, may not exist or have insufficient permissions to view record.",
                             })

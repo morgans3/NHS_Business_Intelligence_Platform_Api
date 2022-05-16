@@ -129,7 +129,7 @@ router.get(
 
                 // Found user?
                 if (result.Items.length === 0) {
-                    res.status(404).json({ success: false, msg: "User not found!" });
+                    res.status(404).json({ success: false, msg: "User not found" });
                 } else {
                     res.json(result.Items[0]);
                 }
@@ -384,7 +384,7 @@ router.delete(
                     res.status(500).json({ success: false, msg: err });
                     return;
                 }
-                res.json({ success: true, msg: "User deleted!" });
+                res.json({ success: true, msg: "User deleted" });
             }
         );
     }

@@ -46,8 +46,10 @@ const securegroup = [
  *         description: Confirmation of Account
  *       400:
  *         description: Bad Request
- *       401:
- *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.post("/check", (req, res, next) => {
     if (req.body.org && req.body.key) {
@@ -62,7 +64,7 @@ router.post("/check", (req, res, next) => {
             });
             res.status(200).json({ msg: key });
         } else {
-            res.status(401).json({ msg: "Key not found" });
+            res.status(404).json({ msg: "Key not found" });
         }
     } else {
         res.status(400).json({ msg: "Unable to parse Key" });

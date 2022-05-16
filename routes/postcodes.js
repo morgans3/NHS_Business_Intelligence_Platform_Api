@@ -26,6 +26,10 @@ const postcodes = require("../models/postcodes");
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -60,6 +64,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/postcode-lookup",

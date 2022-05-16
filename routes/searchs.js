@@ -33,6 +33,12 @@ const TeamModel = new DIULibrary.Models.TeamModel();
  *     responses:
  *       200:
  *         description: Search Results
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/teams",
@@ -40,11 +46,15 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.query.searchterm) {
+            res.status(400).send({ success: false, msg: "Search Term Required" });
+            return;
+        }
         TeamModel.getByFilters(
             {
                 name: req.query.searchterm,
             },
-            function (err, teams) {
+            (err, teams) => {
                 if (err) {
                     res.status(500).send({ status: 500, message: err });
                 } else {

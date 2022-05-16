@@ -29,6 +29,10 @@ const RoleFunctions = require("../helpers/role_functions");
  *     responses:
  *       200:
  *         description: A list of all teams
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
  */
 router.get(
     "/",
@@ -37,7 +41,6 @@ router.get(
     }),
     (req, res, next) => {
         TeamModel.get((err, result) => {
-            // Return data
             if (err) {
                 res.status(500).json({ success: false, msg: err });
             } else {
@@ -92,6 +95,12 @@ router.get(
  *     responses:
  *       200:
  *         description: The newly created team
+ *       400:
+ *        description: Bad request
+ *       401:
+ *        description: Unauthorized
+ *       500:
+ *        description: Internal server error
  */
 router.post(
     "/create",
@@ -99,6 +108,10 @@ router.post(
         session: false,
     }),
     async (req, res, next) => {
+        if (!req.body.code || !req.body.name || !req.body.description || !req.body.organisationcode) {
+            res.status(400).json({ success: false, msg: "Missing Params" });
+            return;
+        }
         // Get params
         const payload = req.body;
         const team = {
@@ -115,7 +128,7 @@ router.post(
             if (err) {
                 res.status(500).json({ success: false, msg: "Failed to create " + err });
             } else {
-                res.json({ success: true, msg: "Team created successfully!", data: team });
+                res.json({ success: true, msg: "Team created successfully", data: team });
             }
         });
     }
@@ -170,6 +183,16 @@ router.post(
  *     responses:
  *       200:
  *         description: The updated team
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal server error
  */
 router.all(
     "/update",
@@ -181,18 +204,20 @@ router.all(
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
         const username = decodedToken["username"];
-        RoleFunctions.checkTeamAdmin(username, { code: req.body.code }, (errCheck, resultCheck) => {
+        const payload = req.body;
+        RoleFunctions.checkTeamAdmin(username, { code: req.body.code }, (errCheck, resultCheck, teamCheck) => {
             if (errCheck) {
                 res.status(500).send({ success: false, msg: errCheck });
+                return;
+            }
+            if (!teamCheck) {
+                res.status(404).send({ success: false, msg: "Team does not exist" });
                 return;
             }
             if (!resultCheck) {
                 res.status(403).send({ success: false, msg: "User not authorized to update team" });
             } else {
-                // Get params
-                const payload = req.body;
-
-                // Update team
+                // Check team exists
                 TeamModel.update(
                     {
                         _id: payload["_id"],
@@ -208,7 +233,7 @@ router.all(
                         if (err) {
                             res.status(500).json({ success: false, msg: "Failed to update " + err });
                         } else {
-                            res.json({ success: true, msg: "Team updated successfully!", data: team });
+                            res.json({ success: true, msg: "Team updated successfully", data: team });
                         }
                     }
                 );
@@ -237,6 +262,14 @@ router.all(
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal server error
  */
 router.get(
     "/getTeamByCode",
@@ -244,15 +277,19 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.query.code) {
+            res.status(400).json({ success: false, msg: "Missing Params" });
+            return;
+        }
         const code = req.query.code;
         TeamModel.getByCode(code, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
-                if (result.Items) {
+                if (result.Items.length > 0) {
                     res.send(JSON.stringify(result.Items));
                 } else {
-                    res.send(JSON.stringify([]));
+                    res.status(404).send({ success: false, msg: "Team does not exist" });
                 }
             }
         });
@@ -279,6 +316,14 @@ router.get(
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal server error
  */
 router.get(
     "/getTeamsByOrgCode",
@@ -286,15 +331,19 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.query.orgcode) {
+            res.status(400).json({ success: false, msg: "Missing Params" });
+            return;
+        }
         const orgcode = req.query.orgcode;
         TeamModel.getByOrg(orgcode, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
-                if (result.Items) {
+                if (result.Items.length > 0) {
                     res.send(JSON.stringify(result.Items));
                 } else {
-                    res.send(JSON.stringify([]));
+                    res.status(404).send({ success: false, msg: "Teams not found" });
                 }
             }
         });
@@ -321,6 +370,14 @@ router.get(
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal server error
  */
 router.get(
     "/getTeamsByPartialTeamName",
@@ -328,6 +385,10 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.query.partialteam) {
+            res.status(400).json({ success: false, msg: "Missing Params" });
+            return;
+        }
         const partialteam = req.query.partialteam;
         TeamModel.getByFilters(
             {
@@ -337,10 +398,10 @@ router.get(
                 if (err) {
                     res.status(500).send({ success: false, msg: err });
                 } else {
-                    if (result.Items) {
+                    if (result.Items.length > 0) {
                         res.send(JSON.stringify(result.Items));
                     } else {
-                        res.send(JSON.stringify([]));
+                        res.status(404).send({ success: false, msg: "Teams not found" });
                     }
                 }
             }
@@ -373,6 +434,14 @@ router.get(
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal server error
  */
 router.get(
     "/getTeamsByPartialTeamNameAndOrgCode",
@@ -380,21 +449,25 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        const orgcode = req.url.split("=")[1].replace("&partialteam", "");
-        const partialteam = req.url.split("=")[2];
+        if (!req.query.partialteam || !req.query.orgcode) {
+            res.status(400).json({ success: false, msg: "Missing Params" });
+            return;
+        }
+        const orgcode = req.query.orgcode;
+        const name = req.query.partialteam;
         TeamModel.getByFilters(
             {
-                name: partialteam,
+                name,
                 orgcode,
             },
             function (err, result) {
                 if (err) {
                     res.status(500).send({ success: false, msg: err });
                 } else {
-                    if (result.Items) {
+                    if (result.Items.length > 0) {
                         res.send(JSON.stringify(result.Items));
                     } else {
-                        res.send(JSON.stringify([]));
+                        res.status(404).send({ success: false, msg: "Teams not found" });
                     }
                 }
             }
@@ -427,6 +500,16 @@ router.get(
  *     responses:
  *       200:
  *         description: Team deletion status
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal server error
  */
 router.delete(
     "/delete",
@@ -434,6 +517,10 @@ router.delete(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body["_id"] || !req.body.code) {
+            res.status(400).json({ success: false, msg: "Missing Params" });
+            return;
+        }
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
         const username = decodedToken["username"];
@@ -454,7 +541,7 @@ router.delete(
                         if (err) {
                             res.status(500).json({ success: false, msg: err });
                         } else {
-                            res.json({ success: true, msg: "Team deleted successfully!" });
+                            res.json({ success: true, msg: "Team deleted successfully" });
                         }
                     }
                 );

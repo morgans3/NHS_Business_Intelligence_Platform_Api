@@ -27,6 +27,10 @@ const PGConstruct = PostgresI.init(settings);
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/topo-json",
@@ -40,8 +44,12 @@ router.get(
             as_properties: `(select row_to_json(_) AS properties from (select lg.icp AS "ICP") as _)
              --row_to_json((organisation_code, name), true) AS properties`,
         };
-        PostgresI.getGeoJson(PGConstruct, params, (response) => {
-            res.json(response);
+        PostgresI.getGeoJson(PGConstruct, params, (err, response) => {
+            if (err) {
+                res.status(500).send({ success: false, msg: err });
+                return;
+            }
+            res.send(response);
         });
     }
 );
@@ -60,6 +68,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -67,8 +79,12 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        PostgresI.getAll(PGConstruct, "public.mosaicpcn", (response) => {
-            res.json(response);
+        PostgresI.getAll(PGConstruct, "public.mosaicpcn", (err, response) => {
+            if (err) {
+                res.status(500).send({ success: false, msg: err });
+                return;
+            }
+            res.send(response);
         });
     }
 );
@@ -87,6 +103,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/hexgeo-json",
@@ -99,8 +119,12 @@ router.get(
             st_asgeojson: "lg.geom",
             as_properties: "(select row_to_json(_) AS properties from (select id, pcn) as _)",
         };
-        PostgresI.getGeoJson(PGConstruct, params, (response) => {
-            res.json(response);
+        PostgresI.getGeoJson(PGConstruct, params, (err, response) => {
+            if (err) {
+                res.status(500).send({ success: false, msg: err });
+                return;
+            }
+            res.send(response);
         });
     }
 );

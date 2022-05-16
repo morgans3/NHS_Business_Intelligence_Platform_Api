@@ -27,6 +27,10 @@ const SpiIncidentMethods = new DIULibrary.Models.SpiIncidentMethods();
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -79,6 +83,12 @@ router.get(
  *     responses:
  *       200:
  *         description: Create an incident
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -86,6 +96,10 @@ router.post(
         session: false,
     }),
     (req, res, next) => {
+        if (!req.body.method || !req.body.dateCreated || !req.body.list || !req.body.priority) {
+            res.status(400).send({ success: false, msg: "Bad Request" });
+            return;
+        }
         SpiIncidentMethods.create(
             {
                 method: req.body.method,
@@ -98,7 +112,7 @@ router.post(
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: false, msg: "New incident created!", data });
+                res.send({ success: true, msg: "New incident created", data });
             }
         );
     }
@@ -139,6 +153,14 @@ router.post(
  *     responses:
  *       200:
  *         description: Incident updated
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -146,23 +168,38 @@ router.put(
         session: false,
     }),
     (req, res, next) => {
-        SpiIncidentMethods.update(
-            {
-                method: req.body.method,
-                dateCreated: req.body.dateCreated,
-            },
-            {
-                list: req.body.list,
-                priority: req.body.priority,
-            },
-            (err, result) => {
-                if (err) {
-                    res.status(500).send({ success: false, msg: err });
-                    return;
-                }
-                res.send({ success: false, msg: "Incident updated!" });
+        if (!req.body.method || !req.body.dateCreated || !req.body.list || !req.body.priority) {
+            res.status(400).send({ success: false, msg: "Bad Request" });
+            return;
+        }
+        const key = {
+            method: req.body.method,
+            dateCreated: req.body.dateCreated,
+        };
+        SpiIncidentMethods.getByKeys(key, (errGet, resultGet) => {
+            if (errGet) {
+                res.status(500).send({ success: false, msg: errGet });
+                return;
             }
-        );
+            if (resultGet.Items.length === 0) {
+                res.status(404).send({ success: false, msg: "Not Found" });
+                return;
+            }
+            SpiIncidentMethods.update(
+                key,
+                {
+                    list: req.body.list,
+                    priority: req.body.priority,
+                },
+                (err, result) => {
+                    if (err) {
+                        res.status(500).send({ success: false, msg: err });
+                        return;
+                    }
+                    res.send({ success: true, msg: "Incident updated" });
+                }
+            );
+        });
     }
 );
 
@@ -190,7 +227,15 @@ router.put(
  *      - application/json
  *     responses:
  *       200:
- *         description: Success status
+ *         description: Incident updated
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -198,21 +243,31 @@ router.delete(
         session: false,
     }),
     (req, res, next) => {
-        // Delete cohort by id
-        SpiIncidentMethods.delete(
-            {
-                method: req.body.method,
-                dateCreated: req.body.dateCreated,
-            },
-            (err, result) => {
-                // Return data
+        if (!req.body.method || !req.body.dateCreated) {
+            res.status(400).send({ success: false, msg: "Bad Request" });
+            return;
+        }
+        const key = {
+            method: req.body.method,
+            dateCreated: req.body.dateCreated,
+        };
+        SpiIncidentMethods.getByKeys(key, (errGet, resultGet) => {
+            if (errGet) {
+                res.status(500).send({ success: false, msg: errGet });
+                return;
+            }
+            if (resultGet.Items.length === 0) {
+                res.status(404).send({ success: false, msg: "Not Found" });
+                return;
+            }
+            SpiIncidentMethods.delete(key, (err, result) => {
                 if (err) {
                     res.status(500).json({ success: false, msg: err });
                     return;
                 }
-                res.json({ success: true, msg: "Incident deleted!" });
-            }
-        );
+                res.json({ success: true, msg: "Incident deleted" });
+            });
+        });
     }
 );
 
