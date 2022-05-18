@@ -17,8 +17,6 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  * @swagger
  * /systemalerts/:
  *   get:
- *     security:
- *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
  *      - SystemAlerts
@@ -27,6 +25,10 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get("/", (req, res, next) => {
     SystemAlerts.getAll(function (err, result) {
@@ -56,6 +58,10 @@ router.get("/", (req, res, next) => {
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/getActive",
@@ -139,8 +145,14 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Alert Update
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -150,6 +162,16 @@ router.put(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+            _id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res) => {
         const newAlert = {
             _id: req.body["_id"],
@@ -234,9 +256,15 @@ router.put(
  *         type: boolean
  *     responses:
  *       200:
- *         description: Confirmation of Alert Registered
+ *         description: Confirmation of Alert Update
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -246,6 +274,15 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const newSystemAlerts = {
             name: { S: req.body.name },

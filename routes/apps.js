@@ -75,8 +75,14 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: Confirmation of App Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -86,6 +92,16 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+            environment: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const newApp = {
             name: req.body.name,
@@ -134,11 +150,6 @@ router.post(
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: app_name
- *         description: App's ID
- *         in: formData
- *         required: true
- *         type: string
  *       - name: name
  *         description: App's name
  *         in: formData
@@ -188,8 +199,16 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of App Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: App not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -199,8 +218,17 @@ router.put(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res) => {
-        const id = req.body.app_name;
+        const id = req.body.name;
         App.getAppByName(id, function (err, app) {
             if (err) {
                 res.status(500).json({
@@ -208,8 +236,14 @@ router.put(
                     msg: "Failed to update: " + err,
                 });
             }
+            if (app.Items.length === 0) {
+                res.status(404).json({
+                    success: false,
+                    msg: "App not found",
+                });
+                return;
+            }
             const scannedItem = app.Items[0];
-            scannedItem.name = req.body.name;
             scannedItem.status = req.body.status;
             scannedItem.ownerName = req.body.ownerName;
             scannedItem.ownerEmail = req.body.ownerEmail;
@@ -229,7 +263,7 @@ router.put(
                 res.json({
                     success: true,
                     msg: "App updated",
-                    data,
+                    data: scannedItem,
                 });
             });
         });
@@ -255,12 +289,14 @@ router.put(
  *     responses:
  *       200:
  *         description: Full List
+ *       500:
+ *         description: Internal Server Error
  */
 router.get("/", (req, res, next) => {
     // Declare callback
     const callback = (err, result) => {
         if (err) {
-            res.send({ success: false, msg: err });
+            res.status(500).send({ success: false, msg: err });
         } else {
             if (result.Items) {
                 res.send(JSON.stringify(result.Items));
@@ -290,7 +326,7 @@ router.get("/", (req, res, next) => {
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: app_name
+ *       - name: name
  *         description: App's ID
  *         in: formData
  *         required: true
@@ -298,8 +334,16 @@ router.get("/", (req, res, next) => {
  *     responses:
  *       200:
  *         description: Confirmation of App being Archived
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: App not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -309,9 +353,17 @@ router.delete(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res) => {
-        const id = req.query.app_name;
-        App.getAppByName(id, function (err, app) {
+        App.getAppByName(req.body.name, function (err, app) {
             if (err) {
                 res.json({
                     success: false,

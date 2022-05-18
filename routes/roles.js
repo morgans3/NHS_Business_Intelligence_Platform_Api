@@ -85,8 +85,14 @@ router.get("/", passport.authenticate("jwt", { session: false }), (req, res, nex
  *     responses:
  *       200:
  *         description: The newly created role
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -96,6 +102,18 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+            description: { type: "string" },
+            authoriser: { type: "string" },
+            capabilities: { type: "array", items: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const payload = req.body;
         RoleModel.create(
@@ -186,9 +204,15 @@ router.post(
  *      - application/json
  *     responses:
  *       200:
- *         description: The updated role
+ *         description: The newly created role
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -198,6 +222,18 @@ router.put(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+            description: { type: "string" },
+            authoriser: { type: "string" },
+            capabilities: { type: "array", items: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         // Get all capabilities
         const payload = req.body;
@@ -283,8 +319,14 @@ router.put(
  *     responses:
  *       200:
  *         description: Success status
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/links/sync",
@@ -294,6 +336,17 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            roles: { type: "string" },
+            link_id: { type: "string" },
+            link_type: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         // Get params
         const payload = req.body;
@@ -315,7 +368,7 @@ router.post(
                     res.status(500).json({ success: false, msg: err });
                     return;
                 }
-                res.json({ success: true, msg: "Role links synced!" });
+                res.json({ success: true, msg: "Role links synced" });
             }
         );
     }
@@ -351,8 +404,14 @@ router.post(
  *     responses:
  *       200:
  *         description: Success status
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/links/create",
@@ -362,6 +421,17 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            role_id: { type: "string" },
+            link_id: { type: "string" },
+            link_type: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         // Get params
         const payload = req.body;
@@ -383,7 +453,7 @@ router.post(
                     res.status(500).json({ success: false, msg: err });
                     return;
                 }
-                res.json({ success: true, msg: "Role link created!" });
+                res.json({ success: true, msg: "Role link created" });
             }
         );
     }
@@ -419,8 +489,14 @@ router.post(
  *     responses:
  *       200:
  *         description: Success status
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/links/delete",
@@ -430,6 +506,17 @@ router.delete(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            role_id: { type: "string" },
+            link_id: { type: "string" },
+            link_type: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         // Get params
         const payload = req.body;
@@ -441,7 +528,7 @@ router.delete(
                 res.status(500).json({ success: false, msg: err });
                 return;
             }
-            res.json({ success: true, msg: "Role link deleted!" });
+            res.json({ success: true, msg: "Role link deleted" });
         });
     }
 );
@@ -466,6 +553,12 @@ router.delete(
  *     responses:
  *       200:
  *         description: The role
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/:id",
@@ -477,7 +570,11 @@ router.get(
             if (err) {
                 res.status(500).json({ success: false, msg: err });
             } else {
-                res.json(result);
+                if (result) {
+                    res.json(result);
+                } else {
+                    res.status(404).json({ success: false, msg: "Role not found" });
+                }
             }
         });
     }
@@ -502,9 +599,15 @@ router.get(
  *      - application/json
  *     responses:
  *       200:
- *         description: Role deletion status
+ *         description: The role
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -514,13 +617,25 @@ router.delete(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
-        // Get all capabilities
         RoleModel.deleteByPrimaryKey(req.body.id, (err, result) => {
             if (err) {
                 res.status(500).json({ success: false, msg: err });
+                return;
+            }
+            if (result.Attributes) {
+                res.send({ success: true, msg: "Payload deleted", data: result.Attributes });
             } else {
-                res.json({ success: true, msg: "Role deleted successfully!" });
+                res.status(404).json({ success: false, msg: "Payload not found" });
             }
         });
     }

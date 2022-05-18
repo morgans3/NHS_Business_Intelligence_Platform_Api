@@ -74,9 +74,15 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *           type: string
  *     responses:
  *       200:
- *         description: Confirmation of Dashboard Registration
+ *         description: Confirmation of App Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -86,6 +92,16 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+            environment: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const newDashboard = {
             name: req.body.name,
@@ -134,11 +150,6 @@ router.post(
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: dashboard_name
- *         description: Dashboard's ID
- *         in: query
- *         required: true
- *         type: string
  *       - name: name
  *         description: Dashboard's name
  *         in: formData
@@ -187,9 +198,17 @@ router.post(
  *           type: string
  *     responses:
  *       200:
- *         description: Confirmation of Dashboard Registration
+ *         description: Confirmation of App Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: App not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -199,8 +218,17 @@ router.put(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res) => {
-        const id = req.query.dashboard_name;
+        const id = req.body.name;
         Dashboards.getDashboardByName(id, function (err, app) {
             if (err) {
                 res.status(500).json({
@@ -209,7 +237,7 @@ router.put(
                 });
             }
             const scannedItem = app.Items[0];
-            scannedItem.name = req.body.name;
+            scannedItem.name = id;
             scannedItem.status = req.body.status;
             scannedItem.ownerName = req.body.ownerName;
             scannedItem.ownerEmail = req.body.ownerEmail;
@@ -255,6 +283,8 @@ router.put(
  *     responses:
  *       200:
  *         description: Full List
+ *       500:
+ *         description: Internal Server Error
  */
 router.get("/", (req, res, next) => {
     // Declare callback
@@ -290,16 +320,24 @@ router.get("/", (req, res, next) => {
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: dashboard_name
+ *       - name: name
  *         description: Dashboard's ID
  *         in: formData
  *         required: true
  *         type: string
  *     responses:
  *       200:
- *         description: Confirmation of Dashboard being Archived
+ *         description: Confirmation of App being Archived
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: App not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -309,9 +347,17 @@ router.delete(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res) => {
-        const id = req.query.dashboard_name;
-        Dashboards.getDashboardByName(id, function (err, app) {
+        Dashboards.getDashboardByName(req.body.name, function (err, app) {
             if (err) {
                 res.status(500).json({
                     success: false,

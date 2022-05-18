@@ -6,10 +6,9 @@ const MFA = require("../models/mfa");
 const Authenticate = require("../models/authenticate");
 const passport = require("passport");
 const JWT = require("jsonwebtoken");
-
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const EmailHelper = DIULibrary.Helpers.Email;
-
 const issuer = process.env.SITE_URL || "NHS BI Platform";
 
 /**
@@ -33,6 +32,10 @@ const issuer = process.env.SITE_URL || "NHS BI Platform";
  *     responses:
  *       200:
  *         description: Confirmation of Authentication Setup
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/register",
@@ -46,12 +49,24 @@ router.get(
             const username = decodedToken["username"];
             if (username) {
                 MFA.setup(username, (err, response) => {
-                    if (err) console.log(response);
-                    res.json(response);
+                    if (err) {
+                        console.log(err);
+                        res.status(500).json({
+                            success: false,
+                            msg: "Unable to setup MFA, reason: " + err,
+                        });
+                    } else {
+                        res.status(200).json(response);
+                    }
+                });
+            } else {
+                res.status(401).json({
+                    success: false,
+                    message: "Unable to parse request",
                 });
             }
         } else {
-            res.status(401).json({ status: 401, message: "User registration failed" });
+            res.status(401).json({ status: 401, success: false, message: "User registration failed" });
         }
     }
 );
@@ -70,6 +85,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Authentication Setup
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/checkmfa",
@@ -85,21 +104,26 @@ router.get(
                 MFA.check(username, (err, response) => {
                     if (err) {
                         console.log(err);
-                        res.json({ status: 200, error: err });
+                        res.status(500).json({ success: false, error: err });
                     } else {
                         if (response) {
                             let flag = false;
                             if (response.Items.length > 0) flag = true;
                             res.json({
-                                status: 200,
+                                success: true,
                                 msg: flag,
+                            });
+                        } else {
+                            res.json({
+                                success: true,
+                                msg: false,
                             });
                         }
                     }
                 });
             }
         } else {
-            res.status(401).json({ status: 401, error: "User registration failed" });
+            res.status(401).json({ success: false, error: "User registration failed" });
         }
     }
 );
@@ -129,12 +153,28 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Authentication Setup
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/verify",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+            tempSecret: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const jwt = req.header("authorization");
         if (jwt) {
@@ -196,12 +236,29 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Authentication Setup
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/validate",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const jwt = req.header("authorization");
         if (jwt) {
@@ -250,6 +307,10 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Authentication Removal
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/unregister",

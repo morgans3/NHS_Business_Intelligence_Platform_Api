@@ -22,8 +22,6 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  */
 
 /**
-
-/**
  * @swagger
  * /userprofiles/create:
  *   post:
@@ -75,24 +73,33 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: Confirmation of new Profile Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            username: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         Profiles.addUserProfile(
             {
                 username: req.body.username,
-                ...(req.body.preferredcontactmethod &&
-                    req.body.preferredcontactmethod.length > 0 && {
-                        preferredcontactmethod: req.body.preferredcontactmethod,
-                    }),
-                ...(req.body.mobiledeviceids &&
-                    req.body.mobiledeviceids.length > 0 && {
-                        mobiledeviceids: req.body.mobiledeviceids,
-                    }),
+                ...(req.body.preferredcontactmethod && { preferredcontactmethod: req.body.preferredcontactmethod }),
+                ...(req.body.mobiledeviceids && { mobiledeviceids: req.body.mobiledeviceids }),
                 ...(req.body.photobase64 && { photobase64: req.body.photobase64 }),
                 ...(req.body.contactnumber && { contactnumber: req.body.contactnumber }),
                 ...(req.body.emailpreference && { emailpreference: req.body.emailpreference }),
@@ -124,6 +131,10 @@ router.post(
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -147,7 +158,7 @@ router.get(
 
 /**
  * @swagger
- * /userprofiles/getUserProfileByUsername:
+ * /userprofiles/username/{username}:
  *   get:
  *     security:
  *      - JWT: []
@@ -159,20 +170,36 @@ router.get(
  *     parameters:
  *       - name: username
  *         description: Unique Username
- *         in: formData
+ *         in: path
  *         required: true
  *         type: string
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getUserProfileByUsername",
+    "/username/:username",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "params",
+        {
+            username: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
-        // Parse request
         let org = "global";
         const username = req.body.username;
         if (req.header("authorization")) {
@@ -330,6 +357,14 @@ router.get(
  *     responses:
  *       200:
  *         description: The user's profile
+ *       400:
+ *         description: Missing parameters
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal error
  */
 router.get(
     "/:userId",
@@ -346,10 +381,8 @@ router.get(
         }
     ),
     (req, res, next) => {
-        // Parse request
         const username = req.params.userId.split("#")[0];
 
-        // Valud organisation?
         OrganisationModel.get({ name: req.params.userId.split("#")[1] }, (err, data) => {
             // Error?
             if (err) {
@@ -412,7 +445,7 @@ router.get(
                         ActiveDirectoryModel.getInstance(organisation.authmethod, (getInstanceError, activeDirectory) => {
                             // Organisation has already been checked, username and org combination must be incorrect
                             if (getInstanceError === "Unknown organisation") {
-                                res.status(404).send({ success: false, message: "User not found!" });
+                                res.status(404).send({ success: false, message: "User not found" });
                                 return;
                             }
 
@@ -478,22 +511,39 @@ router.get(
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: profile_id
+ *       - name: id
  *         description: Profile's ID
- *         in: query
+ *         in: formData
  *         required: true
  *         type: string
  *     responses:
  *       200:
  *         description: Confirmation of Member being Archived
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
-    "/archive",
+    "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res) => {
-        const id = req.body.profile_id;
+        const id = req.body.id;
         Profiles.getUserProfileById(id, function (err, scan) {
             if (err) {
                 res.status(500).json({
@@ -582,12 +632,29 @@ router.delete(
  *     responses:
  *       200:
  *         description: Confirmation of App Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            profile_id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res) => {
         const id = req.body.profile_id;
         Profiles.getUserProfileById(id, function (err, result) {

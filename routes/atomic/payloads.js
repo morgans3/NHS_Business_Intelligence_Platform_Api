@@ -34,6 +34,8 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: List of all atomic payloads
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Internal Server Error
  */
@@ -152,11 +154,18 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
     ],
-    (req, res, next) => {
-        if (!req.body.id || !req.body.type || !req.body.config) {
-            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            type: { type: "string" },
+            config: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         AtomicPayloadsModel.create(
             {
                 id: req.body.id,
@@ -223,11 +232,18 @@ router.put(
         }),
         MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
     ],
-    (req, res, next) => {
-        if (!req.body.id || !req.body.type || !req.body.config) {
-            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            type: { type: "string" },
+            config: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const keys = {
             id: req.body.id,
             type: req.body.type,
@@ -296,31 +312,31 @@ router.delete(
         }),
         MiddlewareHelper.userHasCapability(["Hall Monitor", "Creator"]),
     ],
-    (req, res, next) => {
-        if (!req.body.id || !req.body.type) {
-            res.status(400).json({ success: false, msg: "Not all parmaeters provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            type: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const keys = {
             id: req.body.id,
             type: req.body.type,
         };
-        AtomicPayloadsModel.getByKeys(keys, (errGet, errResult) => {
-            if (errGet) {
-                res.status(500).send({ success: false, msg: errGet });
+        AtomicPayloadsModel.delete(keys, (errDelete, errResult) => {
+            if (errDelete) {
+                res.status(500).send({ success: false, msg: errDelete });
                 return;
             }
-            if (errResult.Items.length === 0) {
+            if (errResult.Attributes) {
+                res.send({ success: true, msg: "Payload deleted", data: errResult.Attributes });
+            } else {
                 res.status(404).json({ success: false, msg: "Payload not found" });
-                return;
             }
-            AtomicPayloadsModel.delete(keys, (errDelete) => {
-                if (errDelete) {
-                    res.status(500).send({ success: false, msg: errDelete });
-                    return;
-                }
-                res.send({ success: true, msg: "Payload deleted", data: errResult.Items[0] });
-            });
         });
     }
 );

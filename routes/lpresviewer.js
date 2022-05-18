@@ -4,6 +4,8 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -31,13 +33,28 @@ const jwt = require("jsonwebtoken");
  *         type: string
  *     responses:
  *       200:
- *         description: Open Source Audit List
+ *         description: Success
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/generate-validation-key",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            nhsnumber: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const token = req.headers.authorization.replace("JWT ", "");
         const username = jwt.decode(token)["username"] || "test";

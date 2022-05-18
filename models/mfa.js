@@ -73,8 +73,6 @@ module.exports.unregister = function (username, callback) {
         if (err) {
             callback(err, { status: 400, msg: err });
         }
-        if (result.Items && result.Items.length > 0) {
-        }
         const params = {
             TableName: "mfa",
             Key: {

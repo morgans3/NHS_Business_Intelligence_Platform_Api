@@ -4,6 +4,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const TeamMemberModel = new DIULibrary.Models.TeamMemberModel();
 const JWT = require("jsonwebtoken");
 const RoleFunctions = require("../helpers/role_functions");
@@ -29,6 +30,10 @@ const RoleFunctions = require("../helpers/role_functions");
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -37,7 +42,6 @@ router.get(
     }),
     (req, res, next) => {
         TeamMemberModel.get((err, result) => {
-            // Return data
             if (err) {
                 res.status(500).json({ success: false, msg: err });
             } else {
@@ -87,14 +91,34 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Member Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            teamcode: { type: "string" },
+            username: { type: "string" },
+            joindate: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
-        // Check if the user has the correct permissions
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
         const username = decodedToken["username"];
@@ -120,7 +144,7 @@ router.post(
                     if (err) {
                         res.status(500).json({ success: false, msg: "Failed to create " + err });
                     } else {
-                        res.json({ success: true, msg: "Team member created successfully!", data: member });
+                        res.json({ success: true, msg: "Team member created successfully", data: member });
                     }
                 });
             }
@@ -167,12 +191,33 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Member Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            teamcode: { type: "string" },
+            username: { type: "string" },
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
@@ -190,21 +235,28 @@ router.put(
                 if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
                 if (req.body.enddate) member["enddate"] = req.body.enddate;
 
-                // Persist in database
-                TeamMemberModel.update(
-                    {
-                        _id: req.body.id,
-                        teamcode: req.body.teamcode,
-                    },
-                    member,
-                    (err, result) => {
-                        if (err) {
-                            res.status(500).json({ success: false, msg: "Failed to update " + err });
-                        } else {
-                            res.json({ success: true, msg: "Team member updated successfully!", data: member });
-                        }
+                TeamMemberModel.getByKeys({ _id: req.body.id, teamcode: req.body.teamcode }, (errGet, errResult) => {
+                    if (errGet) {
+                        res.status(500).json({ success: false, msg: errGet });
+                    } else if (errResult.Items.length === 0) {
+                        res.status(404).json({ success: false, msg: "Member not found" });
+                    } else {
+                        TeamMemberModel.update(
+                            {
+                                _id: req.body.id,
+                                teamcode: req.body.teamcode,
+                            },
+                            member,
+                            (err, result) => {
+                                if (err) {
+                                    res.status(500).json({ success: false, msg: "Failed to update " + err });
+                                } else {
+                                    res.json({ success: true, msg: "Team member updated successfully", data: member });
+                                }
+                            }
+                        );
                     }
-                );
+                });
             }
         });
     }
@@ -212,7 +264,7 @@ router.put(
 
 /**
  * @swagger
- * /teammembers/getTeamMembersByCode:
+ * /teammembers/teamcode/{code}:
  *   get:
  *     security:
  *      - JWT: []
@@ -224,20 +276,24 @@ router.put(
  *     parameters:
  *       - name: code
  *         description: Teams Code
- *         in: query
+ *         in: path
  *         required: true
  *         type: string
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getTeamMembersByCode",
+    "/teamcode/:code",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res, next) => {
-        const code = req.query.code;
+        const code = req.params.code;
         TeamMemberModel.getByTeamCode(code, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
@@ -254,7 +310,7 @@ router.get(
 
 /**
  * @swagger
- * /teammembers/getTeamMembershipsByUsername:
+ * /teammembers/username/{username}:
  *   get:
  *     security:
  *      - JWT: []
@@ -266,20 +322,24 @@ router.get(
  *     parameters:
  *       - name: username
  *         description: Unique Username
- *         in: query
+ *         in: path
  *         required: true
  *         type: string
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getTeamMembershipsByUsername",
+    "/username/:username",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res, next) => {
-        const username = req.query.username;
+        const username = req.params.username;
         TeamMemberModel.getByUsername(username, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
@@ -311,37 +371,51 @@ router.get(
  *         in: formData
  *         required: true
  *         type: string
+ *       - name: teamcode
+ *         description: Team Code
+ *         in: formData
+ *         required: true
+ *         type: string
  *     responses:
  *       200:
  *         description: Confirmation of Member being deleted
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            teamcode: { type: "string" },
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res) => {
-        TeamMemberModel.getByKeys({ _id: req.query.id }, (err, result) => {
+        const keys = {
+            _id: req.body.id,
+            teamcode: req.body.teamcode,
+        };
+
+        TeamMemberModel.delete(keys, (err, errResult) => {
             if (err) {
-                res.status(500).json({ success: false, msg: "Failed to find item: " + err });
+                res.status(500).json({ success: false, msg: "Failed to delete: " + err });
+                return;
             }
-            if (result.Items && result.Items.length > 0) {
-                const member = result.Items[0];
-                TeamMemberModel.delete(
-                    {
-                        _id: member["_id"],
-                        teamcode: member.teamcode,
-                    },
-                    (memberDeleteErr) => {
-                        if (err) {
-                            res.status(500).json({ success: false, msg: "Failed to delete: " + memberDeleteErr });
-                        } else {
-                            res.json({ success: true, msg: "Deleted" });
-                        }
-                    }
-                );
+            if (errResult.Attributes) {
+                res.send({ success: true, msg: "Payload deleted", data: errResult.Attributes });
             } else {
-                res.status(404).json({ success: false, msg: "Can not find item in database." });
+                res.status(404).json({ success: false, msg: "Payload not found" });
             }
         });
     }
@@ -366,6 +440,12 @@ router.delete(
  *     responses:
  *       200:
  *         description: Teammember object
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/:id",
@@ -379,9 +459,8 @@ router.get(
                 return;
             }
 
-            // Found item?
             if (result.Items.length === 0) {
-                res.status(404).json({ success: false, msg: "Team member not found!" });
+                res.status(404).json({ success: false, msg: "Team member not found" });
             } else {
                 res.json(result.Items[0]);
             }

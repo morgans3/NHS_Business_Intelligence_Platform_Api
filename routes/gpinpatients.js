@@ -5,7 +5,8 @@ const router = express.Router();
 const passport = require("passport");
 const Request = require("request");
 const jwt = require("jsonwebtoken");
-
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const basePath = "https://10.164.36.166/mlcsu/production/gpinpatientapi/api/";
 
 /**
@@ -29,6 +30,10 @@ const basePath = "https://10.164.36.166/mlcsu/production/gpinpatientapi/api/";
  *     responses:
  *       200:
  *         description: JWT Bearer Token for Querying Inpatients API
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/authenticate",
@@ -117,12 +122,27 @@ function sendGet(bthtoken, path, callback) {
  *     responses:
  *       200:
  *         description: BTH Inpatient Count Totals
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/inpatientcounts",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
@@ -162,12 +182,27 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH Outpatient Count Totals
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/outpatientcounts",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
@@ -207,12 +242,27 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH AE Count Totals
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/aecounts",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
@@ -252,12 +302,27 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH ECS Count Totals
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/ecscounts",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
@@ -297,12 +362,27 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH EPC Count Totals
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/epccounts",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
@@ -342,12 +422,27 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH Inpatient GP Summary Figures
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/inpatientgpsummary",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
@@ -387,12 +482,27 @@ router.post(
  *     responses:
  *       200:
  *         description: BTH AE GP Summary Figures
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/aegpsummary",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";

@@ -261,33 +261,18 @@ router.delete(
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
     (req, res, next) => {
-        CapabilitiesModel.getByPrimaryKey(req.body.id, function (err, data) {
-            if (err) {
+        CapabilitiesModel.deleteByPrimaryKey(req.body.id, (errDelete, result) => {
+            if (errDelete) {
                 res.status(500).json({
                     success: false,
-                    msg: "Error: " + err,
+                    msg: "Error: " + errDelete,
                 });
+                return;
+            }
+            if (result.Attributes) {
+                res.send({ success: true, msg: "Payload deleted", data: result.Attributes });
             } else {
-                if (data.length > 0) {
-                    CapabilitiesModel.deleteByPrimaryKey(req.body.id, (errDelete, user) => {
-                        if (errDelete) {
-                            res.status(500).json({
-                                success: false,
-                                msg: "Error: " + errDelete,
-                            });
-                        } else {
-                            res.json({
-                                success: true,
-                                msg: "Capability deleted",
-                            });
-                        }
-                    });
-                } else {
-                    res.status(404).json({
-                        success: false,
-                        msg: "Error: Unable to find item with the primary key entered.",
-                    });
-                }
+                res.status(404).json({ success: false, msg: "Payload not found" });
             }
         });
     }
@@ -320,7 +305,6 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        console.log(req);
         CapabilitiesModel.getByPrimaryKey(req.query.id, function (err, data) {
             if (err) {
                 res.status(500).json({
@@ -565,7 +549,7 @@ router.post(
                     res.status(500).json({ success: false, msg: err });
                     return;
                 }
-                res.json({ success: true, msg: "Capability links synced!" });
+                res.json({ success: true, msg: "Capability links synced" });
             }
         );
     }
@@ -633,7 +617,7 @@ router.post(
                     res.status(500).json({ success: false, msg: err });
                     return;
                 }
-                res.json({ success: true, msg: "Capability link created!" });
+                res.json({ success: true, msg: "Capability link created" });
             }
         );
     }
@@ -691,7 +675,7 @@ router.delete(
                 res.status(500).json({ success: false, msg: err });
                 return;
             }
-            res.json({ success: true, msg: "Capability link deleted!" });
+            res.json({ success: true, msg: "Capability link deleted" });
         });
     }
 );

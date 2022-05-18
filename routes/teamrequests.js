@@ -7,6 +7,8 @@ const Requests = require("../models/teamrequests");
 const Members = require("../models/teammembers");
 const JWT = require("jsonwebtoken");
 const RoleFunctions = require("../helpers/role_functions");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -64,12 +66,29 @@ const RoleFunctions = require("../helpers/role_functions");
  *     responses:
  *       200:
  *         description: Confirmation of Request Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            username: { type: "string" },
+            teamcode: { type: "string" },
+            requestdate: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         Members.getteamsByMember(req.body.username, (teamRequestErr, teamRequest) => {
             // see if users is already in team
@@ -83,7 +102,7 @@ router.post(
             } else {
                 let blnInTeam = false;
                 if (teamRequest) {
-                    if (teamRequest.Items.length) {
+                    if (teamRequest.Items.length > 0) {
                         // LOOP through teams and see if req.body.teamcode exists.
                         teamRequest.Items.forEach((team) => {
                             if (team.teamcode === req.body.teamcode) {
@@ -110,7 +129,7 @@ router.post(
                             let blnRequestMade = false;
                             if (requestRequest) {
                                 // IF rows
-                                if (requestRequest.Items.length) {
+                                if (requestRequest.Items.length > 0) {
                                     // LOOP through results and see if they have open requests
                                     requestRequest.Items.forEach((requestData) => {
                                         if (!requestData.approveddate) {
@@ -213,12 +232,34 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Request Update
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            username: { type: "string" },
+            teamcode: { type: "string" },
+            requestdate: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
@@ -290,15 +331,40 @@ router.put(
  *         in: formData
  *         required: true
  *         type: string
+ *       - name: teamcode
+ *         description: Requesting Team
+ *         in: formData
+ *         type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Confirmation of Request being deleted
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            teamcode: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
@@ -365,21 +431,38 @@ router.delete(
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/:id",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "params",
+        {
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         Requests.getRequestById(req.params.id, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
-                if (result.Items) {
-                    res.send(JSON.stringify(result.Items));
+                if (result.Items.length > 0) {
+                    res.json(result.Items[0]);
                 } else {
-                    res.send(JSON.stringify([]));
+                    res.status(404).send({ success: false, msg: "Can not find item in database" });
                 }
             }
         });
@@ -400,6 +483,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -423,7 +510,7 @@ router.get(
 
 /**
  * @swagger
- * /teamrequests/getRequestsByUsername:
+ * /teamrequests/username/{username}:
  *   get:
  *     security:
  *      - JWT: []
@@ -435,28 +522,36 @@ router.get(
  *     parameters:
  *       - name: username
  *         description: User's Name
- *         in: query
+ *         in: path
  *         required: true
  *         type: string
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getRequestsByUsername",
+    "/username/:username",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res, next) => {
-        const username = req.query.username;
+        const username = req.params.username;
         Requests.getRequestsByUsername(username, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
-                if (result.Items) {
+                if (result.Items.length > 0) {
                     res.send(JSON.stringify(result.Items));
                 } else {
-                    res.send(JSON.stringify([]));
+                    res.status(404).json({ success: false, msg: "No requests found" });
                 }
             }
         });
@@ -465,7 +560,7 @@ router.get(
 
 /**
  * @swagger
- * /teamrequests/getRequestsByTeamCode:
+ * /teamrequests/teamcode/{code}:
  *   get:
  *     security:
  *      - JWT: []
@@ -477,28 +572,36 @@ router.get(
  *     parameters:
  *       - name: code
  *         description: Team's Code
- *         in: query
+ *         in: path
  *         required: true
  *         type: string
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getRequestsByTeamCode",
+    "/teamcode/:code",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res, next) => {
-        const code = req.query.code;
+        const code = req.params.code;
         Requests.getRequestsByTeamCode(code, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
-                if (result.Items) {
+                if (result.Items.length > 0) {
                     res.send(JSON.stringify(result.Items));
                 } else {
-                    res.send(JSON.stringify([]));
+                    res.status(404).json({ success: false, msg: "No requests found" });
                 }
             }
         });

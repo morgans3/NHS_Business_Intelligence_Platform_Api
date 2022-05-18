@@ -40,6 +40,8 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         description: Unauthorised
  *       403:
  *        description: Forbidden due to capability requirements
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Server Error Processing
  */
@@ -74,7 +76,7 @@ router.get(
                         if (result.length > 0) {
                             res.send(JSON.stringify(result[0]));
                         } else {
-                            res.status(400).send(
+                            res.status(404).send(
                                 JSON.stringify({
                                     reason: "Unable to find this patient, may not exist or have insufficient permissions to view record.",
                                 })
@@ -119,8 +121,6 @@ router.get(
  *         description: Unauthorised
  *       403:
  *        description: Forbidden due to capability requirements
- *       409:
- *         description: Conflict with something in Database
  *       500:
  *         description: Server Error Processing Result
  */
@@ -143,7 +143,7 @@ router.post(
                 const userroles = decodedToken["capabilities"];
                 demographics.validateNHSNumber(NHSNumber, userroles, DateOfBirth, (err, data) => {
                     if (err) {
-                        res.status(400).send(
+                        res.status(500).send(
                             JSON.stringify({
                                 reason: "Error: " + err,
                             })
@@ -153,7 +153,7 @@ router.post(
                     }
                 });
             } else {
-                res.status(400).json({
+                res.status(401).json({
                     success: false,
                     msg: "Incorrect format of message",
                 });
@@ -201,8 +201,6 @@ router.post(
  *         description: Bad Request, server doesn't understand input
  *       401:
  *         description: Unauthorised
- *       409:
- *         description: Conflict with something in Database
  *       500:
  *         description: Server Error Processing Result
  */

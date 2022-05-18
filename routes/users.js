@@ -9,7 +9,6 @@ const UserModel = new DIULibrary.Models.UserModel();
 const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
 const Authenticate = require("../models/authenticate");
 const AuthenticateHelper = require("../helpers/authenticate");
-const credentials = require("../_credentials/credentials");
 const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const EmailHelper = DIULibrary.Helpers.Email;
 
@@ -34,6 +33,10 @@ const EmailHelper = DIULibrary.Helpers.Email;
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -43,11 +46,19 @@ router.get(
     (req, res, next) => {
         if (req.query.organisation) {
             UserModel.getByOrgAndName(req.query, (err, result) => {
-                res.send(err ? { success: false, msg: err } : result);
+                if (err) {
+                    res.status(500).send({ success: false, msg: err });
+                } else {
+                    res.send(result);
+                }
             });
         } else {
             UserModel.get(req.query, (err, result) => {
-                res.send(err ? { success: false, msg: err } : result);
+                if (err) {
+                    res.status(500).send({ success: false, msg: err });
+                } else {
+                    res.send(result);
+                }
             });
         }
     }
@@ -67,6 +78,10 @@ router.get(
  *     responses:
  *       200:
  *         description: User Profile
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/profile",
@@ -99,6 +114,14 @@ router.get(
  *     responses:
  *       200:
  *         description: Full List
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/:id",
@@ -115,21 +138,19 @@ router.get(
         }
     ),
     (req, res, next) => {
+        // TODO: There is an ID field and is this id compounded two other fields or using the id field?
         UserModel.getByKeys(
             {
                 username: req.params.id.split("#")[0],
                 organisation: req.params.id.split("#")[1],
             },
             (err, result) => {
-                // Error?
                 if (err) {
                     res.status(500).json({ success: false, msg: err.message });
                     return;
                 }
-
-                // Found user?
                 if (result.Items.length === 0) {
-                    res.status(404).json({ success: false, msg: "User not found!" });
+                    res.status(404).json({ success: false, msg: "User not found" });
                 } else {
                     res.json(result.Items[0]);
                 }
@@ -180,16 +201,17 @@ router.get(
  *         in: formData
  *         required: true
  *         type: string
- *       - name: key
- *         description: Key for encryption
- *         in: formData
- *         required: true
- *         type: string
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/register",
@@ -200,6 +222,17 @@ router.post(
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
     (req, res, next) => {
+        if (
+            !req.body.name ||
+            !req.body.email ||
+            !req.body.username ||
+            !req.body.password ||
+            !req.body.organisation ||
+            !req.body.linemanager
+        ) {
+            res.status(400).send({ success: false, msg: "Missing params" });
+            return;
+        }
         const newUser = {
             name: { S: req.body.name },
             email: { S: req.body.email },
@@ -208,26 +241,20 @@ router.post(
             organisation: { S: req.body.organisation },
             linemanager: { S: req.body.linemanager },
         };
-        if (req.body.key === credentials.secretkey) {
-            UserModel.addUser(newUser, req.body.password, (err, user) => {
-                if (err) {
-                    res.status(500).json({
-                        success: false,
-                        msg: "Failed to register user",
-                    });
-                } else {
-                    res.json({
-                        success: true,
-                        msg: "User registered",
-                    });
-                }
-            });
-        } else {
-            res.status(401).json({
-                success: false,
-                msg: "Unauthorized",
-            });
-        }
+
+        UserModel.addUser(newUser, req.body.password, (err, user) => {
+            if (err) {
+                res.status(500).json({
+                    success: false,
+                    msg: "Failed to register user",
+                });
+            } else {
+                res.json({
+                    success: true,
+                    msg: "User registered",
+                });
+            }
+        });
     }
 );
 
@@ -264,48 +291,69 @@ router.post(
  *     responses:
  *       200:
  *         description: User Token
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
-router.post("/authenticate", (req, res, next) => {
-    // Get query parameters
-    const username = req.body.username;
-    const password = req.body.password;
-    const organisation = req.body.organisation;
-    const authentication = req.body.authentication;
-
-    // Get JWT
-    AuthenticateHelper.login(authentication, username, password, organisation, (err, user) => {
-        if (err) {
-            // Return error
-            res.status(401).json({ success: false, msg: err });
-            return null;
-        } else {
-            // Upgrade token
-            Authenticate.upgradePassportwithOrganisation(JWT.decode(user.jwt), false, (upgradeError, token) => {
-                if (upgradeError) console.log(upgradeError);
-
-                // Check password expiry
-                let passwordExpired = true;
-
-                // Check authentication method
-                if (authentication === "Demo") {
-                    // Check password expiry
-                    if (user.password_expires) {
-                        // Date in future?
-                        if (new Date(user.password_expires).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) {
-                            passwordExpired = false;
-                        }
-                    }
-                } else {
-                    // Default to false
-                    passwordExpired = false;
-                }
-
-                // Return token
-                return res.json({ success: true, token, passwordExpired });
-            });
+router.post(
+    "/authenticate",
+    MiddlewareHelper.validate(
+        "body",
+        {
+            username: { type: "string" },
+            password: { type: "string" },
+            organisation: { type: "string" },
+            authentication: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
-    });
-});
+    ),
+    (req, res, next) => {
+        // Get query parameters
+        const username = req.body.username;
+        const password = req.body.password;
+        const organisation = req.body.organisation;
+        const authentication = req.body.authentication;
+
+        // Get JWT
+        AuthenticateHelper.login(authentication, username, password, organisation, (err, user) => {
+            if (err) {
+                // Return error
+                res.status(401).json({ success: false, msg: err });
+                return null;
+            } else {
+                // Upgrade token
+                Authenticate.upgradePassportwithOrganisation(JWT.decode(user.jwt), false, (upgradeError, token) => {
+                    if (upgradeError) console.log(upgradeError);
+
+                    // Check password expiry
+                    let passwordExpired = true;
+
+                    // Check authentication method
+                    if (authentication === "Demo") {
+                        // Check password expiry
+                        if (user.password_expires) {
+                            // Date in future?
+                            if (new Date(user.password_expires).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) {
+                                passwordExpired = false;
+                            }
+                        }
+                    } else {
+                        // Default to false
+                        passwordExpired = false;
+                    }
+
+                    // Return token
+                    return res.json({ success: true, token, passwordExpired });
+                });
+            }
+        });
+    }
+);
 
 /**
  * @swagger
@@ -323,6 +371,8 @@ router.post("/authenticate", (req, res, next) => {
  *         description: Credentials valid
  *       401:
  *         description: Credentials invalid
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/validate",
@@ -361,8 +411,16 @@ router.get(
  *     responses:
  *       200:
  *         description: Credentials valid
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Credentials invalid
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -372,21 +430,32 @@ router.delete(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            username: { type: "string" },
+            organisation: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
-        UserModel.delete(
-            {
-                username: req.body.username,
-                organisation: req.body.organisation,
-            },
-            (err, result) => {
-                // Return data
-                if (err) {
-                    res.status(500).json({ success: false, msg: err });
-                    return;
-                }
-                res.json({ success: true, msg: "User deleted!" });
+        const keys = {
+            username: req.body.username,
+            organisation: req.body.organisation,
+        };
+        UserModel.delete(keys, (err, errResult) => {
+            if (err) {
+                res.status(500).json({ success: false, msg: err });
+                return;
             }
-        );
+            if (errResult.Attributes) {
+                res.send({ success: true, msg: "Payload deleted", data: errResult.Attributes });
+            } else {
+                res.status(404).json({ success: false, msg: "Payload not found" });
+            }
+        });
     }
 );
 
@@ -408,42 +477,58 @@ router.delete(
  *     responses:
  *       200:
  *         description: Verification code sent
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Internal Server Error
  */
-router.post("/send-code", (req, res, next) => {
-    // Generate token and send email
-    const payload = req.body;
-    VerificationCodeModel.create(
+router.post(
+    "/send-code",
+    MiddlewareHelper.validate(
+        "body",
         {
-            organisation: "",
-            username: payload.email,
-            generated: new Date().toISOString(),
+            email: { type: "string" },
         },
-        (saveErr, savedCode) => {
-            // Check for errors
-            if (saveErr) {
-                res.status(500).json({ success: false, msg: "Failed: " + saveErr });
-                return;
-            }
-
-            // Send code to email
-            EmailHelper.sendMail(
-                {
-                    to: payload.email,
-                    subject: "Verification Code for Nexus Intelligence",
-                    message: "Please enter this code where prompted on screen: " + savedCode.code,
-                },
-                (err, response) => {
-                    if (err) {
-                        console.log(err);
-                        res.status(500).json({ success: false, msg: "Failed: " + err });
-                    } else {
-                        res.json({ success: true, msg: "Code has been sent to the provided email address" });
-                    }
-                }
-            );
+        {
+            pattern: "Missing query params",
         }
-    );
-});
+    ),
+    (req, res, next) => {
+        // Generate token and send email
+        const payload = req.body;
+        VerificationCodeModel.create(
+            {
+                organisation: "",
+                username: payload.email,
+                generated: new Date().toISOString(),
+            },
+            (saveErr, savedCode) => {
+                // Check for errors
+                if (saveErr) {
+                    res.status(500).json({ success: false, msg: "Failed: " + saveErr });
+                    return;
+                }
+
+                // Send code to email
+                EmailHelper.sendMail(
+                    {
+                        to: payload.email,
+                        subject: "Verification Code for NHS BI Platform",
+                        message: "Please enter this code where prompted on screen: " + savedCode.code,
+                    },
+                    (err, response) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).json({ success: false, msg: "Failed: " + err });
+                        } else {
+                            res.json({ success: true, msg: "Code has been sent to the provided email address" });
+                        }
+                    }
+                );
+            }
+        );
+    }
+);
 
 /**
  * @swagger
@@ -468,26 +553,42 @@ router.post("/send-code", (req, res, next) => {
  *     responses:
  *       200:
  *         description: Verification code is/is not valid
+ *       400:
+ *         description: Bad Request
+ *       404:
+ *         description: Code not found
+ *       500:
+ *         description: Internal Server Error
  */
-router.post("/verify-code", (req, res, next) => {
-    // Token provided?
-    const payload = req.body;
-    VerificationCodeModel.getCode(payload.code, payload.email, (codeErr, codeRes) => {
-        // Return error
-        if (codeErr) {
-            res.status(500).json({ success: false, msg: "Failed: " + codeErr });
-            return;
+router.post(
+    "/verify-code",
+    MiddlewareHelper.validate(
+        "body",
+        {
+            email: { type: "string" },
+            code: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
+        const payload = req.body;
+        VerificationCodeModel.getCode(payload.code, payload.email, (codeErr, codeRes) => {
+            if (codeErr) {
+                res.status(500).json({ success: false, msg: "Failed: " + codeErr });
+                return;
+            }
 
-        // Return response
-        if (codeRes && codeRes.Items.length > 0) {
-            // Dont allow re-use
-            // passwordModel.deleteCode(payload.code, payload.email, () => {
-            res.json({ success: true, msg: "Code is valid." });
-        } else {
-            res.status(404).json({ success: false, msg: "Code not valid." });
-        }
-    });
-});
+            if (codeRes && codeRes.Items.length > 0) {
+                // TODO: Dont allow re-use
+                // passwordModel.deleteCode(payload.code, payload.email, () => {
+                res.json({ success: true, msg: "Code is valid." });
+            } else {
+                res.status(404).json({ success: false, msg: "Code not valid." });
+            }
+        });
+    }
+);
 
 module.exports = router;

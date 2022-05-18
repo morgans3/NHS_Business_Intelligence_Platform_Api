@@ -33,6 +33,8 @@ const GovUkModel = new DIULibrary.Models.GovUkModel();
  *     responses:
  *       200:
  *         description: Confirmation of Notifciation Update
+ *       500:
+ *         description: Internal Server Error
  */
 router.post("/callback", MiddlewareHelper.authenticateWithKey(process.env.JWT_SECRETKEY), (req, res) => {
     const item = req.body;
@@ -65,6 +67,8 @@ router.post("/callback", MiddlewareHelper.authenticateWithKey(process.env.JWT_SE
  *     responses:
  *       200:
  *         description: Confirmation of Notifciation Update
+ *       500:
+ *         description: Internal Server Error
  */
 router.post("/maincallback", MiddlewareHelper.authenticateWithKey(process.env.JWT_SECRETKEY), (req, res) => {
     CredentialsModel.getByKeys(

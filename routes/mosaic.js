@@ -29,13 +29,16 @@ const PGConstruct = PostgresI.init(settings);
  *       - name: postcode
  *         description: Post Code
  *         in: query
- *         required: true
  *         type: string
  *     produces:
  *      - application/json
  *     responses:
  *       200:
  *         description: All data
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -62,13 +65,16 @@ router.get(
                 res.status(400).json({ success: false, msg: "Incorrect Parameters" });
             } else {
                 const query = `SELECT mostype FROM public.mosaicpostcode where postcode = '${postcode}'`;
-                PostgresI.getByQuery(PGConstruct, query, (response) => {
-                    res.json(response);
+                PostgresI.getByQuery(PGConstruct, query, (err, response) => {
+                    if (err) {
+                        res.status(500).json({ success: false, msg: err });
+                    } else {
+                        res.json(response);
+                    }
                 });
             }
         };
 
-        // Determine method?
         if (req.query.postcode) {
             getMosaicsByPostcode();
         } else {

@@ -32,12 +32,12 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: Success
- *       400:
- *         description: Bad Request
  *       401:
  *         description: Unauthorised
  *       403:
  *        description: Forbidden due to capability requirements
+ *       404:
+ *         description: Not Found
  *       500:
  *         description: Server Error Processing
  */
@@ -147,8 +147,16 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Notifciation Update
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorised
  *       403:
  *        description: Forbidden due to capability requirements
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Server Error Processing
  */
 router.put(
     "/update",
@@ -160,6 +168,14 @@ router.put(
     ],
     (req, res) => {
         const item = req.body;
+        if (!item.uid) {
+            res.status(400).json({
+                success: false,
+                msg: "UID is required",
+            });
+            return;
+        }
+
         virtualward.update("virtualward_lightertouchpathway", item, item.uid, function (err, data) {
             if (err) {
                 res.status(500).json({

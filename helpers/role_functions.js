@@ -48,19 +48,22 @@ module.exports.checkTeamAdmin = function (username, team, callback) {
             if (err) {
                 callback(err);
             } else {
-                if (result.Items) {
+                if (result.Items.length > 0) {
                     const foundTeam = result.Items[0];
                     if (foundTeam.responsiblepeople) {
-                        const user = foundTeam.responsiblepeople.find((person) => {
+                        let admins;
+                        if (!Array.isArray(foundTeam.responsiblepeople)) admins = foundTeam.responsiblepeople.values;
+                        else admins = foundTeam.responsiblepeople;
+                        const user = admins.find((person) => {
                             return person === username;
                         });
                         if (user) {
-                            callback(null, true);
+                            callback(null, true, foundTeam);
                         } else {
                             callback(null, false);
                         }
                     } else {
-                        callback(null, false);
+                        callback(null, false, team);
                     }
                 } else {
                     callback(null, false);
@@ -72,9 +75,9 @@ module.exports.checkTeamAdmin = function (username, team, callback) {
             return person === username;
         });
         if (user) {
-            callback(null, true);
+            callback(null, true, team);
         } else {
-            callback(null, false);
+            callback(null, false, team);
         }
     } else {
         callback(null, false);

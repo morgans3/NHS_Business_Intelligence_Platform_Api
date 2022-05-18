@@ -132,9 +132,19 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("patientidentifiabledata"),
     ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            status: { type: "string" },
+            limit: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const status = req.body.status;
-        const limit = req.query.Limit.toString() || "1000";
+        const limit = req.body.limit.toString() || "1000";
         let numCheck;
         try {
             numCheck = parseInt(limit);

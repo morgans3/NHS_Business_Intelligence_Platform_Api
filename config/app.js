@@ -9,7 +9,6 @@ const getConfigurationFromDatabase = async (callback) => {
         } else {
             if (results.Items.length > 0) {
                 loadedConfiguration = results.Items[0].config;
-                console.log(loadedConfiguration);
                 callback(null, loadedConfiguration);
             } else {
                 callback(null, null);

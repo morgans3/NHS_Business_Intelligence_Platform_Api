@@ -44,8 +44,12 @@ const issuer = process.env.SITE_URL || "NHS BI Platform";
  *     responses:
  *       200:
  *         description: Full List
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -158,8 +162,16 @@ router.get(
  *     responses:
  *       200:
  *         description: Form has been submitted sucessfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal Server Error
  */
 router.post("/account", (req, res, next) => {
+    if (!formData.email_verification_code || !formData.email) {
+        res.status(400).json({ success: false, msg: "Missing email verification code or email" });
+        return;
+    }
     // Get form data
     const formData = req.body;
 
@@ -228,7 +240,7 @@ router.post("/account", (req, res, next) => {
                     console.log("Unable to send authorization request email to: " + formData.email + ". Reason: " + errorSend.toString());
                     res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
                 } else {
-                    res.status(200).json({ success: false, msg: "Request submitted successfully!" });
+                    res.status(200).json({ success: false, msg: "Request submitted successfully" });
                 }
             }
         );
@@ -253,11 +265,17 @@ router.post("/account", (req, res, next) => {
  *     responses:
  *       200:
  *         description: Form retrieved successfully
+ *       404:
+ *         description: Form not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get("/account/:id", (req, res, next) => {
     formSubmissionsModel.getById(req.params.id, (err, data) => {
-        if (err || data.Items.length === 0) {
+        if (err) {
             res.status(500).json({ success: false, msg: "Failed to retrieve request" });
+        } else if (data.Items.length === 0) {
+            res.status(404).json({ success: false, msg: "Request not found" });
         } else {
             res.json(data.Items[0]);
         }
@@ -292,10 +310,19 @@ router.get("/account/:id", (req, res, next) => {
  *     responses:
  *       200:
  *         description: Form retrieved successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal Server Error
  */
 router.post("/account/complete", (req, res, next) => {
     // Get form data
     const formData = req.body;
+
+    if (!formData.parent_id || !formData.action || !formData.date) {
+        res.status(400).json({ success: false, msg: "Missing params" });
+        return;
+    }
 
     // Update parent request
     formSubmissionsModel.update(
@@ -306,7 +333,7 @@ router.post("/account/complete", (req, res, next) => {
         (err, userAccessRequest) => {
             // Return error
             if (err) {
-                res.status(401).json({ success: false, msg: err });
+                res.status(500).json({ success: false, msg: err });
                 return;
             }
 
@@ -373,7 +400,7 @@ router.post("/account/complete", (req, res, next) => {
                             console.log("Unable to send approval notification to: " + formData.email + ". Reason: " + error.toString());
                             res.status(500).json({ success: false, msg: error });
                         } else {
-                            res.json({ success: false, msg: "Request has been approved!" });
+                            res.json({ success: false, msg: "Request has been approved" });
                         }
                     }
                 );

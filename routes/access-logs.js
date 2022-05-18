@@ -43,8 +43,12 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: List of access logs
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/access-logs",
@@ -62,9 +66,12 @@ router.get(
                 res.status(500).json({ success: false, msg: error });
                 return;
             }
-
-            // Return list
-            res.json(data);
+            if (data.Items) {
+                res.json(data.Items);
+            } else {
+                // Return list
+                res.json(data);
+            }
         };
 
         // Change method depending on query
@@ -105,8 +112,12 @@ router.get(
  *     responses:
  *       200:
  *         description: List of access logs
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/:user/access-logs",
@@ -124,8 +135,12 @@ router.get(
                 return;
             }
 
-            // Return list
-            res.json(data);
+            if (data.Items) {
+                res.json(data.Items);
+            } else {
+                // Return list
+                res.json(data);
+            }
         });
     }
 );
@@ -155,8 +170,14 @@ router.get(
  *     responses:
  *       200:
  *         description: List of access log statistics grouped by day
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/access-logs/statistics",
@@ -166,6 +187,16 @@ router.get(
         }),
         MiddlewareHelper.userHasCapability(["Hall Monitor", "Inspection"]),
     ],
+    MiddlewareHelper.validate(
+        "query",
+        {
+            date_from: { type: "string" },
+            date_to: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const dateFrom = req.query.date_from.toString();
         const dateTo = req.query.date_to.toString();
@@ -236,8 +267,6 @@ router.get(
                         data.statistics.push(0);
                     }
                 });
-
-                // Push to response
                 response.data.push(data);
             });
 
@@ -272,12 +301,27 @@ router.get(
  *     responses:
  *       200:
  *         description: Access log created
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/access-logs/create",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            type: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         // Read jtw
         const user = req.header("authorization");

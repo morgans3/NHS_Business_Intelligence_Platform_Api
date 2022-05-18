@@ -4,6 +4,7 @@ const router = express.Router();
 const passport = require("passport");
 const JWT = require("jsonwebtoken");
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const CVICohortModel = new DIULibrary.Models.CVICohortModel();
 const RoleFunctions = require("../helpers/role_functions");
 
@@ -44,6 +45,10 @@ const RoleFunctions = require("../helpers/role_functions");
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/",
@@ -101,12 +106,29 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            cohortName: { type: "string" },
+            createdDT: { type: "string" },
+            cohorturl: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         CVICohortModel.create(
             {
@@ -121,7 +143,7 @@ router.post(
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
-                res.send({ success: true, msg: "New cohort created!", data });
+                res.send({ success: true, msg: "New cohort created", data });
             }
         );
     }
@@ -167,12 +189,31 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            cohortName: { type: "string" },
+            createdDT: { type: "string" },
+            cohorturl: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         if (req.body.teamcode) {
             const token = req.header("authorization");
@@ -201,7 +242,7 @@ router.put(
                                 res.status(500).send({ success: false, msg: err });
                                 return;
                             }
-                            res.send({ success: true, msg: "Cohort updated!", data });
+                            res.send({ success: true, msg: "Cohort updated", data });
                         }
                     );
                 }
@@ -222,7 +263,7 @@ router.put(
                         res.status(500).send({ success: false, msg: err });
                         return;
                     }
-                    res.send({ success: true, msg: "Cohort updated!", data });
+                    res.send({ success: true, msg: "Cohort updated", data });
                 }
             );
         }
@@ -254,12 +295,32 @@ router.put(
  *     responses:
  *       200:
  *         description: Success status
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            cohortName: { type: "string" },
+            createdDT: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const key = {
             cohortName: req.body.cohortName,
@@ -292,7 +353,7 @@ router.delete(
                                 res.status(500).json({ success: false, msg: err });
                                 return;
                             }
-                            res.json({ success: true, msg: "Cohort deleted!" });
+                            res.json({ success: true, msg: "Cohort deleted" });
                         });
                     }
                 });
@@ -303,7 +364,7 @@ router.delete(
                         res.status(500).json({ success: false, msg: err });
                         return;
                     }
-                    res.json({ success: true, msg: "Cohort deleted!" });
+                    res.json({ success: true, msg: "Cohort deleted" });
                 });
             }
         });

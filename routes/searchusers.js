@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const UserModel = new DIULibrary.Models.UserModel();
 const OrganisationModel = new DIULibrary.Models.OrganisationModel();
 const ADModel = require("../models/activedirectory");
@@ -36,12 +37,29 @@ const StringHelper = DIULibrary.Helpers.StringMethods;
  *     responses:
  *       200:
  *         description: Search Results
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ *       503:
+ *        description: Service Unavailable
  */
 router.get(
     "/profiles",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "query",
+        {
+            searchterm: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const search = req.query.searchterm;
         const searchresults = [];
@@ -93,12 +111,30 @@ router.get(
  *     responses:
  *       200:
  *         description: Search Results
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ *       503:
+ *        description: Service Unavailable
  */
 router.get(
     "/org-profiles",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "query",
+        {
+            searchterm: { type: "string" },
+            organisation: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         const search = req.query.searchterm;
         const organisation = req.query.organisation;

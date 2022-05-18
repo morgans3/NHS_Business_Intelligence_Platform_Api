@@ -4,6 +4,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const TeamModel = new DIULibrary.Models.TeamModel();
 
 /**
@@ -33,18 +34,33 @@ const TeamModel = new DIULibrary.Models.TeamModel();
  *     responses:
  *       200:
  *         description: Search Results
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
     "/teams",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "query",
+        {
+            searchterm: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         TeamModel.getByFilters(
             {
                 name: req.query.searchterm,
             },
-            function (err, teams) {
+            (err, teams) => {
                 if (err) {
                     res.status(500).send({ status: 500, message: err });
                 } else {

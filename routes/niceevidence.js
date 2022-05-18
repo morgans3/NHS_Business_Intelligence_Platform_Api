@@ -4,7 +4,8 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const Request = require("request");
-
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 // Put NICE api path here
 const basePath = "https://api.nice.org.uk/services/search/results?q=";
 
@@ -61,12 +62,28 @@ function GetNICE(path, paramItems, callback) {
  *     responses:
  *       200:
  *         description: JSON containing response from NICE API
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/evidencesearch",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            search_query: { type: "string" },
+            search_length: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         GetNICE(req.body.search_query, req.body.search_length, (error, response, body) => {
             if (error) {

@@ -145,7 +145,7 @@ class Authenticate {
 
                     // Check user auth method
                     if (user.auth_method && !nexusAuthMethods.includes(user.auth_method)) {
-                        callback(new Error("Wrong authentication method!"), null);
+                        callback(new Error("Wrong authentication method"), null);
                         return;
                     }
 
@@ -300,7 +300,7 @@ class Authenticate {
 
                     // Check user auth method
                     if (user.auth_method && !nexusAuthMethods.includes(user.auth_method)) {
-                        callback(new Error("Wrong authentication method!"), null);
+                        callback(new Error("Wrong authentication method"), null);
                         return;
                     }
 

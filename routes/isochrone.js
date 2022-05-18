@@ -6,6 +6,8 @@ const passport = require("passport");
 const { settings } = require("../config/database");
 const PostgresI = require("diu-data-functions").Methods.Postgresql;
 const PGConstruct = PostgresI.init(settings);
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -34,19 +36,34 @@ const PGConstruct = PostgresI.init(settings);
  *     responses:
  *       200:
  *         description: Household Statistics
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/houses-within-isochrone",
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            isochrone_bounds: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
-        const query = req.body.isochrone_bounds;
-        const params = {
-            query,
-        };
-        PostgresI.getIsoChrone(PGConstruct, params, (response) => {
-            res.json(response);
+        PostgresI.getIsoChrone(PGConstruct, { query: req.body.isochrone_bounds }, (err, response) => {
+            if (err) {
+                res.status(500).send({ success: false, msg: err });
+                return;
+            }
+            res.send(response);
         });
     }
 );
