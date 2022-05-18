@@ -407,9 +407,9 @@ router.delete(
             teamcode: req.body.teamcode,
         };
 
-        TeamMemberModel.delete(keys, (memberDeleteErr, errResult) => {
+        TeamMemberModel.delete(keys, (err, errResult) => {
             if (err) {
-                res.status(500).json({ success: false, msg: "Failed to delete: " + memberDeleteErr });
+                res.status(500).json({ success: false, msg: "Failed to delete: " + err });
                 return;
             }
             if (errResult.Attributes) {
