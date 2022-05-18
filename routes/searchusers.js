@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const UserModel = new DIULibrary.Models.UserModel();
 const OrganisationModel = new DIULibrary.Models.OrganisationModel();
 const ADModel = require("../models/activedirectory");
@@ -50,11 +51,16 @@ router.get(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.query.searchterm) {
-            res.status(400).send({ success: false, msg: "Search Term Required" });
-            return;
+    MiddlewareHelper.validate(
+        "query",
+        {
+            searchterm: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const search = req.query.searchterm;
         const searchresults = [];
         UserModel.getUserByPartialUsername(search, function (err, users) {
@@ -119,11 +125,17 @@ router.get(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.query.searchterm || !req.query.organisation) {
-            res.status(400).send({ success: false, msg: "Search Term and Organisation Required" });
-            return;
+    MiddlewareHelper.validate(
+        "query",
+        {
+            searchterm: { type: "string" },
+            organisation: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const search = req.query.searchterm;
         const organisation = req.query.organisation;
         const searchresults = [];

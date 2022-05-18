@@ -4,6 +4,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const SpiIncidentMethods = new DIULibrary.Models.SpiIncidentMethods();
 
 /**
@@ -95,11 +96,19 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.method || !req.body.dateCreated || !req.body.list || !req.body.priority) {
-            res.status(400).send({ success: false, msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            method: { type: "string" },
+            dateCreated: { type: "string" },
+            list: { type: "string" },
+            priority: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         SpiIncidentMethods.create(
             {
                 method: req.body.method,
@@ -167,11 +176,19 @@ router.put(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.method || !req.body.dateCreated || !req.body.list || !req.body.priority) {
-            res.status(400).send({ success: false, msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            method: { type: "string" },
+            dateCreated: { type: "string" },
+            list: { type: "string" },
+            priority: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const key = {
             method: req.body.method,
             dateCreated: req.body.dateCreated,
@@ -242,31 +259,32 @@ router.delete(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.method || !req.body.dateCreated) {
-            res.status(400).send({ success: false, msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            method: { type: "string" },
+            dateCreated: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const key = {
             method: req.body.method,
             dateCreated: req.body.dateCreated,
         };
-        SpiIncidentMethods.getByKeys(key, (errGet, resultGet) => {
-            if (errGet) {
-                res.status(500).send({ success: false, msg: errGet });
+
+        SpiIncidentMethods.delete(key, (err, result) => {
+            if (err) {
+                res.status(500).json({ success: false, msg: err });
                 return;
             }
-            if (resultGet.Items.length === 0) {
-                res.status(404).send({ success: false, msg: "Not Found" });
-                return;
+            if (result.Attributes) {
+                res.send({ success: true, msg: "Payload deleted", data: result.Attributes });
+            } else {
+                res.status(404).json({ success: false, msg: "Payload not found" });
             }
-            SpiIncidentMethods.delete(key, (err, result) => {
-                if (err) {
-                    res.status(500).json({ success: false, msg: err });
-                    return;
-                }
-                res.json({ success: true, msg: "Incident deleted" });
-            });
         });
     }
 );

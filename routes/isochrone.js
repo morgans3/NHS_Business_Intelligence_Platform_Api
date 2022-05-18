@@ -6,6 +6,8 @@ const passport = require("passport");
 const { settings } = require("../config/database");
 const PostgresI = require("diu-data-functions").Methods.Postgresql;
 const PGConstruct = PostgresI.init(settings);
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -46,11 +48,16 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.isochrone_bounds) {
-            res.status(400).send({ success: false, msg: "Isochrone bounds not provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            isochrone_bounds: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         PostgresI.getIsoChrone(PGConstruct, { query: req.body.isochrone_bounds }, (err, response) => {
             if (err) {
                 res.status(500).send({ success: false, msg: err });

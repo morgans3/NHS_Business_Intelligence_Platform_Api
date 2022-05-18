@@ -5,7 +5,8 @@ const router = express.Router();
 const passport = require("passport");
 const Request = require("request");
 const jwt = require("jsonwebtoken");
-
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const basePath = "https://10.164.36.166/mlcsu/production/gpinpatientapi/api/";
 
 /**
@@ -133,14 +134,16 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.token) {
-            res.status(400).json({
-                success: false,
-                msg: "No token provided",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/InpatientCounts", (error, response, body) => {
@@ -191,14 +194,16 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.token) {
-            res.status(400).json({
-                success: false,
-                msg: "No token provided",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/OutpatientCounts", (error, response, body) => {
@@ -249,14 +254,16 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.token) {
-            res.status(400).json({
-                success: false,
-                msg: "No token provided",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/AECounts", (error, response, body) => {
@@ -307,14 +314,16 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.token) {
-            res.status(400).json({
-                success: false,
-                msg: "No token provided",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/ECSCounts", (error, response, body) => {
@@ -365,14 +374,16 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.token) {
-            res.status(400).json({
-                success: false,
-                msg: "No token provided",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/EPCCounts", (error, response, body) => {
@@ -423,14 +434,16 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.token) {
-            res.status(400).json({
-                success: false,
-                msg: "No token provided",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/InpatientsGPSummary", (error, response, body) => {
@@ -481,14 +494,16 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.token) {
-            res.status(400).json({
-                success: false,
-                msg: "No token provided",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const token = "Bearer " + req.body.token;
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
         sendGet(token, "FyldecoastDashboard/AEGPSummary", (error, response, body) => {

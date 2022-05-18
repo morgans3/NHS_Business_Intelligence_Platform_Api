@@ -4,6 +4,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const TeamModel = new DIULibrary.Models.TeamModel();
 
 /**
@@ -45,11 +46,16 @@ router.get(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.query.searchterm) {
-            res.status(400).send({ success: false, msg: "Search Term Required" });
-            return;
+    MiddlewareHelper.validate(
+        "query",
+        {
+            searchterm: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         TeamModel.getByFilters(
             {
                 name: req.query.searchterm,

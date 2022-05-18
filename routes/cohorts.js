@@ -6,6 +6,7 @@ const RoleFunctions = require("../helpers/role_functions");
 const DIULibrary = require("diu-data-functions");
 const CohortModel = new DIULibrary.Models.CohortModel();
 const JWT = require("jsonwebtoken");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -112,11 +113,17 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.cohortName || !req.body.cohorturl) {
-            res.status(400).send({ success: false, msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            cohortName: { type: "string" },
+            cohorturl: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         CohortModel.create(
             {
                 cohortName: req.body.cohortName,
@@ -189,11 +196,17 @@ router.put(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.cohortName || !req.body.cohorturl) {
-            res.status(400).send({ success: false, msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            cohortName: { type: "string" },
+            cohorturl: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         if (req.body.teamcode) {
             const token = req.header("authorization");
             const decodedToken = JWT.decode(token.replace("JWT ", ""));
@@ -285,11 +298,16 @@ router.delete(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.id) {
-            res.status(400).send({ success: false, msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const key = {
             _id: req.body.id,
         };

@@ -102,11 +102,19 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res, next) => {
-        if (!req.body.name || !req.body.description || !req.body.authoriser || !req.body.capabilities) {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+            description: { type: "string" },
+            authoriser: { type: "string" },
+            capabilities: { type: "array", items: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const payload = req.body;
         RoleModel.create(
             {
@@ -214,11 +222,19 @@ router.put(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res, next) => {
-        if (!req.body.id || !req.body.name || !req.body.description || !req.body.authoriser || !req.body.capabilities) {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+            description: { type: "string" },
+            authoriser: { type: "string" },
+            capabilities: { type: "array", items: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         // Get all capabilities
         const payload = req.body;
         RoleModel.updateByPrimaryKey(
@@ -320,11 +336,18 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res, next) => {
-        if (!req.body.roles || !req.body.link_id || !req.body.link_type) {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            roles: { type: "string" },
+            link_id: { type: "string" },
+            link_type: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         // Get params
         const payload = req.body;
 
@@ -398,11 +421,18 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res, next) => {
-        if (!req.body.role_id || !req.body.link_id || !req.body.link_type) {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            role_id: { type: "string" },
+            link_id: { type: "string" },
+            link_type: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         // Get params
         const payload = req.body;
 
@@ -476,11 +506,18 @@ router.delete(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res, next) => {
-        if (!req.body.role_id || !req.body.link_id || !req.body.link_type) {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            role_id: { type: "string" },
+            link_id: { type: "string" },
+            link_type: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         // Get params
         const payload = req.body;
 
@@ -580,24 +617,25 @@ router.delete(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res, next) => {
-        if (!req.body.id) {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
-        RoleModel.getByPrimaryKey(req.params.id, (errGet, resultGet) => {
-            if (errGet) {
-                res.status(500).json({ success: false, msg: errGet });
-            } else if (resultGet) {
-                RoleModel.deleteByPrimaryKey(req.body.id, (err, result) => {
-                    if (err) {
-                        res.status(500).json({ success: false, msg: err });
-                    } else {
-                        res.json({ success: true, msg: "Role deleted successfully" });
-                    }
-                });
+    ),
+    (req, res, next) => {
+        RoleModel.deleteByPrimaryKey(req.body.id, (err, result) => {
+            if (err) {
+                res.status(500).json({ success: false, msg: err });
+                return;
+            }
+            if (result.Attributes) {
+                res.send({ success: true, msg: "Payload deleted", data: result.Attributes });
             } else {
-                res.status(404).json({ success: false, msg: "Role not found" });
+                res.status(404).json({ success: false, msg: "Payload not found" });
             }
         });
     }

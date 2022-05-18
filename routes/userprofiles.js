@@ -85,11 +85,16 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.username) {
-            res.status(400).json({ msg: "Missing Params" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            username: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         Profiles.addUserProfile(
             {
                 username: req.body.username,
@@ -185,12 +190,16 @@ router.get(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.params.username) {
-            res.status(400).json({ msg: "Missing Params" });
-            return;
+    MiddlewareHelper.validate(
+        "params",
+        {
+            username: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
-        // Parse request
+    ),
+    (req, res, next) => {
         let org = "global";
         const username = req.body.username;
         if (req.header("authorization")) {
@@ -372,14 +381,8 @@ router.get(
         }
     ),
     (req, res, next) => {
-        if (!req.params.userId) {
-            res.status(400).send({ success: false, msg: "No user id provided" });
-            return;
-        }
-        // Parse request
         const username = req.params.userId.split("#")[0];
 
-        // Valud organisation?
         OrganisationModel.get({ name: req.params.userId.split("#")[1] }, (err, data) => {
             // Error?
             if (err) {
@@ -530,11 +533,16 @@ router.delete(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res) => {
-        if (!req.body.id) {
-            res.status(400).send({ success: false, msg: "No id provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res) => {
         const id = req.body.id;
         Profiles.getUserProfileById(id, function (err, scan) {
             if (err) {
@@ -638,11 +646,16 @@ router.put(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res) => {
-        if (!req.body.profile_id) {
-            res.status(400).send({ success: false, msg: "No id provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            profile_id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res) => {
         const id = req.body.profile_id;
         Profiles.getUserProfileById(id, function (err, result) {
             if (err) {

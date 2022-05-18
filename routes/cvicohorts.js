@@ -4,6 +4,7 @@ const router = express.Router();
 const passport = require("passport");
 const JWT = require("jsonwebtoken");
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const CVICohortModel = new DIULibrary.Models.CVICohortModel();
 const RoleFunctions = require("../helpers/role_functions");
 
@@ -117,11 +118,18 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.cohortName || !req.body.createdDT || !req.body.cohorturl) {
-            res.status(400).json({ success: false, msg: "Not all parameters provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            cohortName: { type: "string" },
+            createdDT: { type: "string" },
+            cohorturl: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         CVICohortModel.create(
             {
                 cohortName: req.body.cohortName,
@@ -195,11 +203,18 @@ router.put(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.cohortName || !req.body.cohorturl || !req.body.createdDT) {
-            res.status(400).send({ success: false, msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            cohortName: { type: "string" },
+            createdDT: { type: "string" },
+            cohorturl: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         if (req.body.teamcode) {
             const token = req.header("authorization");
             const decodedToken = JWT.decode(token.replace("JWT ", ""));
@@ -296,11 +311,17 @@ router.delete(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.cohortName || !req.body.createdDT) {
-            res.status(400).send({ success: false, msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            cohortName: { type: "string" },
+            createdDT: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const key = {
             cohortName: req.body.cohortName,
             createdDT: req.body.createdDT,

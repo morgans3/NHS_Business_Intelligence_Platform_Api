@@ -92,12 +92,17 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res, next) => {
-        if (!req.body.name || !req.body.environment) {
-            res.status(400).json({ success: false, msg: "Not all parameters provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+            environment: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
-
+    ),
+    (req, res, next) => {
         const newApp = {
             name: req.body.name,
             status: req.body.status,
@@ -213,11 +218,16 @@ router.put(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res) => {
-        if (!req.body.name) {
-            res.status(400).json({ success: false, msg: "Not all parameters provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res) => {
         const id = req.body.name;
         App.getAppByName(id, function (err, app) {
             if (err) {
@@ -343,11 +353,16 @@ router.delete(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res) => {
-        if (!req.body.name) {
-            res.status(400).json({ success: false, msg: "Not all parameters provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res) => {
         App.getAppByName(req.body.name, function (err, app) {
             if (err) {
                 res.json({

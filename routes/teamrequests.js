@@ -7,6 +7,8 @@ const Requests = require("../models/teamrequests");
 const Members = require("../models/teammembers");
 const JWT = require("jsonwebtoken");
 const RoleFunctions = require("../helpers/role_functions");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -76,11 +78,18 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.username || !req.body.teamcode || !req.body.requestdate) {
-            res.status(400).json({ msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            username: { type: "string" },
+            teamcode: { type: "string" },
+            requestdate: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         Members.getteamsByMember(req.body.username, (teamRequestErr, teamRequest) => {
             // see if users is already in team
             // IF rows
@@ -239,14 +248,19 @@ router.put(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res) => {
-        if (!req.body.id || !req.body.username || !req.body.teamcode || !req.body.requestdate) {
-            res.status(400).json({
-                success: false,
-                msg: "Failed to update: Missing required fields",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            username: { type: "string" },
+            teamcode: { type: "string" },
+            requestdate: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
         const username = decodedToken["username"];
@@ -341,14 +355,17 @@ router.delete(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res) => {
-        if (!req.body.id || !req.body.teamcode) {
-            res.status(400).json({
-                success: false,
-                msg: "Failed to delete: Missing required fields",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            teamcode: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
         const username = decodedToken["username"];
@@ -428,20 +445,22 @@ router.get(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.params.id) {
-            res.status(400).json({
-                success: false,
-                msg: "Failed to get: Missing required fields",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "params",
+        {
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         Requests.getRequestById(req.params.id, function (err, result) {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
                 if (result.Items.length > 0) {
-                    res.send(JSON.stringify(result.Items[0]));
+                    res.json(result.Items[0]);
                 } else {
                     res.status(404).send({ success: false, msg: "Can not find item in database" });
                 }

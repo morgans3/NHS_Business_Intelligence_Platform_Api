@@ -66,7 +66,7 @@ router.get(
                 res.status(500).json({ success: false, msg: error });
                 return;
             }
-            if (data && data.Items) {
+            if (data.Items) {
                 res.json(data.Items);
             } else {
                 // Return list
@@ -135,7 +135,7 @@ router.get(
                 return;
             }
 
-            if (data && data.Items) {
+            if (data.Items) {
                 res.json(data.Items);
             } else {
                 // Return list
@@ -187,11 +187,17 @@ router.get(
         }),
         MiddlewareHelper.userHasCapability(["Hall Monitor", "Inspection"]),
     ],
-    (req, res, next) => {
-        if (!req.query.date_from || !req.query.date_to) {
-            res.status(400).json({ success: false, msg: "Missing query params" });
-            return;
+    MiddlewareHelper.validate(
+        "query",
+        {
+            date_from: { type: "string" },
+            date_to: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const dateFrom = req.query.date_from.toString();
         const dateTo = req.query.date_to.toString();
         if (!dateFrom || !dateTo) {
@@ -307,15 +313,19 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            type: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     (req, res, next) => {
         // Read jtw
         const user = req.header("authorization");
         const decodedToken = JWT.decode(user.replace("JWT ", ""));
-
-        if (!req.body.type) {
-            res.status(400).json({ success: false, msg: "Missing input params" });
-            return;
-        }
 
         // Store access log
         const payload = req.body;

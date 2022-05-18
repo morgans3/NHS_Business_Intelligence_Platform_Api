@@ -4,7 +4,8 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const Request = require("request");
-
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 // Put NICE api path here
 const basePath = "https://api.nice.org.uk/services/search/results?q=";
 
@@ -73,11 +74,17 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.search_query || !req.body.search_length) {
-            res.status(400).send({ success: false, msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            search_query: { type: "string" },
+            search_length: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         GetNICE(req.body.search_query, req.body.search_length, (error, response, body) => {
             if (error) {
                 res.status(500).json({

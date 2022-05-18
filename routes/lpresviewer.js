@@ -4,6 +4,8 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -44,11 +46,16 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.nhsnumber) {
-            res.status(400).send({ success: false, msg: "NHS Number not provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            nhsnumber: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const token = req.headers.authorization.replace("JWT ", "");
         const username = jwt.decode(token)["username"] || "test";
         const nhsnumber = req.body.nhsnumber;

@@ -7,6 +7,7 @@ const Authenticate = require("../models/authenticate");
 const passport = require("passport");
 const JWT = require("jsonwebtoken");
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const EmailHelper = DIULibrary.Helpers.Email;
 const issuer = process.env.SITE_URL || "NHS BI Platform";
 
@@ -164,14 +165,17 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.token || !req.body.tempSecret) {
-            res.status(400).json({
-                success: false,
-                msg: "Token and Temp Secret are required",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+            tempSecret: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const jwt = req.header("authorization");
         if (jwt) {
             const decodedToken = JWT.decode(jwt.replace("JWT ", ""));
@@ -246,14 +250,16 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.token) {
-            res.status(400).json({
-                success: false,
-                msg: "Token is required",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            token: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const jwt = req.header("authorization");
         if (jwt) {
             const decodedToken = JWT.decode(jwt.replace("JWT ", ""));

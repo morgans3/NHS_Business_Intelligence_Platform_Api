@@ -162,14 +162,17 @@ router.put(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res) => {
-        if (!req.body["_id"] || !req.body.name) {
-            res.status(400).send({
-                success: false,
-                msg: "Missing Params",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+            _id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res) => {
         const newAlert = {
             _id: req.body["_id"],
             name: req.body.name,
@@ -271,14 +274,16 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res, next) => {
-        if (!req.body.name) {
-            res.status(400).send({
-                success: false,
-                msg: "Missing Params",
-            });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            name: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const newSystemAlerts = {
             name: { S: req.body.name },
             message: { S: req.body.message },

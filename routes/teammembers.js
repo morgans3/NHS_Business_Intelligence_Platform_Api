@@ -4,6 +4,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const TeamMemberModel = new DIULibrary.Models.TeamMemberModel();
 const JWT = require("jsonwebtoken");
 const RoleFunctions = require("../helpers/role_functions");
@@ -106,13 +107,18 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.teamcode || !req.body.username || !req.body.joindate) {
-            res.status(400).json({ success: false, msg: "Team Code is required" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            teamcode: { type: "string" },
+            username: { type: "string" },
+            joindate: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
-
-        // Check if the user has the correct permissions
+    ),
+    (req, res, next) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
         const username = decodedToken["username"];
@@ -201,11 +207,18 @@ router.put(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.id || !req.body.teamcode || !req.body.username) {
-            res.status(400).json({ success: false, msg: "Id and Team Code are required" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            teamcode: { type: "string" },
+            username: { type: "string" },
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
         const username = decodedToken["username"];
@@ -378,36 +391,31 @@ router.delete(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res) => {
-        if (!req.body.id || !req.body.teamcode) {
-            res.status(400).send({ success: false, msg: "Missing Params" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            teamcode: { type: "string" },
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res) => {
         const keys = {
             _id: req.body.id,
             teamcode: req.body.teamcode,
         };
-        TeamMemberModel.getByKeys(keys, (err, result) => {
+
+        TeamMemberModel.delete(keys, (memberDeleteErr, errResult) => {
             if (err) {
-                res.status(500).json({ success: false, msg: "Failed to find item: " + err });
+                res.status(500).json({ success: false, msg: "Failed to delete: " + memberDeleteErr });
+                return;
             }
-            if (result.Items && result.Items.length > 0) {
-                const member = result.Items[0];
-                TeamMemberModel.delete(
-                    {
-                        _id: member["_id"],
-                        teamcode: member.teamcode,
-                    },
-                    (memberDeleteErr) => {
-                        if (err) {
-                            res.status(500).json({ success: false, msg: "Failed to delete: " + memberDeleteErr });
-                        } else {
-                            res.json({ success: true, msg: "Deleted" });
-                        }
-                    }
-                );
+            if (errResult.Attributes) {
+                res.send({ success: true, msg: "Payload deleted", data: errResult.Attributes });
             } else {
-                res.status(404).json({ success: false, msg: "Can not find item in database." });
+                res.status(404).json({ success: false, msg: "Payload not found" });
             }
         });
     }

@@ -132,11 +132,17 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("patientidentifiabledata"),
     ],
-    (req, res, next) => {
-        if (!req.body.status || !req.body.limit) {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            status: { type: "string" },
+            limit: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const status = req.body.status;
         const limit = req.body.limit.toString() || "1000";
         let numCheck;

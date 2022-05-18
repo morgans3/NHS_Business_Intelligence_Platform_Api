@@ -4,6 +4,7 @@ const router = express.Router();
 const passport = require("passport");
 const uuid = require("uuid");
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const TeamModel = new DIULibrary.Models.TeamModel();
 const JWT = require("jsonwebtoken");
 const RoleFunctions = require("../helpers/role_functions");
@@ -107,12 +108,19 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    async (req, res, next) => {
-        if (!req.body.code || !req.body.name || !req.body.description || !req.body.organisationcode) {
-            res.status(400).json({ success: false, msg: "Missing Params" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            code: { type: "string" },
+            name: { type: "string" },
+            description: { type: "string" },
+            organisationcode: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
-        // Get params
+    ),
+    async (req, res, next) => {
         const payload = req.body;
         const team = {
             _id: uuid.v1(),
@@ -276,11 +284,16 @@ router.get(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.query.code) {
-            res.status(400).json({ success: false, msg: "Missing Params" });
-            return;
+    MiddlewareHelper.validate(
+        "query",
+        {
+            code: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const code = req.query.code;
         TeamModel.getByCode(code, function (err, result) {
             if (err) {
@@ -330,11 +343,16 @@ router.get(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.query.orgcode) {
-            res.status(400).json({ success: false, msg: "Missing Params" });
-            return;
+    MiddlewareHelper.validate(
+        "query",
+        {
+            orgcode: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const orgcode = req.query.orgcode;
         TeamModel.getByOrg(orgcode, function (err, result) {
             if (err) {
@@ -384,11 +402,16 @@ router.get(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.query.partialteam) {
-            res.status(400).json({ success: false, msg: "Missing Params" });
-            return;
+    MiddlewareHelper.validate(
+        "query",
+        {
+            partialteam: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const partialteam = req.query.partialteam;
         TeamModel.getByFilters(
             {
@@ -448,11 +471,17 @@ router.get(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.query.partialteam || !req.query.orgcode) {
-            res.status(400).json({ success: false, msg: "Missing Params" });
-            return;
+    MiddlewareHelper.validate(
+        "query",
+        {
+            partialteam: { type: "string" },
+            orgcode: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const orgcode = req.query.orgcode;
         const name = req.query.partialteam;
         TeamModel.getByFilters(
@@ -516,11 +545,17 @@ router.delete(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body["_id"] || !req.body.code) {
-            res.status(400).json({ success: false, msg: "Missing Params" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            _id: { type: "string" },
+            code: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
         const username = decodedToken["username"];

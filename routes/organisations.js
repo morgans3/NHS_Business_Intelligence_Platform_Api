@@ -93,11 +93,19 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res, next) => {
-        if (!req.body.code || !req.body.name || !req.body.authmethod || !req.body.contact) {
-            res.status(400).json({ success: false, msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            code: { type: "string" },
+            name: { type: "string" },
+            authmethod: { type: "string" },
+            contact: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         new AWS.DynamoDB().putItem(
             {
                 TableName: tablename,
@@ -180,11 +188,19 @@ router.put(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res) => {
-        if (!req.body.code || !req.body.name || !req.body.authmethod || !req.body.contact) {
-            res.status(400).json({ success: false, msg: "Bad Request" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            code: { type: "string" },
+            name: { type: "string" },
+            authmethod: { type: "string" },
+            contact: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res) => {
         DynamoDBData.updateItem(AWS, tablename, ["code", "name"], req.body, (err, app) => {
             if (err) {
                 res.status(500).json({
@@ -250,35 +266,19 @@ router.delete(
                 code: req.body.code,
                 name: req.body.name,
             };
-            DynamoDBData.getItemByKeys(AWS, tablename, ["code", "name"], [req.body.code, req.body.name], (errGet, resultGet) => {
-                if (errGet) {
+            DynamoDBData.removeItem(AWS, tablename, key, (err, result) => {
+                if (err) {
                     res.status(500).json({
                         success: false,
-                        msg: "Failed to get: " + errGet,
+                        msg: "Error: " + err,
                     });
                     return;
                 }
-                if (resultGet.Items && resultGet.Items.length === 0) {
-                    res.status(404).json({
-                        success: false,
-                        msg: "Not found",
-                    });
-                    return;
+                if (result.Attributes) {
+                    res.send({ success: true, msg: "Payload deleted", data: result.Attributes });
+                } else {
+                    res.status(404).json({ success: false, msg: "Payload not found" });
                 }
-
-                DynamoDBData.removeItem(AWS, tablename, key, (err, response) => {
-                    if (err) {
-                        res.status(500).json({
-                            success: false,
-                            msg: "Error: " + err,
-                        });
-                    } else {
-                        res.json({
-                            success: true,
-                            msg: "Removed",
-                        });
-                    }
-                });
             });
         } else {
             res.status(400).json({

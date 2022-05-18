@@ -42,7 +42,7 @@ const tablename = "newsfeeds";
  *         description: Order of Feed in display
  *         in: formData
  *         required: true
- *         type: number
+ *         type: string
  *     responses:
  *       200:
  *         description: Confirmation of News Feed Registration
@@ -63,12 +63,18 @@ router.post(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res, next) => {
-        if (!req.body.destination || !req.body.type || !req.body.priority) {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            destination: { type: "string" },
+            type: { type: "string" },
+            priority: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
-
+    ),
+    (req, res, next) => {
         const data = {
             destination: req.body.destination,
             type: req.body.type,
@@ -147,11 +153,18 @@ router.put(
         }),
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
-    (req, res) => {
-        if (!req.body.destination || !req.body.type || !req.body.priority) {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            destination: { type: "string" },
+            type: { type: "string" },
+            priority: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res) => {
         DynamoDBData.updateItem(AWS, tablename, ["destination", "type"], req.body, (err, app) => {
             if (err) {
                 res.status(500).json({
@@ -270,41 +283,20 @@ router.delete(
                 destination: req.body.destination,
                 type: req.body.type,
             };
-            DynamoDBData.getItemByKeys(
-                AWS,
-                tablename,
-                ["destination", "type"],
-                [req.body.destination, req.body.type],
-                (errGet, resultGet) => {
-                    if (errGet) {
-                        res.status(500).json({
-                            success: false,
-                            msg: "Failed to get: " + errGet,
-                        });
-                    } else {
-                        if (resultGet.Items && resultGet.Items.length > 0) {
-                            DynamoDBData.removeItem(AWS, tablename, key, (errRemove) => {
-                                if (errRemove) {
-                                    res.status(500).json({
-                                        success: false,
-                                        msg: "Error: " + errRemove,
-                                    });
-                                } else {
-                                    res.json({
-                                        success: true,
-                                        msg: "Removed",
-                                    });
-                                }
-                            });
-                        } else {
-                            res.status(404).json({
-                                success: false,
-                                msg: "News Feed Not Found",
-                            });
-                        }
-                    }
+            DynamoDBData.removeItem(AWS, tablename, key, (errRemove, result) => {
+                if (errRemove) {
+                    res.status(500).json({
+                        success: false,
+                        msg: "Error: " + errRemove,
+                    });
+                    return;
                 }
-            );
+                if (result.Attributes) {
+                    res.send({ success: true, msg: "Payload deleted", data: result.Attributes });
+                } else {
+                    res.status(404).json({ success: false, msg: "Payload not found" });
+                }
+            });
         } else {
             res.status(400).json({
                 success: false,

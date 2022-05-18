@@ -2,8 +2,8 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-
 const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const AtomicFormDataModel = new DIULibrary.Models.AtomicFormDataModel();
 
 /**
@@ -138,11 +138,18 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.id || !req.body.formid || !req.body.config) {
-            res.status(400).json({ success: false, msg: "Not all parameters provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            formid: { type: "string" },
+            config: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         AtomicFormDataModel.create(
             {
                 id: req.body.id,
@@ -204,11 +211,18 @@ router.put(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.id || !req.body.formid || !req.body.config) {
-            res.status(400).json({ success: false, msg: "Not all parameters provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            formid: { type: "string" },
+            config: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         AtomicFormDataModel.update(
             {
                 id: req.body.id,
@@ -267,23 +281,33 @@ router.delete(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.id || !req.body.formid) {
-            res.status(400).json({ success: false, msg: "Not all parameters provided" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            formid: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         AtomicFormDataModel.delete(
             {
                 id: req.body.id,
                 formid: req.body.formid,
             },
-            (err, result) => {
+            (err, errResult) => {
                 // Return data
                 if (err) {
                     res.status(500).json({ success: false, msg: err });
                     return;
                 }
-                res.json({ success: true, msg: "Formdata deleted" });
+                if (errResult.Attributes) {
+                    res.send({ success: true, msg: "Payload deleted", data: errResult.Attributes });
+                } else {
+                    res.status(404).json({ success: false, msg: "Payload not found" });
+                }
             }
         );
     }

@@ -4,6 +4,8 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const Views = require("../models/opensourceviews");
+const DIULibrary = require("diu-data-functions");
+const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
  * @swagger
@@ -49,11 +51,17 @@ router.post(
     passport.authenticate("jwt", {
         session: false,
     }),
-    (req, res, next) => {
-        if (!req.body.page || !req.body.limit) {
-            res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-            return;
+    MiddlewareHelper.validate(
+        "body",
+        {
+            page: { type: "string" },
+            limit: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
         const limit = parseInt(req.body.limit) || 100;
         Views.getByPage(req.body.page, limit, function (err, result) {
             if (err) {
@@ -97,31 +105,40 @@ router.post(
  *       500:
  *         description: Internal Server Error
  */
-router.post("/addView", (req, res, next) => {
-    if (!req.body.page || !req.body.parent) {
-        res.status(400).json({ success: false, msg: "Incorrect Parameters" });
-        return;
-    }
-    const page = req.body.page;
-    const forwarded = req.headers["x-forwarded-for"] || "";
-    const ipaddress = forwarded.toString().split(",").pop() || req.connection.remoteAddress || req.socket.remoteAddress;
-    const parent = req.body.parent;
-
-    Views.addView(
+router.post(
+    "/addView",
+    MiddlewareHelper.validate(
+        "body",
         {
-            page,
-            datetime: new Date().toUTCString(),
-            ipaddress,
-            parent,
+            page: { type: "string" },
+            parent: { type: "string" },
         },
-        function (err, data) {
-            if (err) {
-                res.status(500).send({ success: false, msg: err });
-            } else {
-                res.send({ success: true, msg: "View Recorded", data });
-            }
+        {
+            pattern: "Missing query params",
         }
-    );
-});
+    ),
+    (req, res, next) => {
+        const page = req.body.page;
+        const forwarded = req.headers["x-forwarded-for"] || "";
+        const ipaddress = forwarded.toString().split(",").pop() || req.connection.remoteAddress || req.socket.remoteAddress;
+        const parent = req.body.parent;
+
+        Views.addView(
+            {
+                page,
+                datetime: new Date().toUTCString(),
+                ipaddress,
+                parent,
+            },
+            function (err, data) {
+                if (err) {
+                    res.status(500).send({ success: false, msg: err });
+                } else {
+                    res.send({ success: true, msg: "View Recorded", data });
+                }
+            }
+        );
+    }
+);
 
 module.exports = router;
