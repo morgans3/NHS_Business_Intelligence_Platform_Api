@@ -249,14 +249,19 @@ router.put(
             type: req.body.type,
         };
         AtomicPayloadsModel.getByKeys(keys, (errGet, resultGet) => {
+            // Check for error
             if (errGet) {
                 res.status(500).send({ success: false, msg: errGet });
                 return;
             }
+
+            // Check item exists
             if (resultGet.Items.length === 0) {
                 res.status(404).json({ success: false, msg: "Payload not found" });
                 return;
             }
+
+            // Udpate item
             AtomicPayloadsModel.update(keys, { config: req.body.config }, (err, data) => {
                 if (err) {
                     res.status(500).send({ success: false, msg: err });
