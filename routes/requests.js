@@ -61,7 +61,6 @@ router.get(
     ],
     (req, res, next) => {
         formSubmissionsModel.get(req.query, (error, data) => {
-            console.log(error, data);
             // Check for save error
             if (error) {
                 res.status(500).json({ success: false, msg: error });
@@ -430,8 +429,8 @@ router.post("/account/complete", (req, res, next) => {
                         to: userAccessRequest.data.email,
                         subject: "BI Platform Access",
                         message: `
-                <p>Your access to ${issuer.replace("api.", "")} has not been approved.</p>
-                <p><b>Reason:</b> ${formData.reason}</p>`,
+                        <p>Your access to ${issuer.replace("api.", "")} has not been approved.</p>
+                        <p><b>Reason:</b> ${formData.reason}</p>`,
                         actions: [
                             {
                                 class: "primary",
@@ -453,5 +452,107 @@ router.post("/account/complete", (req, res, next) => {
         }
     );
 });
+
+/**
+ * @swagger
+ * /requests/help:
+ *   post:
+ *     security:
+ *      - JWT: []
+ *        required: false
+ *     description: Send feedback
+ *     tags:
+ *      - Requests
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *      - in: body
+ *        name: Payload
+ *        description: Message information
+ *        schema:
+ *          type: object
+ *          required:
+ *            - message
+ *          properties:
+ *            email:
+ *              type: string
+ *            message:
+ *              type: string
+ *            attributes:
+ *              type: object
+ *              patternProperties:
+ *                "^.*$":
+ *                  type: string
+ *
+ *     responses:
+ *       200:
+ *         description: Request received successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal Server Error
+ */
+router.post(
+    "/help",
+    MiddlewareHelper.validate(
+        "body",
+        {
+            message: { type: "string" },
+        },
+        {
+            pattern: "Please provide us with sufficient information",
+        }
+    ),
+    (req, res, next) => {
+        // Get form data
+        const formData = req.body;
+
+        // Store form in the database
+        const helpRequest = {
+            id: uuid.v1(),
+            parent_id: null,
+            type: "HelpRequest",
+            data: {
+                email: formData?.email || "unknown",
+                message: formData.message,
+                attributes: formData.attributes
+            },
+            created_at: require("luxon").DateTime.now().toISO(),
+        };
+        formSubmissionsModel.create(helpRequest, (error) => {
+            // Check for save error
+            if (error) {
+                res.status(500).json({ success: false, msg: error });
+                return;
+            }
+
+            // Send notification email
+            EmailHelper.sendMail(
+                {
+                    to: process.env.ALERTS_EMAIL,
+                    subject: "User Help Request",
+                    message: `
+                        <p>A Nexus Intelligence user has requested some help...</p>
+                        <p>${formData.message}</p>`,
+                    actions: [
+                        {
+                            class: "primary",
+                            text: "View more",
+                            type: "view_request",
+                            type_params: { id: helpRequest.id },
+                        }
+                    ],
+                },
+                (errorSend) => {
+                    if (errorSend) {
+                        console.log("Unable to send authorization request email to alerts email. Reason: " + errorSend.toString());
+                        res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
+                    } else {
+                        res.status(200).json({ success: false, msg: "Request submitted successfully" });
+                    }
+                }
+            );
+        });
+    });
 
 module.exports = router;
