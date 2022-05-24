@@ -6,6 +6,7 @@ const JWT = require("jsonwebtoken");
 
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
+const passwordModel = new DIULibrary.Models.PasswordModel();
 const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
 const Authenticate = require("../models/authenticate");
 const AuthenticateHelper = require("../helpers/authenticate");
@@ -581,9 +582,13 @@ router.post(
             }
 
             if (codeRes && codeRes.Items.length > 0) {
-                // TODO: Dont allow re-use
-                // passwordModel.deleteCode(payload.code, payload.email, () => {
-                res.json({ success: true, msg: "Code is valid." });
+                passwordModel.deleteCode(payload.code, payload.email, (errDelete, resDelete) => {
+                    if (errDelete) {
+                        res.status(500).json({ success: false, msg: "Failed: " + errDelete });
+                        return;
+                    }
+                    res.json({ success: true, msg: "Code is valid" });
+                });
             } else {
                 res.status(404).json({ success: false, msg: "Code not valid." });
             }

@@ -34,6 +34,10 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         in: formData
  *         type: string
  *         required: true
+ *       - name: organisation
+ *         description: Requesting User's Organisation
+ *         in: formData
+ *         type: string
  *       - name: teamcode
  *         description: Requesting Team
  *         in: formData
@@ -150,6 +154,7 @@ router.post(
                                     requestdate: { S: req.body.requestdate },
                                 };
 
+                                if (req.body.organisation) newRequest["organisation"] = { S: req.body.organisation };
                                 if (req.body.requestor) newRequest["requestor"] = { S: req.body.requestor };
                                 if (req.body.requestapprover) newRequest["requestapprover"] = { S: req.body.requestapprover };
                                 if (req.body.approveddate) newRequest["approveddate"] = { S: req.body.approveddate };
@@ -200,6 +205,10 @@ router.post(
  *         in: formData
  *         type: string
  *         required: true
+ *       - name: organisation
+ *         description: Requesting User's Organisation
+ *         in: formData
+ *         type: string
  *       - name: teamcode
  *         description: Requesting Team
  *         in: formData
@@ -285,6 +294,7 @@ router.put(
                         app.username = req.body.username;
                         app.teamcode = req.body.teamcode;
                         app.requestdate = req.body.requestdate;
+                        if (req.body.organisation) app.organisation = req.body.organisation;
                         if (req.body.requestor) app.requestor = req.body.requestor;
                         if (req.body.requestapprover) app.requestapprover = req.body.requestapprover;
                         if (req.body.approveddate) app.approveddate = req.body.approveddate;
