@@ -16,8 +16,6 @@ const PGConstruct = PostgresI.init(settings);
  * @swagger
  * /gppractices/:
  *   get:
- *     security:
- *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
  *      - GPPractices
