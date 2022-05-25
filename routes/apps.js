@@ -274,8 +274,6 @@ router.put(
  * @swagger
  * /apps/:
  *   get:
- *     security:
- *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
  *      - Application
