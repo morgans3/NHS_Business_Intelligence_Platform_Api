@@ -11,6 +11,7 @@ const formSubmissionsModel = new DIULibrary.Models.FormSubmissionModel(AWS);
 const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const EmailHelper = DIULibrary.Helpers.Email;
 const MessagesHelper = require("../helpers/messages");
+const MsTeamsHelper = DIULibrary.Helpers.MsTeams;
 
 const issuer = process.env.SITE_URL || "NHS BI Platform";
 
@@ -527,25 +528,21 @@ router.post(
             }
 
             // Send notification email
-            EmailHelper.sendMail(
+            MsTeamsHelper.sendNotification(
                 {
-                    to: process.env.ALERTS_EMAIL,
-                    subject: "User Help Request",
+                    title: "User Message",
                     message: `
-                        <p>A Nexus Intelligence user has requested some help...</p>
-                        <p>${formData.message}</p>`,
-                    actions: [
-                        {
-                            class: "primary",
-                            text: "View more",
-                            type: "view_request",
-                            type_params: { id: helpRequest.id },
-                        }
-                    ],
+                        New message from a Nexus Intelligence user... \n\n
+                        **Email**: ${formData.email} \n\n
+                        **Message**: ${formData.message}`,
+                    actionButton: {
+                        title: "View Request",
+                        url: `https://${process.env.SITE_URL}/admin/requests/${encodeURIComponent(helpRequest.id)}`
+                    }
                 },
                 (errorSend) => {
                     if (errorSend) {
-                        console.log("Unable to send authorization request email to alerts email. Reason: " + errorSend.toString());
+                        console.log("Unable to send notification alert. Reason: " + errorSend.toString());
                         res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
                     } else {
                         res.status(200).json({ success: false, msg: "Request submitted successfully" });
