@@ -268,8 +268,6 @@ router.put(
  * @swagger
  * /dashboards/:
  *   get:
- *     security:
- *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
  *      - Dashboards
