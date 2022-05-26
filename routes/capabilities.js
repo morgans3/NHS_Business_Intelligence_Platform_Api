@@ -594,8 +594,23 @@ router.post(
         passport.authenticate("jwt", {
             session: false,
         }),
-        MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
+    (req, res, next) => {
+        // Check that user has permission
+        const user = JWT.decode(req.header("authorization").replace("JWT ", ""));
+        CapabilitiesModel.getByPrimaryKey(req.body.capability_id, (error, capability) => {
+            if (!capability || error) {
+                res.status(400).json({ success: false, msg: error || "Capability not found" });
+            } else if (
+                capability.authoriser === null &&
+                (req.body.link_id === `${user.username}#${user.organisation}`)
+            ) {
+                next();
+            } else {
+                MiddlewareHelper.userHasCapability("Hall Monitor")(req, res, next);
+            }
+        });
+    },
     (req, res, next) => {
         // Get params
         const payload = req.body;
@@ -662,7 +677,15 @@ router.delete(
         passport.authenticate("jwt", {
             session: false,
         }),
-        MiddlewareHelper.userHasCapability("Hall Monitor"),
+        (req, res, next) => {
+            // Check that user has permission
+            const user = JWT.decode(req.header("authorization").replace("JWT ", ""));
+            if (req.body.link_id === `${user.username}#${user.organisation}`) {
+                next();
+            } else {
+                MiddlewareHelper.userHasCapability("Hall Monitor")(req, res, next);
+            }
+        },
     ],
     (req, res, next) => {
         // Get params
