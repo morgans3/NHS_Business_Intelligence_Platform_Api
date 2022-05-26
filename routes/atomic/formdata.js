@@ -223,22 +223,32 @@ router.put(
         }
     ),
     (req, res, next) => {
-        AtomicFormDataModel.update(
-            {
-                id: req.body.id,
-                formid: req.body.formid,
-            },
-            {
-                config: req.body.config,
-            },
-            (err, data) => {
+        const keys = {
+            id: req.body.id,
+            formid: req.body.formid,
+        };
+        AtomicFormDataModel.getByKeys(keys, (errGet, resultGet) => {
+            // Check for error
+            if (errGet) {
+                res.status(500).send({ success: false, msg: errGet });
+                return;
+            }
+
+            // Check item exists
+            if (resultGet.Items.length === 0) {
+                res.status(404).json({ success: false, msg: "Formdata not found" });
+                return;
+            }
+
+            // Udpate item
+            AtomicFormDataModel.update(keys, { config: req.body.config }, (err, data) => {
                 if (err) {
                     res.status(500).send({ success: false, msg: err });
                     return;
                 }
                 res.send({ success: true, msg: "Formdata updated", data });
-            }
-        );
+            });
+        });
     }
 );
 
@@ -304,9 +314,9 @@ router.delete(
                     return;
                 }
                 if (errResult.Attributes) {
-                    res.send({ success: true, msg: "Payload deleted", data: errResult.Attributes });
+                    res.send({ success: true, msg: "Formdata deleted", data: errResult.Attributes });
                 } else {
-                    res.status(404).json({ success: false, msg: "Payload not found" });
+                    res.status(404).json({ success: false, msg: "Formdata not found" });
                 }
             }
         );

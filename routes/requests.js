@@ -167,85 +167,97 @@ router.get(
  *       500:
  *         description: Internal Server Error
  */
-router.post("/account", (req, res, next) => {
-    if (!formData.email_verification_code || !formData.email) {
-        res.status(400).json({ success: false, msg: "Missing email verification code or email" });
-        return;
-    }
-    // Get form data
-    const formData = req.body;
-
-    // Store form in the database
-    const formSubmission = {
-        id: uuid.v1(),
-        parent_id: null,
-        type: "AccountRequest",
-        data: {
-            firstname: formData.firstname,
-            surname: formData.surname,
-            email: formData.email,
-            professional_role: formData.professional_role,
-            professional_number: formData.professional_number,
-            organisation: formData.organisation,
-            request_sponsor: {
-                email: formData.request_sponsor.email,
-            },
-            pid_access: {
-                patient_gps: formData.pid_access.patient_gps,
-                patient_chs: formData.pid_access.patient_chs,
-                citizen_council: formData.pid_access.citizen_council,
-                related_ch: formData.pid_access.related_ch,
-                related_mdt: formData.pid_access.related_mdt,
-            },
-            app_access: formData.app_access,
-            approved: null,
+router.post(
+    "/account",
+    MiddlewareHelper.validate(
+        "body",
+        {
+            email_verification_code: { type: "string" },
+            email: { type: "string" },
         },
-        created_at: formData.date,
-    };
-    formSubmissionsModel.create(formSubmission, (error) => {
-        // Check for save error
-        if (error) {
-            res.status(500).json({ success: false, msg: error });
-            return;
+        {
+            pattern: "Missing query params",
         }
+    ),
+    (req, res, next) => {
+        // Get form data
+        const formData = req.body;
 
-        // Delete email verification code
-        verificationCodesModel.deleteCode(formData.email_verification_code, formData.email);
+        // Store form in the database
+        const formSubmission = {
+            id: uuid.v1(),
+            parent_id: null,
+            type: "AccountRequest",
+            data: {
+                firstname: formData.firstname,
+                surname: formData.surname,
+                email: formData.email,
+                professional_role: formData.professional_role,
+                professional_number: formData.professional_number,
+                organisation: formData.organisation,
+                request_sponsor: {
+                    email: formData.request_sponsor.email,
+                },
+                pid_access: {
+                    patient_gps: formData.pid_access.patient_gps,
+                    patient_chs: formData.pid_access.patient_chs,
+                    citizen_council: formData.pid_access.citizen_council,
+                    related_ch: formData.pid_access.related_ch,
+                    related_mdt: formData.pid_access.related_mdt,
+                },
+                app_access: formData.app_access,
+                approved: null,
+            },
+            created_at: formData.date,
+        };
+        formSubmissionsModel.create(formSubmission, (error) => {
+            // Check for save error
+            if (error) {
+                res.status(500).json({ success: false, msg: error });
+                return;
+            }
 
-        // Send sponsor an email
-        EmailHelper.sendMail(
-            {
-                to: formSubmission.data.request_sponsor.email,
-                subject: "BI Platform Access",
-                message: `<p>A member of your organisation has requested access to the BI Platform. Details of the request are below...</p>
+            // Delete email verification code
+            verificationCodesModel.deleteCode(formData.email_verification_code, formData.email);
+
+            // Send sponsor an email
+            EmailHelper.sendMail(
+                {
+                    to: formSubmission.data.request_sponsor.email,
+                    subject: "BI Platform Access",
+                    message: `<p>A member of your organisation has requested access to the BI Platform.
+                    Details of the request are below...</p>
             ${MessagesHelper.accountRequestTable(formSubmission)}
             <p>Please click below to authorise or deny this request...</p>`,
-                actions: [
-                    {
-                        class: "primary",
-                        text: "Approve",
-                        type: "account_request_approve",
-                        type_params: { id: formSubmission.id },
-                    },
-                    {
-                        class: "warn",
-                        text: "Deny",
-                        type: "account_request_deny",
-                        type_params: { id: formSubmission.id },
-                    },
-                ],
-            },
-            (errorSend) => {
-                if (errorSend) {
-                    console.log("Unable to send authorization request email to: " + formData.email + ". Reason: " + errorSend.toString());
-                    res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
-                } else {
-                    res.status(200).json({ success: false, msg: "Request submitted successfully" });
+                    actions: [
+                        {
+                            class: "primary",
+                            text: "Approve",
+                            type: "account_request_approve",
+                            type_params: { id: formSubmission.id },
+                        },
+                        {
+                            class: "warn",
+                            text: "Deny",
+                            type: "account_request_deny",
+                            type_params: { id: formSubmission.id },
+                        },
+                    ],
+                },
+                (errorSend) => {
+                    if (errorSend) {
+                        console.log(
+                            "Unable to send authorization request email to: " + formData.email + ". Reason: " + errorSend.toString()
+                        );
+                        res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
+                    } else {
+                        res.status(200).json({ success: false, msg: "Request submitted successfully" });
+                    }
                 }
-            }
-        );
-    });
-});
+            );
+        });
+    }
+);
 
 /**
  * @swagger

@@ -88,6 +88,10 @@ router.get(
  *         in: formData
  *         type: string
  *         format: date
+ *       - name: organisation
+ *         description: Member's Organisation
+ *         in: formData
+ *         type: string
  *     responses:
  *       200:
  *         description: Confirmation of Member Registration
@@ -136,6 +140,7 @@ router.post(
                     username: req.body.username,
                     joindate: req.body.joindate,
                 };
+                if (req.body.organisation) member["organisation"] = req.body.organisation;
                 if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
                 if (req.body.enddate) member["enddate"] = req.body.enddate;
 
@@ -178,6 +183,10 @@ router.post(
  *         description: Member Username
  *         in: formData
  *         required: true
+ *         type: string
+ *       - name: organisation
+ *         description: Member's Organisation
+ *         in: formData
  *         type: string
  *       - name: rolecode
  *         description: Member's Role
@@ -232,6 +241,7 @@ router.put(
             } else {
                 // Create item
                 const member = { username: req.body.username };
+                if (req.body.organisation) member["organisation"] = req.body.organisation;
                 if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
                 if (req.body.enddate) member["enddate"] = req.body.enddate;
 

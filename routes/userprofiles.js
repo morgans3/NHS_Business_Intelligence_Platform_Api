@@ -88,7 +88,7 @@ router.post(
     MiddlewareHelper.validate(
         "body",
         {
-            username: { type: "string" },
+            username: { type: "string", pattern: "[A-z. 0-9]{1,50}#[A-z. ]{1,50}" },
         },
         {
             pattern: "Missing query params",
@@ -156,13 +156,14 @@ router.get(
     }
 );
 
+// TODO: Switch from /userprofiles/username/{username} to /userprofiles/{userId}
 /**
  * @swagger
  * /userprofiles/username/{username}:
  *   get:
  *     security:
  *      - JWT: []
- *     description: Returns the profile for a User
+ *     description: Returns the profile for a User *TO BE DEPRECATED*
  *     tags:
  *      - UserProfiles
  *     produces:
