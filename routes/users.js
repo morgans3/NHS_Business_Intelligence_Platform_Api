@@ -6,7 +6,7 @@ const JWT = require("jsonwebtoken");
 
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
-const passwordModel = new DIULibrary.Models.PasswordModel();
+// const passwordModel = new DIULibrary.Models.PasswordModel();
 const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
 const Authenticate = require("../models/authenticate");
 const AuthenticateHelper = require("../helpers/authenticate");
@@ -358,6 +358,47 @@ router.post(
 
 /**
  * @swagger
+ * /users/authentication-refresh:
+ *   post:
+ *     security:
+ *      - JWT: []
+ *     description: Get an updated JWT for the currently authenticated user
+ *     tags:
+ *      - Users
+ *     produces:
+ *      - application/json
+ *     responses:
+ *       200:
+ *         description: User Token
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ */
+router.post(
+    "/authentication-refresh",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        // Get user
+        const user = JWT.decode(req.header("authorization").replace("JWT ", ""));
+
+        // Get JWT
+        Authenticate.upgradePassportwithOrganisation(user, true, (error, token) => {
+            if (error) {
+                console.log(error);
+                res.status(500).json({ status: 200, message: "Could not update your authentication" });
+            }
+            res.json({ status: 200, message: "Token refreshed successfully", token });
+        });
+    }
+);
+
+/**
+ * @swagger
  * /users/validate:
  *   get:
  *     security:
@@ -582,7 +623,7 @@ router.post(
             }
 
             if (codeRes && codeRes.Items.length > 0) {
-                passwordModel.deleteCode(payload.code, payload.email, (errDelete, resDelete) => {
+                VerificationCodeModel.deleteCode(payload.code, payload.email, (errDelete, resDelete) => {
                     if (errDelete) {
                         res.status(500).json({ success: false, msg: "Failed: " + errDelete });
                         return;
