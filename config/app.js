@@ -21,18 +21,37 @@ const returnLoadedConfig = () => {
     return loadedConfiguration;
 };
 
+let securegroup = [];
+
+const getSecurityGroup = () => {
+    return securegroup;
+};
+
+const configureServiceAccounts = async (services) => {
+    securegroup = [];
+    const AWSHelper = require("diu-data-functions").Helpers.Aws;
+    const credentials = JSON.parse(await AWSHelper.getSecrets("serviceaccounts"));
+    services.forEach((org) => {
+        securegroup.push({ org, key: credentials[org] || null });
+    });
+};
+
 module.exports = {
     returnLoadedConfig,
     getConfigurationFromDatabase,
+    getSecurityGroup,
     configureApis: async () => {
         // To-do: Check for local .env file first
         const AWSHelper = require("diu-data-functions").Helpers.Aws;
 
-        await getConfigurationFromDatabase((err, configuration) => {
+        await getConfigurationFromDatabase(async (err, configuration) => {
             if (err) {
                 console.log("ERROR: " + JSON.stringify(err));
                 throw err;
             } else {
+                if (configuration.serviceaccounts) {
+                    await configureServiceAccounts(configuration.serviceaccounts);
+                }
                 configuration.configuration.forEach(async (api) => {
                     try {
                         const credentials = JSON.parse(await AWSHelper.getSecrets(api.secretName));
