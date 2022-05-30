@@ -1,5 +1,6 @@
 const DIULibrary = require("diu-data-functions").Methods.DynamoDBData;
 const AWS = require("../config/database").AWS;
+const uuid = require("uuid");
 let loadedConfiguration = null;
 
 const getConfigurationFromDatabase = async (callback) => {
@@ -32,6 +33,9 @@ const configureServiceAccounts = async (services) => {
     const AWSHelper = require("diu-data-functions").Helpers.Aws;
     const credentials = JSON.parse(await AWSHelper.getSecrets("serviceaccounts"));
     services.forEach((org) => {
+        if (org === "Service" && credentials[org]) {
+            process.env.GOVUKKEY = credentials[org];
+        }
         securegroup.push({ org, key: credentials[org] || null });
     });
 };
@@ -49,6 +53,7 @@ module.exports = {
                 console.log("ERROR: " + JSON.stringify(err));
                 throw err;
             } else {
+                process.env.GOVUKKEY = uuid.v1(); // Default to unreadable random key;
                 if (configuration.serviceaccounts) {
                     await configureServiceAccounts(configuration.serviceaccounts);
                 }
