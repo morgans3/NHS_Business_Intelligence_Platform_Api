@@ -497,11 +497,16 @@ router.get(
  *      - Capabilities
  *     parameters:
  *       - name: capabilities[]
- *         description: Array of capability ids
+ *         description: Array of capability ids with their value
  *         in: formData
  *         type: array
  *         items:
- *           type: integer
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *             valuejson:
+ *               type: string
  *       - name: link_id
  *         description: Capability link id
  *         in: formData
@@ -580,6 +585,11 @@ router.post(
  *         in: formData
  *         required: true
  *         type: string
+ *       - name: valuejson
+ *         description: Capability value
+ *         in: formData
+ *         required: true
+ *         type: string
  *     produces:
  *      - application/json
  *     responses:
@@ -601,10 +611,7 @@ router.post(
         CapabilitiesModel.getByPrimaryKey(req.body.capability_id, (error, capability) => {
             if (!capability || error) {
                 res.status(400).json({ success: false, msg: error || "Capability not found" });
-            } else if (
-                capability.authoriser === null &&
-                (req.body.link_id === `${user.username}#${user.organisation}`)
-            ) {
+            } else if (capability.authoriser === null && req.body.link_id === `${user.username}#${user.organisation}`) {
                 next();
             } else {
                 MiddlewareHelper.userHasCapability("Hall Monitor")(req, res, next);
@@ -618,12 +625,12 @@ router.post(
         // Read jwt
         const user = JWT.decode(req.header("authorization").replace("JWT ", ""));
 
-        // Create role links
         CapabilityLinkModel.create(
             {
                 capability_id: payload.capability_id,
                 link_id: payload.link_id,
                 link_type: payload.link_type,
+                valuejson: payload.valuejson,
                 approved_by: user["email"],
             },
             (err, result) => {

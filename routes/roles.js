@@ -78,8 +78,12 @@ router.get("/", passport.authenticate("jwt", { session: false }), (req, res, nex
  *            capabilities:
  *              type: array
  *              items:
- *                type: string
- *                description: List of capability ids for the role
+ *                type: object
+ *                properties:
+ *                  id:
+ *                    type: integer
+ *                  valuejson:
+ *                    type: string
  *     produces:
  *      - application/json
  *     responses:
@@ -108,7 +112,7 @@ router.post(
             name: { type: "string" },
             description: { type: "string" },
             authoriser: { type: "string" },
-            capabilities: { type: "array", items: "string" },
+            capabilities: { type: "array" },
         },
         {
             pattern: "Missing query params",
@@ -135,7 +139,6 @@ router.post(
 
                 // Create capability links
                 const role = result[0];
-                payload.capabilities = payload.capabilities.map((c) => parseInt(c));
                 CapabilityLinkModel.link(
                     payload.capabilities,
                     {
@@ -198,8 +201,12 @@ router.post(
  *            capabilities:
  *              type: array
  *              items:
- *                type: string
- *                description: List of capability ids for the role
+ *                type: object
+ *                properties:
+ *                  id:
+ *                    type: integer
+ *                  valuejson:
+ *                    type: string
  *     produces:
  *      - application/json
  *     responses:
@@ -228,7 +235,7 @@ router.put(
             name: { type: "string" },
             description: { type: "string" },
             authoriser: { type: "string" },
-            capabilities: { type: "array", items: "string" },
+            capabilities: { type: "array" },
         },
         {
             pattern: "Missing query params",
@@ -257,7 +264,6 @@ router.put(
 
                 // Create role link
                 const role = result[0];
-                payload.capabilities = payload.capabilities.map((c) => parseInt(c));
                 CapabilityLinkModel.link(
                     payload.capabilities,
                     {

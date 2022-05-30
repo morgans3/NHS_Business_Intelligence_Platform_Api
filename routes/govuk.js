@@ -36,7 +36,7 @@ const GovUkModel = new DIULibrary.Models.GovUkModel();
  *       500:
  *         description: Internal Server Error
  */
-router.post("/callback", MiddlewareHelper.authenticateWithKey(process.env.JWT_SECRETKEY), (req, res) => {
+router.post("/callback", MiddlewareHelper.authenticateWithKey(process.env.GOVUKKEY), (req, res) => {
     const item = req.body;
     GovUkModel.update(item, (err, result) => {
         if (err) console.error(err);
@@ -70,7 +70,8 @@ router.post("/callback", MiddlewareHelper.authenticateWithKey(process.env.JWT_SE
  *       500:
  *         description: Internal Server Error
  */
-router.post("/maincallback", MiddlewareHelper.authenticateWithKey(process.env.JWT_SECRETKEY), (req, res) => {
+router.post("/maincallback", MiddlewareHelper.authenticateWithKey(process.env.GOVUKKEY), (req, res) => {
+    // TODO: store the govuk settings in the API settings and configure the API to use the govuk settings
     CredentialsModel.getByKeys(
         {
             type: "GovUkService",

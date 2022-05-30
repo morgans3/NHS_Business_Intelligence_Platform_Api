@@ -6,14 +6,6 @@ const credentials = require("../_credentials/credentials");
 const jwt = require("jsonwebtoken");
 const SimpleCrypto = new (require("simple-crypto-js").default)(credentials.secretkey);
 
-// TODO: Update group to pull key from Secrets Manager
-const securegroup = [
-    {
-        org: "ANY",
-        key: "SERVICEACCOUNTKEYHERE",
-    },
-];
-
 /**
  * @swagger
  * tags:
@@ -52,6 +44,7 @@ const securegroup = [
  *         description: Internal Server Error
  */
 router.post("/check", (req, res, next) => {
+    const securegroup = require("../config/app").getSecurityGroup();
     if (req.body.org && req.body.key) {
         if (securegroup.find((x) => x.org === req.body.org && x.key === req.body.key)) {
             const servicepayload = {

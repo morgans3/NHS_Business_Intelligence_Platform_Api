@@ -29,6 +29,72 @@ For serverless API endpoints please review the code in: <https://github.com/morg
 
 This code will deploy as a docker container. For a method of automating the deployment of this server, along with the rest of our BI platform, please refer to: <https://github.com/morgans3/NHS_Business_Intelligence_Platform>
 
+## Build (Configuration)
+
+This API can be provided with additional configuration options that are read from the Atomic Payloads database in DynamoDB.
+
+An example of this configuration is as follows:
+
+``` json
+{
+ "id": "apisettings",
+ "type": "ApiSettings",
+ "config": {
+  "activedirectories": [
+   {
+    "authentication": "xfyldecoast",
+    "baseDN": "dc=xfyldecoast,dc=nhs,dc=uk",
+    "bindCredentials": "ldappass",
+    "bindDN": "ldapauth",
+    "url": "ldap://IPADDRESS:PORTNUMBER"
+   },
+   ...
+  ],
+  "configuration": [
+   {
+    "configName": "emailCredentials",
+    "secretName": "email",
+    "secrets": [
+     {
+      "EMAIL_HOST": "host"
+     },
+     {
+      "EMAIL_PASSWORD": "password"
+     },
+     {
+      "EMAIL_USERNAME": "username"
+     }
+    ]
+   },
+   ...
+   {
+    "configName": "adcredentials",
+    "secretName": "adcredentials",
+    "secrets": [
+     {
+      "ldapauth": "ldapauth"
+     },
+     {
+      "ldappass": "ldappass"
+     },
+     ...
+    ]
+   }
+  ],
+  "serviceaccounts": [
+   "SERVICENAMEMATCHINGAWSSECRETKEY",
+   ...
+  ]
+ }
+}
+```
+
+- `activedirectories`: An array of Active Directory configurations.
+- `configuration`: An array of configuration objects in the form: `{ configName: string, secretName: string, secrets: [{ secretkey: string, secretvalue: string }] }`
+- `serviceaccount` holds and array of strings which match the keys stored in the `serviceaccounts` secret in AWS Secrets manager. This section will store all of the key-value pairs as `organisation-keys` to allow service account credentials to be used on certain API methods.
+
+The cofiguration file provides the API with knowledge of which secrets to pull from AWS Secrets Manager in order to set the correct environment variables for the API.
+
 ## Usage (API Calls)
 
 API endpoints are stored in the `routes` folder and can be viewed by navigating to <https://api.YOUR_URL_HERE/api-docs/> after being deployed.
