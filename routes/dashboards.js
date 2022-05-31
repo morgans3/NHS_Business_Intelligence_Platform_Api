@@ -236,6 +236,14 @@ router.put(
                     msg: "Failed to update: " + err,
                 });
             }
+            if (!app.Items.length) {
+                res.status(404).json({
+                    success: false,
+                    msg: "Failed to find item",
+                });
+                return;
+            }
+            console.log(app.Items);
             const scannedItem = app.Items[0];
             scannedItem.name = id;
             scannedItem.status = req.body.status;
