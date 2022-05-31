@@ -588,7 +588,7 @@ router.delete(
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: profile_id
+ *       - name: _id
  *         description: Profile's ID
  *         in: formData
  *         required: true
@@ -650,14 +650,14 @@ router.put(
     MiddlewareHelper.validate(
         "body",
         {
-            profile_id: { type: "string" },
+            _id: { type: "string" },
         },
         {
             pattern: "Missing query params",
         }
     ),
     (req, res) => {
-        const id = req.body.profile_id;
+        const id = req.body["_id"];
         Profiles.getUserProfileById(id, function (err, result) {
             if (err) {
                 res.status(500).json({
