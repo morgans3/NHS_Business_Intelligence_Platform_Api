@@ -251,7 +251,7 @@ router.post(
                         );
                         res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
                     } else {
-                        res.status(200).json({ success: false, msg: "Request submitted successfully" });
+                        res.status(200).json({ success: true, msg: "Request submitted successfully" });
                     }
                 }
             );
@@ -412,7 +412,7 @@ router.post("/account/complete", (req, res, next) => {
                             console.log("Unable to send approval notification to: " + formData.email + ". Reason: " + error.toString());
                             res.status(500).json({ success: false, msg: error });
                         } else {
-                            res.json({ success: false, msg: "Request has been approved" });
+                            res.json({ success: true, msg: "Request has been approved" });
                         }
                     }
                 );
@@ -528,7 +528,7 @@ router.post(
             data: {
                 email: formData?.email || "unknown",
                 message: formData.message,
-                attributes: formData.attributes
+                attributes: formData.attributes,
             },
             created_at: require("luxon").DateTime.now().toISO(),
         };
@@ -549,19 +549,20 @@ router.post(
                         **Message**: ${formData.message}`,
                     actionButton: {
                         title: "View Request",
-                        url: `https://${process.env.SITE_URL}/admin/requests/${encodeURIComponent(helpRequest.id)}`
-                    }
+                        url: `https://${process.env.SITE_URL}/admin/requests/${encodeURIComponent(helpRequest.id)}`,
+                    },
                 },
                 (errorSend) => {
                     if (errorSend) {
                         console.log("Unable to send notification alert. Reason: " + errorSend.toString());
                         res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
                     } else {
-                        res.status(200).json({ success: false, msg: "Request submitted successfully" });
+                        res.status(200).json({ success: true, msg: "Request submitted successfully" });
                     }
                 }
             );
         });
-    });
+    }
+);
 
 module.exports = router;
