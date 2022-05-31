@@ -243,7 +243,6 @@ router.put(
                 });
                 return;
             }
-            console.log(app.Items);
             const scannedItem = app.Items[0];
             scannedItem.name = id;
             scannedItem.status = req.body.status;
