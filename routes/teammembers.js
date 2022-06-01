@@ -101,8 +101,6 @@ router.get(
  *         description: Unauthorized
  *       403:
  *         description: Forbidden
- *       404:
- *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
@@ -366,6 +364,53 @@ router.get(
 
 /**
  * @swagger
+ * /teammembers/{id}:
+ *   get:
+ *     security:
+ *      - JWT: []
+ *     description: Returns a teamember object
+ *     tags:
+ *      - TeamMembers
+ *     parameters:
+ *      - name: id
+ *        description: Team member id
+ *        type: string
+ *        in: path
+ *     produces:
+ *      - application/json
+ *     responses:
+ *       200:
+ *         description: Teammember object
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get(
+    "/:id",
+    passport.authenticate("jwt", {
+        session: false,
+    }),
+    (req, res, next) => {
+        TeamMemberModel.getByKeys({ _id: req.params.id }, (err, result) => {
+            if (err) {
+                res.status(500).send({ success: false, msg: err });
+                return;
+            }
+
+            if (result.Items.length === 0) {
+                res.status(404).json({ success: false, msg: "Team member not found" });
+            } else {
+                res.json(result.Items[0]);
+            }
+        });
+    }
+);
+
+/**
+ * @swagger
  * /teammembers/delete:
  *   delete:
  *     security:
@@ -426,53 +471,6 @@ router.delete(
                 res.send({ success: true, msg: "Payload deleted", data: errResult.Attributes });
             } else {
                 res.status(404).json({ success: false, msg: "Payload not found" });
-            }
-        });
-    }
-);
-
-/**
- * @swagger
- * /teammembers/{id}:
- *   get:
- *     security:
- *      - JWT: []
- *     description: Returns a teamember object
- *     tags:
- *      - TeamMembers
- *     parameters:
- *      - name: id
- *        description: Team member id
- *        type: string
- *        in: path
- *     produces:
- *      - application/json
- *     responses:
- *       200:
- *         description: Teammember object
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Not found
- *       500:
- *         description: Internal Server Error
- */
-router.get(
-    "/:id",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res, next) => {
-        TeamMemberModel.getByKeys({ _id: req.params.id }, (err, result) => {
-            if (err) {
-                res.status(500).send({ success: false, msg: err });
-                return;
-            }
-
-            if (result.Items.length === 0) {
-                res.status(404).json({ success: false, msg: "Team member not found" });
-            } else {
-                res.json(result.Items[0]);
             }
         });
     }
