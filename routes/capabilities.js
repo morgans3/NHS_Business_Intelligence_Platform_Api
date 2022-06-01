@@ -566,7 +566,7 @@ router.post(
  *   post:
  *     security:
  *      - JWT: []
- *     description: Create a new capability link. Requires Hall Montior
+ *     description: Create or update a capability link. Requires Hall Montior
  *     tags:
  *      - Capabilities
  *     parameters:
@@ -675,6 +675,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Success status
+ *       404:
+ *        description: Capability link not found
  *       403:
  *        description: Forbidden due to capability requirements
  */
@@ -699,13 +701,22 @@ router.delete(
         const payload = req.body;
 
         // Create role links
-        CapabilityLinkModel.deleteByLinkable(payload.capability_id, payload.link_type, payload.link_id, (err, result) => {
+        CapabilityLinkModel.deleteByLinkable(payload.capability_id, payload.link_type, payload.link_id, (err, links) => {
             // Return data
             if (err) {
                 res.status(500).json({ success: false, msg: err });
                 return;
             }
-            res.json({ success: true, msg: "Capability link deleted" });
+
+            // Has deleted?
+            if (links.length > 0) {
+                res.json({ success: true, msg: "Capability link deleted" });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    msg: "Could not delete item, this is probably because it's authorised by one of your teams or roles."
+                });
+            }
         });
     }
 );
