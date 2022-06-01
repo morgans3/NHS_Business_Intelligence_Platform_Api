@@ -103,7 +103,8 @@ router.post(
         }
     ),
     (req, res, next) => {
-        const newApp = {
+        // Set app
+        const app = {
             name: req.body.name,
             status: req.body.status,
             icon: req.body.icon,
@@ -113,15 +114,18 @@ router.post(
             environment: req.body.environment,
             description: req.body.description,
         };
+
+        // Add images?
         if (req.body.images) {
             try {
-                newApp["images"] = req.body.images.split(",");
+                app["images"] = req.body.images.split(",");
             } catch (ex) {
-                newApp["images"] = req.body.images;
+                app["images"] = req.body.images;
             }
         }
 
-        App.addApp(newApp, (err, user) => {
+        // Persist
+        App.addApp(app, (err, createdApp) => {
             if (err) {
                 res.status(500).json({
                     success: false,
@@ -131,7 +135,7 @@ router.post(
                 res.json({
                     success: true,
                     msg: "Registered",
-                    data: newApp,
+                    data: createdApp,
                 });
             }
         });
