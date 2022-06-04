@@ -470,8 +470,6 @@ router.post("/account/complete", (req, res, next) => {
  * @swagger
  * /requests/help:
  *   post:
- *     security:
- *      - JWT: []
  *        required: false
  *     description: Send feedback
  *     tags:

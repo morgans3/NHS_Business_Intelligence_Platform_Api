@@ -18,7 +18,7 @@ module.exports.getAll = function (limit, roles, callback) {
 };
 
 module.exports.getPersonByNHSNumber = function (nhsnumber, roles, callback) {
-    const rolecheck = functions.checkRole(false, roles, "population");
+    const rolecheck = functions.checkRole(false, roles, "populationjoined");
     if (rolecheck === "" || rolecheck === "error") {
         callback(new Error("No permissions"), null, { reason: "Access denied. Insufficient permissions to view any patients details." });
     } else {

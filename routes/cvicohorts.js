@@ -255,7 +255,6 @@ router.put(
                 },
                 {
                     cohorturl: req.body.cohorturl,
-                    teamcode: req.body.teamcode,
                     username: req.body.username,
                 },
                 (err, data) => {
