@@ -334,11 +334,11 @@ router.delete(
                 res.status(404).send({ success: false, msg: "Cohort not found" });
                 return;
             }
-            if (resultGet[0].teamcode) {
+            if (resultGet.Items[0].teamcode) {
                 const token = req.header("authorization");
                 const decodedToken = JWT.decode(token.replace("JWT ", ""));
                 const username = decodedToken["username"];
-                RoleFunctions.checkTeamAdmin(username, { code: resultGet[0].teamcode }, (errCheck, resultCheck) => {
+                RoleFunctions.checkTeamAdmin(username, { code: resultGet.Items[0].teamcode }, (errCheck, resultCheck) => {
                     if (errCheck) {
                         res.status(500).send({ success: false, msg: errCheck });
                         return;
