@@ -306,10 +306,10 @@ router.get(
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
-                if (result.Items) {
+                if (result.Items && result.Items.length > 0) {
                     res.send(JSON.stringify(result.Items));
                 } else {
-                    res.send(JSON.stringify([]));
+                    res.status(404).send({ success: false, msg: "Unable to find team with code" });
                 }
             }
         });
@@ -352,10 +352,10 @@ router.get(
             if (err) {
                 res.status(500).send({ success: false, msg: err });
             } else {
-                if (result.Items) {
+                if (result.Items && result.Items.length > 0) {
                     res.send(JSON.stringify(result.Items));
                 } else {
-                    res.send(JSON.stringify([]));
+                    res.status(404).send({ success: false, msg: "Unable to find team with username" });
                 }
             }
         });

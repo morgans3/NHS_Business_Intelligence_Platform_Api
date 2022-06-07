@@ -135,11 +135,11 @@ router.get(
                 return;
             }
 
-            if (data.Items) {
+            if (data.Items && data.Items.length > 0) {
                 res.json(data.Items);
             } else {
                 // Return list
-                res.json(data);
+                res.status(404).json({ success: false, msg: "We cannot find any logs associated to this user" });
             }
         });
     }
