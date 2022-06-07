@@ -165,18 +165,33 @@ router.put(
         }
     ),
     (req, res) => {
-        DynamoDBData.updateItem(AWS, tablename, ["destination", "type"], req.body, (err, app) => {
-            if (err) {
+        DynamoDBData.getItemByKeys(AWS, tablename, ["destination", "type"], [req.body.destination, req.body.type], (errFind, result) => {
+            if (errFind) {
                 res.status(500).json({
                     success: false,
-                    msg: "Failed to update: " + err,
+                    msg: "Failed to update: " + errFind,
                 });
             }
-            res.json({
-                success: true,
-                msg: "Updated",
-                data: req.body,
-            });
+            if (result.Items && result.Items.length) {
+                DynamoDBData.updateItem(AWS, tablename, ["destination", "type"], req.body, (err, app) => {
+                    if (err) {
+                        res.status(500).json({
+                            success: false,
+                            msg: "Failed to update: " + err,
+                        });
+                    }
+                    res.json({
+                        success: true,
+                        msg: "Updated",
+                        data: req.body,
+                    });
+                });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    msg: "Failed to find item to update",
+                });
+            }
         });
     }
 );
