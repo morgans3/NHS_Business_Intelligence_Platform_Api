@@ -60,8 +60,8 @@ router.get("/content/search", (req, res, next) => {
  *     responses:
  *       200:
  *         description: Confluence document
- *       400:
- *         description: Bad request
+ *       404:
+ *         description: Id not found
  *       500:
  *         description: Internal Server Error
  */
