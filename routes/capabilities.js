@@ -550,6 +550,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Success status
+ *       401:
+ *        description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
  */
@@ -632,6 +634,7 @@ router.post(
         passport.authenticate("jwt", {
             session: false,
         }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
     (req, res, next) => {
         // Check that user has permission
@@ -703,6 +706,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Success status
+ *       401:
+ *        description: Anauthorized
  *       403:
  *        description: Forbidden due to capability requirements
  */
@@ -740,7 +745,7 @@ router.delete(
 
 /**
  * @swagger
- * /capabilities/getByRoleName:
+ * /capabilities/roles/getByRoleName:
  *   get:
  *     description: Get a capability by passing the name of a role
  *     security:
@@ -758,9 +763,11 @@ router.delete(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       204:
+ *         description: Unable to find Role or Capabilities for Role
  */
 router.get(
-    "/getByRoleName",
+    "/roles/getByRoleName",
     passport.authenticate("jwt", {
         session: false,
     }),
