@@ -116,6 +116,8 @@ router.get(
  *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       404:
+ *        description: User not found
  *       500:
  *         description: Internal Server Error
  */
