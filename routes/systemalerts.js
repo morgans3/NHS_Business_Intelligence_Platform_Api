@@ -3,8 +3,11 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const SystemAlerts = require("../models/systemalerts");
+const AWS = require("../config/database").AWS;
 const DIULibrary = require("diu-data-functions");
+const DynamoDBData = DIULibrary.Methods.DynamoDBData;
 const MiddlewareHelper = DIULibrary.Helpers.Middleware;
+const tablename = "systemalerts";
 
 /**
  * @swagger
@@ -149,6 +152,8 @@ router.get(
  *         description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
+ *       404:
+ *        description: Item not found
  *       500:
  *         description: Internal Server Error
  */
@@ -182,18 +187,33 @@ router.put(
             author: req.body.author,
             archive: req.body.archive,
         };
-        SystemAlerts.updateSystemAlert(newAlert, function (err) {
-            if (err) {
+        DynamoDBData.getItemByKeys(AWS, tablename, ["_id", "author"], [newAlert["_id"], newAlert["author"]], (errFind, result) => {
+            if (errFind) {
                 res.status(500).json({
                     success: false,
-                    msg: "Failed to update: " + err,
+                    msg: "Failed to update: " + errFind,
                 });
             }
-            res.json({
-                success: true,
-                msg: "Alert updated",
-                data: newAlert,
-            });
+            if (result.Items && result.Items.length) {
+                SystemAlerts.updateSystemAlert(newAlert, function (err) {
+                    if (err) {
+                        res.status(500).json({
+                            success: false,
+                            msg: "Failed to update: " + err,
+                        });
+                    }
+                    res.json({
+                        success: true,
+                        msg: "Alert updated",
+                        data: newAlert,
+                    });
+                });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    msg: "Failed to find item to update",
+                });
+            }
         });
     }
 );
