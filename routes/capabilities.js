@@ -31,6 +31,8 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: A list of available capabilties
+ *       401:
+ *         description: Unauthorized
  */
 router.get(
     "/",
@@ -78,7 +80,7 @@ router.get(
  *         required: true
  *         type: string
  *       - name: authoriser
- *         description: The member of staff resposnible for creating this capability.
+ *         description: The member of staff responsible for creating this capability.
  *         in: formData
  *         required: false
  *         type: string
@@ -93,6 +95,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *         description: Authorization Error
  *       403:
  *        description: Forbidden due to capability requirements
  */
@@ -177,6 +181,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *        description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
  */
@@ -249,6 +255,8 @@ router.put(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *        description: Unauthorized
  *       403:
  *        description: Forbidden due to capability requirements
  */
@@ -269,8 +277,8 @@ router.delete(
                 });
                 return;
             }
-            if (result.Attributes) {
-                res.send({ success: true, msg: "Payload deleted", data: result.Attributes });
+            if (result.length > 0) {
+                res.send({ success: true, msg: "Payload deleted", data: result });
             } else {
                 res.status(404).json({ success: false, msg: "Payload not found" });
             }
@@ -292,12 +300,16 @@ router.delete(
  *     parameters:
  *       - name: id
  *         description: The ID of the capability being updated.
- *         in: query
+ *         in: path
  *         required: true
  *         type: integer
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *        description: Unauthorized
+ *       404:
+ *        description: cannot find item with the primary key entered
  */
 router.get(
     "/:id",
@@ -305,7 +317,7 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        CapabilitiesModel.getByPrimaryKey(req.query.id, function (err, data) {
+        CapabilitiesModel.getByPrimaryKey(req.params.id, function (err, data) {
             if (err) {
                 res.status(500).json({
                     success: false,
@@ -327,7 +339,7 @@ router.get(
 
 /**
  * @swagger
- * /capabilities/getByTag:
+ * /capabilities/tags/getByTag:
  *   get:
  *     description: Get a capability by passing the name of a tag
  *     security:
@@ -345,9 +357,11 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *         description: Unauthorized
  */
 router.get(
-    "/getByTag",
+    "/tags/getByTag",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -374,7 +388,7 @@ router.get(
 
 /**
  * @swagger
- * /capabilities/getByTagsAnd:
+ * /capabilities/tags/getByTagsAnd:
  *   get:
  *     description: Get a capability by passing the name of a tag
  *     security:
@@ -395,14 +409,21 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *         description: Unauthorized
  */
 router.get(
-    "/getByTagsAnd",
+    "/tags/getByTagsAnd",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res, next) => {
         if (req.query.tags) {
+            if (req.query.tags.length === 1) {
+                if (req.query.tags[0].indexOf(",") !== -1) {
+                    req.query.tags = req.query.tags[0].split(",");
+                }
+            }
             CapabilitiesModel.getByTagsAnd(req.query.tags, function (err, data) {
                 if (err) {
                     res.status(500).json({
@@ -431,7 +452,7 @@ router.get(
 
 /**
  * @swagger
- * /capabilities/getByTagsOr:
+ * /capabilities/tags/getByTagsOr:
  *   get:
  *     description: Get a capability by passing the name of a tag
  *     security:
@@ -452,14 +473,21 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *         description: Unauthorized
  */
 router.get(
-    "/getByTagsOr",
+    "/tags/getByTagsOr",
     passport.authenticate("jwt", {
         session: false,
     }),
     (req, res, next) => {
         if (req.query.tags) {
+            if (req.query.tags.length === 1) {
+                if (req.query.tags[0].indexOf(",") !== -1) {
+                    req.query.tags = req.query.tags[0].split(",");
+                }
+            }
             CapabilitiesModel.getByTagsOr(req.query.tags, function (err, data) {
                 if (err) {
                     res.status(500).json({
