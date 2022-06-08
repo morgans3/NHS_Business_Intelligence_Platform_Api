@@ -142,6 +142,8 @@ router.post(
  *         description: Unauthorized
  *       403:
  *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: Item not found to update
  *       500:
  *         description: Internal Server Error
  */
