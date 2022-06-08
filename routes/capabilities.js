@@ -418,8 +418,9 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        if (req.query.tags) {
-            if (req.query.tags.length === 1) {
+        let tags = req.query.tags;
+        if (tags) {
+            if (tags.length === 1) {
                 if (req.query.tags[0].indexOf(",") !== -1) {
                     req.query.tags = req.query.tags[0].split(",");
                 }
@@ -482,8 +483,9 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        if (req.query.tags) {
-            if (req.query.tags.length === 1) {
+        let tags = req.query.tags;
+        if (tags) {
+            if (tags.length === 1) {
                 if (req.query.tags[0].indexOf(",") !== -1) {
                     req.query.tags = req.query.tags[0].split(",");
                 }
