@@ -17,8 +17,6 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  * @swagger
  * /systemalerts/:
  *   get:
- *     security:
- *      - JWT: []
  *     description: Returns the entire collection
  *     tags:
  *      - SystemAlerts
@@ -32,25 +30,19 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *       500:
  *         description: Internal Server Error
  */
-router.get(
-    "/",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res, next) => {
-        SystemAlerts.getAll(function (err, result) {
-            if (err) {
-                res.status(500).send({ success: false, msg: err });
+router.get("/", (req, res, next) => {
+    SystemAlerts.getAll(function (err, result) {
+        if (err) {
+            res.status(500).send({ success: false, msg: err });
+        } else {
+            if (result.Items) {
+                res.send(JSON.stringify(result.Items));
             } else {
-                if (result.Items) {
-                    res.send(JSON.stringify(result.Items));
-                } else {
-                    res.send(JSON.stringify("[]"));
-                }
+                res.send(JSON.stringify("[]"));
             }
-        });
-    }
-);
+        }
+    });
+});
 
 /**
  * @swagger
