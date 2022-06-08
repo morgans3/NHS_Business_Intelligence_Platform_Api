@@ -338,6 +338,8 @@ router.get(
  *         description: Full List
  *       401:
  *         description: Unauthorized
+ *       404:
+ *         description: Not found
  *       500:
  *         description: Internal Server Error
  */
