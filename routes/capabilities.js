@@ -21,8 +21,6 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  * @swagger
  * /capabilities:
  *   get:
- *     security:
- *      - JWT: []
  *     description: Get all capabilties
  *     tags:
  *      - Capabilities
@@ -32,23 +30,17 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *       200:
  *         description: A list of available capabilties
  */
-router.get(
-    "/",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res, next) => {
-        // Get all capabilities
-        CapabilitiesModel.get((err, result) => {
-            // Return data
-            if (err) {
-                res.status(500).json({ success: false, msg: err });
-            } else {
-                res.json(result);
-            }
-        });
-    }
-);
+router.get("/", (req, res, next) => {
+    // Get all capabilities
+    CapabilitiesModel.get((err, result) => {
+        // Return data
+        if (err) {
+            res.status(500).json({ success: false, msg: err });
+        } else {
+            res.json(result);
+        }
+    });
+});
 
 /**
  * @swagger

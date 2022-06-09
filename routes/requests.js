@@ -3,15 +3,17 @@ const express = require("express");
 const router = express.Router();
 const AWS = require("../config/database").AWS;
 const passport = require("passport");
+const keyBy = require("lodash/keyby");
+const groupBy = require("lodash/groupby");
 
 const DIULibrary = require("diu-data-functions");
-const usersModel = new DIULibrary.Models.UserModel(AWS);
-const verificationCodesModel = new DIULibrary.Models.VerificationCodeModel(AWS);
-const formSubmissionsModel = new DIULibrary.Models.FormSubmissionModel(AWS);
+const usersModel = new DIULibrary.Models.UserModel();
+const verificationCodesModel = new DIULibrary.Models.VerificationCodeModel();
+const formSubmissionsModel = new DIULibrary.Models.FormSubmissionModel();
 const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const EmailHelper = DIULibrary.Helpers.Email;
-const MessagesHelper = require("../helpers/messages");
 const MsTeamsHelper = DIULibrary.Helpers.MsTeams;
+const CapabilitiesModel = new DIULibrary.Models.CapabilityModel();
 
 const issuer = process.env.SITE_URL || "NHS BI Platform";
 
@@ -148,10 +150,15 @@ router.get(
  *          related_mdt:
  *            type: string
  *
- *      - name: app_access
+ *      - name: capabilities
  *        type: array
  *        items:
- *          type: string
+ *          type: object
+ *            properties:
+ *              id:
+ *                type: string
+ *              valuejson:
+ *                type: string
  *
  *      - name: terms_agreed
  *        type: boolean
@@ -183,78 +190,103 @@ router.post(
         // Get form data
         const formData = req.body;
 
-        // Store form in the database
-        const formSubmission = {
-            id: uuid.v1(),
-            parent_id: null,
-            type: "AccountRequest",
-            data: {
-                firstname: formData.firstname,
-                surname: formData.surname,
-                email: formData.email,
-                professional_role: formData.professional_role,
-                professional_number: formData.professional_number,
-                organisation: formData.organisation,
-                request_sponsor: {
-                    email: formData.request_sponsor.email,
-                },
-                pid_access: {
-                    patient_gps: formData.pid_access.patient_gps,
-                    patient_chs: formData.pid_access.patient_chs,
-                    citizen_council: formData.pid_access.citizen_council,
-                    related_ch: formData.pid_access.related_ch,
-                    related_mdt: formData.pid_access.related_mdt,
-                },
-                app_access: formData.app_access,
-                approved: null,
-            },
-            created_at: formData.date,
-        };
-        formSubmissionsModel.create(formSubmission, (error) => {
-            // Check for save error
-            if (error) {
-                res.status(500).json({ success: false, msg: error });
+        // Get capabilities
+        CapabilitiesModel.query({
+            text: "SELECT * FROM capabilities WHERE id = ANY($1)",
+            values: [formData.capabilities.map((item) => item.id)]
+        }, (capabilityQueryError, capabilities) => {
+            // Check for error
+            if (capabilityQueryError) {
+                res.status(500).json({ success: false, msg: capabilityQueryError });
                 return;
             }
 
-            // Delete email verification code
-            verificationCodesModel.deleteCode(formData.email_verification_code, formData.email);
+            // Key by id
+            capabilities = keyBy(capabilities, (capability) => capability.id);
 
-            // Send sponsor an email
-            EmailHelper.sendMail(
-                {
-                    to: formSubmission.data.request_sponsor.email,
-                    subject: "BI Platform Access",
-                    message: `<p>A member of your organisation has requested access to the BI Platform.
-                    Details of the request are below...</p>
-            ${MessagesHelper.accountRequestTable(formSubmission)}
-            <p>Please click below to authorise or deny this request...</p>`,
-                    actions: [
-                        {
-                            class: "primary",
-                            text: "Approve",
-                            type: "account_request_approve",
-                            type_params: { id: formSubmission.id },
-                        },
-                        {
-                            class: "warn",
-                            text: "Deny",
-                            type: "account_request_deny",
-                            type_params: { id: formSubmission.id },
-                        },
-                    ],
+            // Store form in the database
+            const formSubmission = {
+                id: uuid.v1(),
+                parent_id: null,
+                type: "AccountRequest",
+                data: {
+                    firstname: formData.firstname,
+                    surname: formData.surname,
+                    email: formData.email,
+                    professional_role: formData.professional_role,
+                    professional_number: formData.professional_number,
+                    organisation: formData.organisation,
+                    pid_access: {
+                        patient_gps: formData.pid_access.patient_gps,
+                        patient_chs: formData.pid_access.patient_chs,
+                        citizen_council: formData.pid_access.citizen_council,
+                        related_ch: formData.pid_access.related_ch,
+                        related_mdt: formData.pid_access.related_mdt,
+                    },
+                    capabilities: formData.capabilities.map((capability) => {
+                        capability.approved = (capabilities[capability.id].authoriser == null);
+                        return capability;
+                    }),
+                    approved: null,
                 },
-                (errorSend) => {
-                    if (errorSend) {
-                        console.log(
-                            "Unable to send authorization request email to: " + formData.email + ". Reason: " + errorSend.toString()
-                        );
-                        res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
-                    } else {
-                        res.status(200).json({ success: true, msg: "Request submitted successfully" });
-                    }
+                created_at: formData.date,
+            };
+            formSubmissionsModel.create(formSubmission, (error) => {
+                // Check for save error
+                if (error) {
+                    res.status(500).json({ success: false, msg: error });
+                    return;
                 }
-            );
+
+                // Delete email verification code
+                verificationCodesModel.deleteCode(formData.email_verification_code, formData.email);
+
+                // Group capabilities by authorisers
+                console.log(capabilities);
+                console.log(Object.values(capabilities));
+                const authorisers = groupBy(
+                    Object.values(capabilities),
+                    (capability) => capability.authoriser
+                );
+                console.log(authorisers);
+
+                // Send email to each authoriser
+                Object.keys(authorisers).forEach((authoriser) => {
+                    if (authoriser !== "null") {
+                        EmailHelper.sendMail(
+                            {
+                                to: authoriser,
+                                subject: "Nexus BI Platform Access",
+                                message: `
+                                <p>${formData.firstname} ${formData.surname} has requested access to the Nexus BI Platform.</p>
+                                <p>Click below to view further details...</p>`,
+                                actions: [
+                                    {
+                                        class: "primary",
+                                        text: "View Request",
+                                        type: "account_request_action",
+                                        type_params: {
+                                            id: formSubmission.id,
+                                            capabilities: authorisers[authoriser].map((item) => item.id)
+                                        },
+                                    }
+                                ],
+                            },
+                            (errorSend) => {
+                                if (errorSend) {
+                                    console.log(
+                                        "Unable to send authorization request email to: " +
+                                        formData.email + ". Reason: " + errorSend.toString()
+                                    );
+                                    res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
+                                } else {
+                                    res.status(200).json({ success: true, msg: "Request submitted successfully" });
+                                }
+                            }
+                        );
+                    }
+                });
+            });
         });
     }
 );
