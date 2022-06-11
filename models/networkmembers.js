@@ -6,14 +6,14 @@ const tablename = "networkmembers";
 
 module.exports.remove = function (item, callback) {
     const key = {
-        _id: item["_id"],
+        id: item.id,
         networkcode: item.networkcode,
     };
     DynamoDB.removeItem(AWS, tablename, key, callback);
 };
 
 module.exports.getNetworkMemberById = function (id, callback) {
-    DynamoDB.getItemByIndex(AWS, tablename, "_id", id, callback);
+    DynamoDB.getItemByIndex(AWS, tablename, "id", id, callback);
 };
 
 module.exports.getNetworkMembersByNetwork = function (code, callback) {
@@ -30,10 +30,10 @@ module.exports.getAll = function (callback) {
 
 module.exports.addNetworkMember = function (newnetworkMember, callback) {
     const assignRandomint = Generic.getDateTime() + Math.floor(Math.random() * 1e4).toString();
-    newnetworkMember["_id"] = { S: assignRandomint };
+    newnetworkMember.id = { S: assignRandomint };
     DynamoDB.addItem(AWS, tablename, newnetworkMember, callback);
 };
 
 module.exports.update = function (newData, callback) {
-    DynamoDB.updateItem(AWS, tablename, ["_id", "networkcode"], newData, callback);
+    DynamoDB.updateItem(AWS, tablename, ["id", "networkcode"], newData, callback);
 };

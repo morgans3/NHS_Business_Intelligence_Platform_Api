@@ -6,14 +6,14 @@ const tablename = "teamrequests";
 
 module.exports.remove = function (id, code, callback) {
     const key = {
-        _id: id,
+        id,
         teamcode: code,
     };
     DynamoDB.removeItem(AWS, tablename, key, callback);
 };
 
 module.exports.getRequestById = function (id, callback) {
-    DynamoDB.getItemByKey(AWS, tablename, "_id", id, callback);
+    DynamoDB.getItemByKey(AWS, tablename, "id", id, callback);
 };
 
 module.exports.getRequestsByUsername = function (name, callback) {
@@ -41,10 +41,10 @@ module.exports.getAll = function (callback) {
 
 module.exports.addRequest = function (newRequest, callback) {
     const assignRandomint = Generic.getDateTime() + Math.floor(Math.random() * 1e4).toString();
-    newRequest["_id"] = { S: assignRandomint };
+    newRequest.id = { S: assignRandomint };
     DynamoDB.addItem(AWS, tablename, newRequest, callback);
 };
 
 module.exports.update = function (newData, callback) {
-    DynamoDB.updateItem(AWS, tablename, ["_id", "teamcode"], newData, callback);
+    DynamoDB.updateItem(AWS, tablename, ["id", "teamcode"], newData, callback);
 };

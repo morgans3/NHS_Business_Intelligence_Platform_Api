@@ -95,7 +95,7 @@ router.get(
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: _id
+ *       - name: id
  *         description: Alerts's ID
  *         in: formData
  *         required: true
@@ -166,7 +166,7 @@ router.put(
         "body",
         {
             name: { type: "string" },
-            _id: { type: "string" },
+            id: { type: "string" },
         },
         {
             pattern: "Missing query params",
@@ -174,7 +174,7 @@ router.put(
     ),
     (req, res) => {
         const newAlert = {
-            _id: req.body["_id"],
+            id: req.body.id,
             name: req.body.name,
             message: req.body.message,
             startdate: req.body.startdate,
@@ -305,7 +305,7 @@ router.post(
                 res.json({
                     success: true,
                     msg: "Registered",
-                    _id: event,
+                    id: event,
                 });
             }
         });

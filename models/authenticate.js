@@ -35,7 +35,7 @@ module.exports.upgradePassport = function (previousToken, mfa, callback) {
                             });
                         }
                         const upgrade = {
-                            _id: previousToken["_id"],
+                            id: previousToken.id,
                             name: previousToken.name,
                             username: previousToken.username,
                             email: previousToken.email,
@@ -53,7 +53,7 @@ module.exports.upgradePassport = function (previousToken, mfa, callback) {
                 });
             } else {
                 const upgrade = {
-                    _id: previousToken["_id"],
+                    id: previousToken.id,
                     name: previousToken.name,
                     username: previousToken.username,
                     email: previousToken.email,
@@ -88,7 +88,7 @@ module.exports.upgradePassportwithOrganisation = (previousToken, mfa, callback) 
                 });
             }
             const upgrade = {
-                _id: previousToken["_id"],
+                id: previousToken.id,
                 name: previousToken.name,
                 username: previousToken.username,
                 email: previousToken.email,
@@ -107,13 +107,13 @@ module.exports.upgradePassportwithOrganisation = (previousToken, mfa, callback) 
 };
 
 module.exports.authenticateDemo = function (user, callback) {
-    const id = user["_id"] || user.username + "_Collaborative Partners";
+    const id = user.id || user.username + "_Collaborative Partners";
     getTeamMembershipsByUsername(user.username, (err, memberships) => {
         if (err) {
             console.error(err);
         }
         const returnUser = {
-            _id: id,
+            id,
             name: user.name,
             username: user.username,
             email: user.email,
