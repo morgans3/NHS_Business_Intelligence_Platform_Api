@@ -170,7 +170,7 @@ router.post(
                                         res.json({
                                             success: true,
                                             msg: "Registered",
-                                            _id: request,
+                                            id: request,
                                         });
                                     }
                                 });
@@ -397,7 +397,7 @@ router.delete(
                     }
                     if (result.Items.length > 0) {
                         const request = result.Items[0];
-                        Requests.remove(request["_id"], request.teamcode, function (requestRemoveErr) {
+                        Requests.remove(request.id, request.teamcode, function (requestRemoveErr) {
                             if (requestRemoveErr) {
                                 res.status(500).json({
                                     success: false,

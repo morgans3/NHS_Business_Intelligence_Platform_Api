@@ -110,7 +110,7 @@ router.post(
                 if (err) {
                     res.status(500).json({ success: false, msg: "Failed to register: " + err });
                 } else {
-                    res.json({ success: true, msg: "Registered", _id: data["_id"], data });
+                    res.json({ success: true, msg: "Registered", id: data.id, data });
                 }
             }
         );
@@ -260,7 +260,7 @@ router.get(
                                             });
                                         } else {
                                             const orguser = {
-                                                _id: result.Items[0]["id"],
+                                                id: result.Items[0]["id"],
                                                 name: user.cn,
                                                 username: user.sAMAccountName,
                                                 email: user.mail,
@@ -279,7 +279,7 @@ router.get(
                                 } else {
                                     const founduser = result2.Items[0];
                                     const fulluser = {
-                                        _id: result.Items[0]["id"],
+                                        id: result.Items[0]["id"],
                                         name: founduser.name,
                                         username,
                                         email: founduser.email,
@@ -316,7 +316,7 @@ router.get(
                                 });
                             } else {
                                 const ADuser = {
-                                    _id: user.employeeID,
+                                    id: user.employeeID,
                                     name: user.cn,
                                     username: user.sAMAccountName,
                                     email: user.mail,
@@ -427,7 +427,7 @@ router.get(
                             // Return profile
                             const userprofile = profiles.Items.length === 0 ? null : profiles.Items[0];
                             res.send({
-                                _id: userprofile ? userprofile["_id"] : user["_id"],
+                                id: userprofile ? userprofile.id : user.id,
                                 name: user.name,
                                 email: user.email,
                                 username: user.username,
@@ -474,7 +474,7 @@ router.get(
                                         // Return profile
                                         const userprofile = profiles.Items.length === 0 ? null : profiles.Items[0];
                                         res.send({
-                                            _id: userprofile ? userprofile["_id"] : user.employeeID,
+                                            id: userprofile ? userprofile.id : user.employeeID,
                                             name: user.cn,
                                             email: user.mail,
                                             username: user.sAMAccountName,
@@ -588,7 +588,7 @@ router.delete(
  *     produces:
  *      - application/json
  *     parameters:
- *       - name: _id
+ *       - name: id
  *         description: Profile's ID
  *         in: formData
  *         required: true
@@ -650,14 +650,14 @@ router.put(
     MiddlewareHelper.validate(
         "body",
         {
-            _id: { type: "string" },
+            id: { type: "string" },
         },
         {
             pattern: "Missing query params",
         }
     ),
     (req, res) => {
-        const id = req.body["_id"];
+        const id = req.body.id;
         Profiles.getUserProfileById(id, function (err, result) {
             if (err) {
                 res.status(500).json({

@@ -24,7 +24,7 @@ class Authenticate {
                 null,
                 jwt.sign(
                     {
-                        _id: user["_id"] || user.username + "_" + user.organisation,
+                        id: user.id || user.username + "_" + user.organisation,
                         name: user.name,
                         username: user.username,
                         email: user.email,
@@ -110,7 +110,7 @@ class Authenticate {
 
                                     // Return user
                                     callback(null, {
-                                        _id: StringHelper.sidBufferToString(user.objectSid),
+                                        id: StringHelper.sidBufferToString(user.objectSid),
                                         name: user.cn,
                                         username: user.sAMAccountName,
                                         email: user.mail,
@@ -260,7 +260,7 @@ class Authenticate {
 
                                     // Return user
                                     callback(null, {
-                                        _id: StringHelper.sidBufferToString(users[0].objectSid),
+                                        id: StringHelper.sidBufferToString(users[0].objectSid),
                                         name: users[0].cn,
                                         username: users[0].sAMAccountName,
                                         email: users[0].mail,

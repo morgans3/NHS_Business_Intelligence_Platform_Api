@@ -6,7 +6,7 @@ const AWS = require("../config/database").AWS;
 const tablename = "userprofiles";
 
 module.exports.getUserProfileById = function (id, callback) {
-    DynamoDB.getItemByKey(AWS, tablename, "_id", id, callback);
+    DynamoDB.getItemByKey(AWS, tablename, "id", id, callback);
 };
 
 module.exports.getUserProfileByUsername = function (username, callback) {
@@ -18,8 +18,8 @@ module.exports.getAll = function (callback) {
 };
 
 module.exports.addUserProfile = function (newUserProfile, callback) {
-    newUserProfile["_id"] = Generic.getDateTime() + Math.floor(Math.random() * 1e4).toString();
-    (new AWS.DynamoDB()).putItem(
+    newUserProfile.id = Generic.getDateTime() + Math.floor(Math.random() * 1e4).toString();
+    new AWS.DynamoDB().putItem(
         {
             TableName: tablename,
             Item: AWS.DynamoDB.Converter.marshall(newUserProfile),
@@ -32,12 +32,12 @@ module.exports.addUserProfile = function (newUserProfile, callback) {
 
 module.exports.remove = function (user, callback) {
     const key = {
-        _id: user["_id"],
+        id: user.id,
         username: user.username,
     };
     DynamoDB.removeItem(AWS, tablename, key, callback);
 };
 
 module.exports.updateUserProfile = function (newData, callback) {
-    DynamoDB.updateItem(AWS, tablename, ["_id", "username"], newData, callback);
+    DynamoDB.updateItem(AWS, tablename, ["id", "username"], newData, callback);
 };
