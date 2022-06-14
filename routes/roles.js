@@ -119,6 +119,7 @@ router.post(
         }
     ),
     (req, res, next) => {
+        console.log(req);
         const payload = req.body;
         RoleModel.create(
             {

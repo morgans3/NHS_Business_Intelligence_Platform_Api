@@ -43,6 +43,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         description: Server Unavailable
  */
 router.get("/acknowledgements/", MiddlewareHelper.authenticateWithKey(credentials.docobo.inboundkey), (req, res, next) => {
+    console.log(credentials.docobo.inboundkey);
     Acknowledgements.getAll(function (err, result) {
         if (err) {
             res.status(500).send(err);
