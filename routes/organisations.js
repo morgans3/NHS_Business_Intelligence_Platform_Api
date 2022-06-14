@@ -274,7 +274,7 @@ router.delete(
                     });
                     return;
                 }
-                if (result.Attributes) {
+                if (result.msg.Attributes) {
                     res.send({ success: true, msg: "Payload deleted", data: result.Attributes });
                 } else {
                     res.status(404).json({ success: false, msg: "Payload not found" });
