@@ -208,6 +208,19 @@ router.all(
         // Router set to all for teamprofile update redirect
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            code: { type: "string" },
+            name: { type: "string" },
+            description: { type: "string" },
+            organisationcode: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     async (req, res, next) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
