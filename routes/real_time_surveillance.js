@@ -298,7 +298,7 @@ router.post(
         }
     ),
     (req, res, next) => {
-        const item = req.body;
+        const item = prepareData(req.body);
         RealTimeSurveillance.create(item, (err, data) => {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
@@ -677,8 +677,31 @@ router.post(
 );
 
 function prepareData(data) {
-    console.log(data);
+    let age;
+    if (data.date) {
+        age = dateDiffInYears(new Date(data.date_of_birth), new Date(data.date));
+    } else {
+        age = dateDiffInYears(new Date(data.date_of_birth), new Date());
+    }
+    if (age) data.age = age;
     return data;
+}
+
+function dateDiffInYears(dateold, datenew) {
+    var ynew = datenew.getFullYear();
+    var mnew = datenew.getMonth();
+    var dnew = datenew.getDate();
+    var yold = dateold.getFullYear();
+    var mold = dateold.getMonth();
+    var dold = dateold.getDate();
+    var diff = ynew - yold;
+    if (mold > mnew) diff--;
+    else {
+        if (mold == mnew) {
+            if (dold > dnew) diff--;
+        }
+    }
+    return diff;
 }
 
 module.exports = router;
