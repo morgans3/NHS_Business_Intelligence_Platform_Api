@@ -31,6 +31,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         description: Limit of citizens returned to a maximum of 5000
  *         in: query
  *         type: string
+ *         example: 10
  *     responses:
  *       200:
  *         description: Shielding List
