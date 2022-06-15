@@ -559,11 +559,11 @@ router.post(
     ),
     (req, res, next) => {
         const item = prepareData(req.body);
-        const index = req.body.index;
-        const date_of_birth = req.body.date_of_birth;
+        const id = req.body.index;
+        const dateOfBirth = req.body.date_of_birth;
         delete item.index;
         delete item.date_of_birth;
-        RealTimeSurveillance.getByID(index, date_of_birth, function (err, result) {
+        RealTimeSurveillance.getByID(id, dateOfBirth, function (err, result) {
             if (err) {
                 res.status(500).json({
                     success: false,
@@ -571,7 +571,7 @@ router.post(
                 });
             } else {
                 if (result && result.Items.length > 0) {
-                    const keys = { index: index, date_of_birth: date_of_birth };
+                    const keys = { index: id, date_of_birth: dateOfBirth };
                     RealTimeSurveillance.update(keys, item, (updateErr, updateResult) => {
                         if (updateErr) {
                             res.status(500).send({ success: false, msg: updateErr });
@@ -637,8 +637,8 @@ router.post(
     ),
     (req, res, next) => {
         const index = req.body.index;
-        const date_of_birth = req.body.date_of_birth;
-        RealTimeSurveillance.getByID(index, date_of_birth, function (err, result) {
+        const dateOfBirth = req.body.date_of_birth;
+        RealTimeSurveillance.getByID(index, dateOfBirth, function (err, result) {
             if (err) {
                 res.status(500).json({
                     success: false,
@@ -648,7 +648,7 @@ router.post(
                 if (result && result.Items.length > 0) {
                     const keys = {
                         index: index,
-                        date_of_birth: date_of_birth,
+                        date_of_birth: dateOfBirth,
                     };
                     RealTimeSurveillance.delete(keys, function (removeErr, removeResult) {
                         if (removeErr) {
