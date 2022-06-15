@@ -636,9 +636,9 @@ router.post(
         }
     ),
     (req, res, next) => {
-        const index = req.body.index;
+        const id = req.body.index;
         const dateOfBirth = req.body.date_of_birth;
-        RealTimeSurveillance.getByID(index, dateOfBirth, function (err, result) {
+        RealTimeSurveillance.getByID(id, dateOfBirth, function (err, result) {
             if (err) {
                 res.status(500).json({
                     success: false,
@@ -647,7 +647,7 @@ router.post(
             } else {
                 if (result && result.Items.length > 0) {
                     const keys = {
-                        index: index,
+                        index: id,
                         date_of_birth: dateOfBirth,
                     };
                     RealTimeSurveillance.delete(keys, function (removeErr, removeResult) {
