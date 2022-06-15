@@ -128,7 +128,7 @@ router.post(
                         success: true,
                         msg: "Registered",
                         id: req.body.code,
-                        data,
+                        data: req.body,
                     });
                 }
             }
