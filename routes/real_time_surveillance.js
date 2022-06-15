@@ -571,7 +571,8 @@ router.post(
                 });
             } else {
                 if (result && result.Items.length > 0) {
-                    RealTimeSurveillance.update({ index: index, date_of_birth: date_of_birth }, item, (updateErr, updateResult) => {
+                    const keys = { index: index, date_of_birth: date_of_birth };
+                    RealTimeSurveillance.update(keys, item, (updateErr, updateResult) => {
                         if (updateErr) {
                             res.status(500).send({ success: false, msg: updateErr });
                             return;
@@ -645,26 +646,24 @@ router.post(
                 });
             } else {
                 if (result && result.Items.length > 0) {
-                    RealTimeSurveillance.delete(
-                        {
-                            index: index,
-                            date_of_birth: date_of_birth,
-                        },
-                        function (removeErr, removeResult) {
-                            if (removeErr) {
-                                res.status(500).json({
-                                    success: false,
-                                    msg: "Error: " + err,
-                                });
-                            } else {
-                                res.status(200).json({
-                                    success: true,
-                                    msg: "Item deleted",
-                                    data: removeResult,
-                                });
-                            }
+                    const keys = {
+                        index: index,
+                        date_of_birth: date_of_birth,
+                    };
+                    RealTimeSurveillance.delete(keys, function (removeErr, removeResult) {
+                        if (removeErr) {
+                            res.status(500).json({
+                                success: false,
+                                msg: "Error: " + err,
+                            });
+                        } else {
+                            res.status(200).json({
+                                success: true,
+                                msg: "Item deleted",
+                                data: removeResult,
+                            });
                         }
-                    );
+                    });
                 } else {
                     res.status(404).json({
                         success: false,
