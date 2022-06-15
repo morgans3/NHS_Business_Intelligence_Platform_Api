@@ -31,6 +31,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         in: query
  *         required: true
  *         type: string
+ *         example: "0123456789"
  *     responses:
  *       200:
  *         description: Patient Details
@@ -100,6 +101,7 @@ router.get(
  *         in: query
  *         required: true
  *         type: string
+ *         example: "0123456789"
  *     responses:
  *       200:
  *         description: Patient Details
