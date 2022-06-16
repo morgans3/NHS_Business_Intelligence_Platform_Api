@@ -7,7 +7,6 @@ const JWT = require("jsonwebtoken");
 const DIULibrary = require("diu-data-functions");
 const RoleModel = new DIULibrary.Models.RoleModel();
 const RoleLinkModel = new DIULibrary.Models.RoleLinkModel();
-const CapabilityLinkModel = new DIULibrary.Models.CapabilityLinkModel();
 const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 
 /**
@@ -62,7 +61,6 @@ router.get("/", (req, res, next) => {
  *            - name
  *            - description
  *            - authoriser
- *            - capabilities
  *          properties:
  *            name:
  *              type: string
@@ -73,15 +71,6 @@ router.get("/", (req, res, next) => {
  *            authoriser:
  *              type: string
  *              description: Role authoriser email
- *            capabilities:
- *              type: array
- *              items:
- *                type: object
- *                properties:
- *                  id:
- *                    type: integer
- *                  valuejson:
- *                    type: string
  *     produces:
  *      - application/json
  *     responses:
@@ -110,7 +99,6 @@ router.post(
             name: { type: "string" },
             description: { type: "string" },
             authoriser: { type: "string" },
-            capabilities: { type: "array" },
         },
         {
             pattern: "Missing query params",
@@ -128,34 +116,13 @@ router.post(
                 // Error
                 if (err) {
                     res.status(500).json({ success: false, msg: err });
-                    return;
+                } else {
+                    res.json({
+                        success: true,
+                        msg: "Role created",
+                        data: result[0],
+                    });
                 }
-
-                // Read jwt
-                const user = req.header("authorization");
-                const decodedToken = JWT.decode(user.replace("JWT ", ""));
-
-                // Create capability links
-                const role = result[0];
-                CapabilityLinkModel.link(
-                    payload.capabilities,
-                    {
-                        id: role.id,
-                        type: "role",
-                        approved_by: decodedToken["email"],
-                    },
-                    (errMethod) => {
-                        if (errMethod) {
-                            res.status(500).json({ success: false, msg: errMethod });
-                            return;
-                        }
-                        res.json({
-                            success: true,
-                            msg: "Role created",
-                            data: Object.assign(role, { capabilities: payload.capabilities }),
-                        });
-                    }
-                );
             }
         );
     }
@@ -183,7 +150,6 @@ router.post(
  *            - name
  *            - description
  *            - authoriser
- *            - capabilities
  *          properties:
  *            id:
  *              type: integer
@@ -196,15 +162,6 @@ router.post(
  *            authoriser:
  *              type: string
  *              description: Role authoriser email
- *            capabilities:
- *              type: array
- *              items:
- *                type: object
- *                properties:
- *                  id:
- *                    type: integer
- *                  valuejson:
- *                    type: string
  *     produces:
  *      - application/json
  *     responses:
@@ -233,7 +190,6 @@ router.put(
             name: { type: "string" },
             description: { type: "string" },
             authoriser: { type: "string" },
-            capabilities: { type: "array" },
         },
         {
             pattern: "Missing query params",
@@ -253,34 +209,13 @@ router.put(
                 // Error
                 if (err) {
                     res.status(500).json({ success: false, msg: err });
-                    return;
+                } else {
+                    res.json({
+                        success: true,
+                        msg: "Role updated",
+                        data: result[0],
+                    });
                 }
-
-                // Read jwt
-                const user = req.header("authorization");
-                const decodedToken = JWT.decode(user.replace("JWT ", ""));
-
-                // Create role link
-                const role = result[0];
-                CapabilityLinkModel.link(
-                    payload.capabilities,
-                    {
-                        id: role.id,
-                        type: "role",
-                        approved_by: decodedToken["email"],
-                    },
-                    (linkError) => {
-                        if (linkError) {
-                            res.status(500).json({ success: false, msg: linkError });
-                            return;
-                        }
-                        res.json({
-                            success: true,
-                            msg: "Role updated",
-                            data: Object.assign(role, { capabilities: payload.capabilities }),
-                        });
-                    }
-                );
             }
         );
     }
@@ -631,15 +566,18 @@ router.delete(
         }
     ),
     (req, res, next) => {
-        RoleModel.deleteByPrimaryKey(req.body.id, (err, result) => {
+        RoleModel.deleteByPrimaryKey(req.body.id, (err, deletedRole) => {
+            // Handle error
             if (err) {
                 res.status(500).json({ success: false, msg: err });
                 return;
             }
-            if (result.Attributes) {
-                res.send({ success: true, msg: "Payload deleted", data: result.Attributes });
+
+            // Check if item existed
+            if (deletedRole) {
+                res.send({ success: true, msg: "Role deleted", data: deletedRole });
             } else {
-                res.status(404).json({ success: false, msg: "Payload not found" });
+                res.status(404).json({ success: false, msg: "Role not found" });
             }
         });
     }

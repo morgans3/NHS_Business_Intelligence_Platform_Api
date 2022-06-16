@@ -49,6 +49,7 @@ module.exports.checkTeamAdmin = function (username, team, callback) {
                 callback(err);
             } else {
                 if (result.Items.length > 0) {
+                    console.log(result);
                     const foundTeam = result.Items[0];
                     if (foundTeam.responsiblepeople) {
                         let admins;
@@ -60,7 +61,7 @@ module.exports.checkTeamAdmin = function (username, team, callback) {
                         if (user) {
                             callback(null, true, foundTeam);
                         } else {
-                            callback(null, false);
+                            callback(null, false, foundTeam);
                         }
                     } else {
                         callback(null, false, team);

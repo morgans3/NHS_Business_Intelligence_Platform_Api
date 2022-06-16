@@ -253,7 +253,8 @@ router.delete(
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
     (req, res, next) => {
-        CapabilitiesModel.deleteByPrimaryKey(req.body.id, (errDelete, result) => {
+        CapabilitiesModel.deleteByPrimaryKey(req.body.id, (errDelete, deletedCapability) => {
+            // Handle error
             if (errDelete) {
                 res.status(500).json({
                     success: false,
@@ -261,10 +262,12 @@ router.delete(
                 });
                 return;
             }
-            if (result.Attributes) {
-                res.send({ success: true, msg: "Payload deleted", data: result.Attributes });
+
+            // Check if item existed
+            if (deletedCapability) {
+                res.send({ success: true, msg: "Capability deleted", data: deletedCapability });
             } else {
-                res.status(404).json({ success: false, msg: "Payload not found" });
+                res.status(404).json({ success: false, msg: "Capability not found" });
             }
         });
     }
