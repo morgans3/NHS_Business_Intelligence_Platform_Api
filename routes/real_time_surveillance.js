@@ -591,7 +591,7 @@ router.post(
 
 /**
  * @swagger
- * /real_time_surveillance/remove:
+ * /real_time_surveillance/delete:
  *   post:
  *     security:
  *      - JWT: []
@@ -622,7 +622,7 @@ router.post(
  *         description: server error
  */
 router.post(
-    "/remove",
+    "/delete",
     passport.authenticate("jwt", {
         session: false,
     }),
