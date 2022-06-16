@@ -298,7 +298,7 @@ router.post(
         }
     ),
     (req, res, next) => {
-        const item = prepareData(req.body);
+        const item = req.body;
         RealTimeSurveillance.create(item, (err, data) => {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
@@ -538,6 +538,8 @@ router.post(
  *         description: Bad Request, server doesn't understand input
  *       401:
  *         description: Unauthorised
+ *       404:
+ *         description: Item not found
  *       500:
  *         description: Server Error Processing Result
  */
@@ -558,11 +560,9 @@ router.post(
         }
     ),
     (req, res, next) => {
-        const item = prepareData(req.body);
+        const item = req.body;
         const id = req.body.index;
         const dateOfBirth = req.body.date_of_birth;
-        delete item.index;
-        delete item.date_of_birth;
         RealTimeSurveillance.getByID(id, dateOfBirth, function (err, result) {
             if (err) {
                 res.status(500).json({
@@ -571,8 +571,7 @@ router.post(
                 });
             } else {
                 if (result && result.Items.length > 0) {
-                    const keys = { index: id, date_of_birth: dateOfBirth };
-                    RealTimeSurveillance.update(keys, item, (updateErr, updateResult) => {
+                    RealTimeSurveillance.update(item, (updateErr, updateResult) => {
                         if (updateErr) {
                             res.status(500).send({ success: false, msg: updateErr });
                             return;
@@ -615,6 +614,8 @@ router.post(
  *     responses:
  *       200:
  *         description: item deleted
+ *       401:
+ *         description: Unathorized
  *       404:
  *         description: item not found
  *       500:
@@ -674,33 +675,5 @@ router.post(
         });
     }
 );
-
-function prepareData(data) {
-    let age;
-    if (data.date) {
-        age = dateDiffInYears(new Date(data.date_of_birth), new Date(data.date));
-    } else {
-        age = dateDiffInYears(new Date(data.date_of_birth), new Date());
-    }
-    if (age) data.age = age;
-    return data;
-}
-
-function dateDiffInYears(dateold, datenew) {
-    const ynew = datenew.getFullYear();
-    const mnew = datenew.getMonth();
-    const dnew = datenew.getDate();
-    const yold = dateold.getFullYear();
-    const mold = dateold.getMonth();
-    const dold = dateold.getDate();
-    let diff = ynew - yold;
-    if (mold > mnew) diff--;
-    else {
-        if (mold === mnew) {
-            if (dold > dnew) diff--;
-        }
-    }
-    return diff;
-}
 
 module.exports = router;
