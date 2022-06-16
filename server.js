@@ -28,7 +28,6 @@
 
     // Configure apis
     await require("./config/app").configureApis();
-
     const app = require("./app");
     const port = process.env.PORT || 8079;
     app.listen(port);

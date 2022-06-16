@@ -343,7 +343,7 @@ router.post(
     MiddlewareHelper.validate(
         "body",
         {
-            roles: { type: "string" },
+            roles: { type: "array" },
             link_id: { type: "string" },
             link_type: { type: "string" },
         },

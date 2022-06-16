@@ -195,7 +195,7 @@ router.put(
                     msg: "Error: " + err,
                 });
             } else {
-                if (data.length > 0) {
+                if (data) {
                     CapabilitiesModel.updateByPrimaryKey(req.body.id, newCapability, (errUpdate, user) => {
                         if (errUpdate) {
                             res.status(500).json({
@@ -275,8 +275,6 @@ router.delete(
  * /capabilities/{id}:
  *   get:
  *     description: Get a capability by passing the ID
- *     security:
- *      - JWT: []
  *     tags:
  *      - Capabilities
  *     produces:
@@ -293,19 +291,13 @@ router.delete(
  */
 router.get(
     "/:id",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
     (req, res, next) => {
         CapabilitiesModel.getByPrimaryKey(req.query.id, function (err, data) {
             if (err) {
-                res.status(500).json({
-                    success: false,
-                    msg: "Error: " + err,
-                });
+                res.status(500).json({ success: false, msg: "Error: " + err });
             } else {
-                if (data.length > 0) {
-                    res.json(data[0]);
+                if (data) {
+                    res.json(data);
                 } else {
                     res.status(404).json({
                         success: false,
