@@ -14,12 +14,12 @@ module.exports.getAll = function (callback) {
 module.exports.getSystemAlertsById = function (id, callback) {
     const params = {
         TableName: tablename,
-        KeyConditionExpression: "#_id = :_id",
+        KeyConditionExpression: "#id = :id",
         ExpressionAttributeNames: {
-            "#_id": "_id",
+            "#id": "id",
         },
         ExpressionAttributeValues: {
-            ":_id": id,
+            ":id": id,
         },
     };
     docClient.query(params, callback);
@@ -42,7 +42,7 @@ module.exports.getActiveSystemAlerts = function (date, callback) {
 
 module.exports.addSystemAlert = function (newSystemAlert, callback) {
     const assignRandomint = getDateTime() + Math.floor(Math.random() * 1e4).toString();
-    newSystemAlert["_id"] = { S: assignRandomint };
+    newSystemAlert.id = { S: assignRandomint };
     const dynamoDB = new AWS.DynamoDB();
     const params = {
         TableName: tablename,
@@ -57,7 +57,7 @@ module.exports.updateSystemAlert = function (systemAlert, callback) {
     const params = {
         TableName: tablename,
         Key: {
-            _id: systemAlert["_id"],
+            id: systemAlert.id,
             author: systemAlert.author,
         },
         UpdateExpression: "set #name=:nm, startdate=:sd, enddate=:ed, #msg=:msg, #status=:st, #icon=:ic, #arc=:arc",

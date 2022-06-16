@@ -68,7 +68,7 @@ router.get(
 /**
  * @swagger
  * /users/profile:
- *   get:
+ *   post:
  *     security:
  *      - JWT: []
  *     description: Returns User Profile
@@ -84,7 +84,7 @@ router.get(
  *       500:
  *         description: Internal Server Error
  */
-router.get(
+router.post(
     "/profile",
     passport.authenticate("jwt", {
         session: false,
@@ -400,7 +400,7 @@ router.post(
 /**
  * @swagger
  * /users/validate:
- *   get:
+ *   post:
  *     security:
  *      - JWT: []
  *     description: Checks User Credentials
@@ -416,7 +416,7 @@ router.post(
  *       500:
  *         description: Internal Server Error
  */
-router.get(
+router.post(
     "/validate",
     passport.authenticate("jwt", {
         session: false,

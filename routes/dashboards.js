@@ -236,30 +236,37 @@ router.put(
                     msg: "Failed to update: " + err,
                 });
             }
-            const scannedItem = app.Items[0];
-            scannedItem.name = id;
-            scannedItem.status = req.body.status;
-            scannedItem.ownerName = req.body.ownerName;
-            scannedItem.ownerEmail = req.body.ownerEmail;
-            scannedItem.environment = req.body.environment;
-            scannedItem.icon = req.body.icon;
-            scannedItem.url = req.body.url;
-            scannedItem.description = req.body.description;
-            if (req.body.images) scannedItem.images = req.body.images;
+            if (app.Items && app.Items.length > 0) {
+                const scannedItem = app.Items[0];
+                scannedItem.name = id;
+                scannedItem.status = req.body.status;
+                scannedItem.ownerName = req.body.ownerName;
+                scannedItem.ownerEmail = req.body.ownerEmail;
+                scannedItem.environment = req.body.environment;
+                scannedItem.icon = req.body.icon;
+                scannedItem.url = req.body.url;
+                scannedItem.description = req.body.description;
+                if (req.body.images) scannedItem.images = req.body.images;
 
-            Dashboards.updateDashboard(scannedItem, function (errUpdate, data) {
-                if (errUpdate) {
-                    res.status(500).json({
-                        success: false,
-                        msg: "Failed to update: " + errUpdate,
+                Dashboards.updateDashboard(scannedItem, function (errUpdate, data) {
+                    if (errUpdate) {
+                        res.status(500).json({
+                            success: false,
+                            msg: "Failed to update: " + errUpdate,
+                        });
+                    }
+                    res.json({
+                        success: true,
+                        msg: "Dashboard updated",
+                        data: scannedItem,
                     });
-                }
-                res.json({
-                    success: true,
-                    msg: "Dashboard updated",
-                    data: scannedItem,
                 });
-            });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    msg: "Dashboard not found",
+                });
+            }
         });
     }
 );

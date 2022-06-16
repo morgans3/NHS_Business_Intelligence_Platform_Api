@@ -245,7 +245,7 @@ router.put(
                 if (req.body.rolecode) member["rolecode"] = req.body.rolecode;
                 if (req.body.enddate) member["enddate"] = req.body.enddate;
 
-                TeamMemberModel.getByKeys({ _id: req.body.id, teamcode: req.body.teamcode }, (errGet, errResult) => {
+                TeamMemberModel.getByKeys({ id: req.body.id, teamcode: req.body.teamcode }, (errGet, errResult) => {
                     if (errGet) {
                         res.status(500).json({ success: false, msg: errGet });
                     } else if (errResult.Items.length === 0) {
@@ -253,7 +253,7 @@ router.put(
                     } else {
                         TeamMemberModel.update(
                             {
-                                _id: req.body.id,
+                                id: req.body.id,
                                 teamcode: req.body.teamcode,
                             },
                             member,
@@ -413,7 +413,7 @@ router.delete(
     ),
     (req, res) => {
         const keys = {
-            _id: req.body.id,
+            id: req.body.id,
             teamcode: req.body.teamcode,
         };
 
@@ -463,7 +463,7 @@ router.get(
         session: false,
     }),
     (req, res, next) => {
-        TeamMemberModel.getByKeys({ _id: req.params.id }, (err, result) => {
+        TeamMemberModel.getByKeys({ id: req.params.id }, (err, result) => {
             if (err) {
                 res.status(500).send({ success: false, msg: err });
                 return;

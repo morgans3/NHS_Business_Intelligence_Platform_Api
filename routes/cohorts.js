@@ -221,7 +221,7 @@ router.put(
                 } else {
                     CohortModel.update(
                         {
-                            _id: req.body.id,
+                            id: req.body.id,
                         },
                         {
                             cohortName: req.body.cohortName,
@@ -242,7 +242,7 @@ router.put(
         } else {
             CohortModel.update(
                 {
-                    _id: req.body.id,
+                    id: req.body.id,
                 },
                 {
                     cohortName: req.body.cohortName,
@@ -308,7 +308,7 @@ router.delete(
     ),
     (req, res, next) => {
         const key = {
-            _id: req.body.id,
+            id: req.body.id,
         };
         CohortModel.getByKeys(key, (errGet, resultGet) => {
             if (errGet) {

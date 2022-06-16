@@ -31,6 +31,7 @@ const TeamModel = new DIULibrary.Models.TeamModel();
  *         in: query
  *         required: true
  *         type: string
+ *         example: DIU
  *     responses:
  *       200:
  *         description: Search Results

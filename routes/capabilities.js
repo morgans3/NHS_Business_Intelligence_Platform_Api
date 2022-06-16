@@ -659,10 +659,14 @@ router.post(
  *     responses:
  *       200:
  *         description: Success status
- *       404:
- *        description: Capability link not found
+ *       400:
+ *        description: Bad Request
+ *       401:
+ *        description: Unauthorised
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *        description: Internal Server Error
  */
 router.delete(
     "/links/delete",
@@ -692,15 +696,7 @@ router.delete(
                 return;
             }
 
-            // Has deleted?
-            if (links.length > 0) {
-                res.json({ success: true, msg: "Capability link deleted" });
-            } else {
-                res.status(404).json({
-                    success: false,
-                    msg: "Could not delete item, this is probably because it's authorised by one of your teams or roles."
-                });
-            }
+            res.json({ success: true, msg: "Capability link deleted" });
         });
     }
 );

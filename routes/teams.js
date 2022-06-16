@@ -123,7 +123,7 @@ router.post(
     async (req, res, next) => {
         const payload = req.body;
         const team = {
-            _id: uuid.v1(),
+            id: uuid.v1(),
             code: payload.code,
             description: payload.description,
             name: payload.name,
@@ -160,13 +160,13 @@ router.post(
  *        schema:
  *          type: object
  *          required:
- *            - _id
+ *            - id
  *            - code
  *            - name
  *            - description
  *            - organisationcode
  *          properties:
- *            _id:
+ *            id:
  *              type: string
  *              description: Id of team to update
  *            code:
@@ -208,6 +208,19 @@ router.all(
         // Router set to all for teamprofile update redirect
         session: false,
     }),
+    MiddlewareHelper.validate(
+        "body",
+        {
+            id: { type: "string" },
+            code: { type: "string" },
+            name: { type: "string" },
+            description: { type: "string" },
+            organisationcode: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
     async (req, res, next) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
@@ -228,7 +241,7 @@ router.all(
                 // Check team exists
                 TeamModel.update(
                     {
-                        _id: payload["_id"],
+                        id: payload.id,
                         code: payload.code,
                     },
                     {
@@ -514,7 +527,7 @@ router.get(
  *     tags:
  *      - Teams
  *     parameters:
- *       - name: _id
+ *       - name: id
  *         description: Id of team to delete
  *         in: formData
  *         required: true
@@ -548,7 +561,7 @@ router.delete(
     MiddlewareHelper.validate(
         "body",
         {
-            _id: { type: "string" },
+            id: { type: "string" },
             code: { type: "string" },
         },
         {
@@ -569,7 +582,7 @@ router.delete(
             } else {
                 TeamModel.delete(
                     {
-                        _id: req.body["_id"],
+                        id: req.body.id,
                         code: req.body.code,
                     },
                     (err, result) => {

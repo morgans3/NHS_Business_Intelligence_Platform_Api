@@ -202,7 +202,7 @@ router.get(
                                     const responseAD = [];
                                     user.forEach((staff) => {
                                         responseAD.push({
-                                            _id: StringHelper.sidBufferToString(staff.objectSid),
+                                            id: StringHelper.sidBufferToString(staff.objectSid),
                                             name: staff.cn,
                                             email: staff.mail,
                                             username: staff.sAMAccountName,
