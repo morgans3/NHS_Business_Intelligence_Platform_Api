@@ -312,7 +312,7 @@ router.post(
 /**
  * @swagger
  * /real_time_surveillance/update:
- *   post:
+ *   put:
  *     description: Create a new incident
  *     security:
  *      - JWT: []
@@ -592,7 +592,7 @@ router.post(
 /**
  * @swagger
  * /real_time_surveillance/delete:
- *   post:
+ *   delete:
  *     security:
  *      - JWT: []
  *     description: Removes the Item
