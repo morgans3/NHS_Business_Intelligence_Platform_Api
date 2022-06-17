@@ -1,4 +1,4 @@
-FROM node:14.15.3-alpine
+FROM node:current-alpine
 RUN apk add g++ make python
 ARG PGDATABASE
 ENV PGDATABASE ${PGDATABASE}
@@ -23,7 +23,7 @@ ENV SITE_URL ${SITE_URL}
 ENV API_NAME=api-server, AWSREGION=eu-west-2
 WORKDIR /usr/src/app
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
-RUN npm install --legacy-peer-deps --production --silent && mv node_modules ../
+RUN npm install --legacy-peer-deps --production && mv node_modules ../
 COPY . .
 EXPOSE 8079
 CMD npm start
