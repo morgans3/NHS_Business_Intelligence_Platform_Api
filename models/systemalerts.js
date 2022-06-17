@@ -25,6 +25,15 @@ module.exports.getSystemAlertsById = function (id, callback) {
     docClient.query(params, callback);
 };
 
+module.exports.delete = function (keys, callback) {
+    const params = {
+        TableName: tablename,
+        Key: keys,
+        ReturnValues: "ALL_OLD",
+    };
+    docClient.delete(params, callback);
+};
+
 module.exports.getActiveSystemAlerts = function (date, callback) {
     const params = {
         TableName: tablename,
