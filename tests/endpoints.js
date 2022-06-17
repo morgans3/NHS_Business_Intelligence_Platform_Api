@@ -450,6 +450,26 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
+        url: "/real_time_surveillance/",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/real_time_surveillance/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/real_time_surveillance/update",
+        type: "JWT",
+        method: "put",
+    },
+    {
+        url: "/real_time_surveillance/delete",
+        type: "JWT",
+        method: "delete",
+    },
+    {
         url: "/requests",
         type: "JWT",
         method: "get",

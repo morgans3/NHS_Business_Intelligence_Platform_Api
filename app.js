@@ -110,6 +110,7 @@ const routes = [
     "atomic/payloads",
     "atomic/formdata",
     "spi_incidentmethods",
+    "real_time_surveillance",
 ];
 
 // ADD ENDPOINTS
