@@ -202,10 +202,9 @@ router.post(
  *       500:
  *         description: Internal server error
  */
-router.all(
+router.put(
     "/update",
     passport.authenticate("jwt", {
-        // Router set to all for teamprofile update redirect
         session: false,
     }),
     MiddlewareHelper.validate(
@@ -231,12 +230,12 @@ router.all(
                 res.status(500).send({ success: false, msg: errCheck });
                 return;
             }
-            if (!teamCheck) {
-                res.status(404).send({ success: false, msg: "Team does not exist" });
-                return;
-            }
             if (!resultCheck) {
                 res.status(403).send({ success: false, msg: "User not authorized to update team" });
+                return;
+            }
+            if (!teamCheck) {
+                res.status(404).send({ success: false, msg: "Team does not exist" });
             } else {
                 // Check team exists
                 TeamModel.update(
