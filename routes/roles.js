@@ -28,6 +28,8 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: A list of available roles
+ *       500:
+ *         description: Database Error
  */
 router.get("/", (req, res, next) => {
     RoleModel.get((err, result) => {
@@ -541,10 +543,10 @@ router.get(
  *         description: The role
  *       401:
  *         description: Unauthorized
- *       404:
- *         description: Not Found
  *       403:
  *        description: Forbidden due to capability requirements
+ *       404:
+ *         description: Not Found
  *       500:
  *         description: Internal Server Error
  */
