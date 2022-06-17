@@ -621,7 +621,7 @@ router.put(
  *       500:
  *         description: server error
  */
-router.post(
+router.delete(
     "/delete",
     passport.authenticate("jwt", {
         session: false,
