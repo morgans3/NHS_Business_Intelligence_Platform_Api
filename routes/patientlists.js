@@ -185,7 +185,7 @@ router.get(
  *         description: Cohort of patients
  *         in: query
  *         type: string
- *         example: "{}""
+ *         example: "{}"
  *     responses:
  *       200:
  *         description: Patient List

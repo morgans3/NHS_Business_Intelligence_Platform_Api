@@ -102,8 +102,7 @@ describe("Test the Security of All Protected Endpoints", () => {
 
 beforeAll(async (done) => {
     app = await testapp;
-    const { generateInvalidToken } = require("../helpers/generateToken");
-    nonToken = generateInvalidToken;
+    nonToken = require("../helpers/generateToken").generateInvalidToken;
     done();
 }, 10000);
 

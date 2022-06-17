@@ -21,8 +21,6 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  * @swagger
  * /capabilities:
  *   get:
- *     security:
- *      - JWT: []
  *     description: Get all capabilties
  *     tags:
  *      - Capabilities
@@ -31,24 +29,20 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *     responses:
  *       200:
  *         description: A list of available capabilties
+ *       500:
+ *         description: Internal Server Error
  */
-router.get(
-    "/",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res, next) => {
-        // Get all capabilities
-        CapabilitiesModel.get((err, result) => {
-            // Return data
-            if (err) {
-                res.status(500).json({ success: false, msg: err });
-            } else {
-                res.json(result);
-            }
-        });
-    }
-);
+router.get("/", (req, res, next) => {
+    // Get all capabilities
+    CapabilitiesModel.get((err, result) => {
+        // Return data
+        if (err) {
+            res.status(500).json({ success: false, msg: err });
+        } else {
+            res.json(result);
+        }
+    });
+});
 
 /**
  * @swagger
@@ -78,7 +72,7 @@ router.get(
  *         required: true
  *         type: string
  *       - name: authoriser
- *         description: The member of staff resposnible for creating this capability.
+ *         description: The member of staff responsible for creating this capability.
  *         in: formData
  *         required: false
  *         type: string
@@ -93,8 +87,12 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *        description: Unauthorised
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/create",
@@ -162,7 +160,7 @@ router.post(
  *         required: true
  *         type: string
  *       - name: authoriser
- *         description: The member of staff resposnible for creating this capability.
+ *         description: The member of staff responsible for creating this capability.
  *         in: formData
  *         required: false
  *         type: string
@@ -177,8 +175,14 @@ router.post(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *         description: Unauthorised
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: Capability not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.put(
     "/update",
@@ -203,7 +207,7 @@ router.put(
                     msg: "Error: " + err,
                 });
             } else {
-                if (data.length > 0) {
+                if (data) {
                     CapabilitiesModel.updateByPrimaryKey(req.body.id, newCapability, (errUpdate, user) => {
                         if (errUpdate) {
                             res.status(500).json({
@@ -249,8 +253,14 @@ router.put(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       401:
+ *         description: Unauthorised
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       404:
+ *         description: Capability not found
+ *       500:
+ *         description: Internal Server Error
  */
 router.delete(
     "/delete",
@@ -261,7 +271,8 @@ router.delete(
         MiddlewareHelper.userHasCapability("Hall Monitor"),
     ],
     (req, res, next) => {
-        CapabilitiesModel.deleteByPrimaryKey(req.body.id, (errDelete, result) => {
+        CapabilitiesModel.deleteByPrimaryKey(req.body.id, (errDelete, deletedCapability) => {
+            // Handle error
             if (errDelete) {
                 res.status(500).json({
                     success: false,
@@ -269,10 +280,12 @@ router.delete(
                 });
                 return;
             }
-            if (result.Attributes) {
-                res.send({ success: true, msg: "Payload deleted", data: result.Attributes });
+
+            // Check if item existed
+            if (deletedCapability) {
+                res.send({ success: true, msg: "Capability deleted", data: deletedCapability });
             } else {
-                res.status(404).json({ success: false, msg: "Payload not found" });
+                res.status(404).json({ success: false, msg: "Capability not found" });
             }
         });
     }
@@ -283,8 +296,6 @@ router.delete(
  * /capabilities/{id}:
  *   get:
  *     description: Get a capability by passing the ID
- *     security:
- *      - JWT: []
  *     tags:
  *      - Capabilities
  *     produces:
@@ -292,42 +303,37 @@ router.delete(
  *     parameters:
  *       - name: id
  *         description: The ID of the capability being updated.
- *         in: query
+ *         in: path
  *         required: true
  *         type: integer
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       404:
+ *         description: Capability not found
+ *       500:
+ *         description: Internal Server Error
  */
-router.get(
-    "/:id",
-    passport.authenticate("jwt", {
-        session: false,
-    }),
-    (req, res, next) => {
-        CapabilitiesModel.getByPrimaryKey(req.query.id, function (err, data) {
-            if (err) {
-                res.status(500).json({
-                    success: false,
-                    msg: "Error: " + err,
-                });
+router.get("/:id", (req, res, next) => {
+    CapabilitiesModel.getByPrimaryKey(req.params.id, function (err, data) {
+        if (err) {
+            res.status(500).json({ success: false, msg: "Error: " + err });
+        } else {
+            if (data) {
+                res.json(data);
             } else {
-                if (data.length > 0) {
-                    res.json(data[0]);
-                } else {
-                    res.status(404).json({
-                        success: false,
-                        msg: "Error: Unable to find item with the primary key entered.",
-                    });
-                }
+                res.status(404).json({
+                    success: false,
+                    msg: "Error: Unable to find item with the primary key entered.",
+                });
             }
-        });
-    }
-);
+        }
+    });
+});
 
 /**
  * @swagger
- * /capabilities/getByTag:
+ * /capabilities/tags/getByTag:
  *   get:
  *     description: Get a capability by passing the name of a tag
  *     security:
@@ -345,9 +351,11 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getByTag",
+    "/tags/getByTag",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -374,7 +382,7 @@ router.get(
 
 /**
  * @swagger
- * /capabilities/getByTagsAnd:
+ * /capabilities/tags/getByTagsAnd:
  *   get:
  *     description: Get a capability by passing the name of a tag
  *     security:
@@ -395,9 +403,11 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getByTagsAnd",
+    "/tags/getByTagsAnd",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -431,7 +441,7 @@ router.get(
 
 /**
  * @swagger
- * /capabilities/getByTagsOr:
+ * /capabilities/tags/getByTagsOr:
  *   get:
  *     description: Get a capability by passing the name of a tag
  *     security:
@@ -452,9 +462,11 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getByTagsOr",
+    "/tags/getByTagsOr",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -523,7 +535,9 @@ router.get(
  *       200:
  *         description: Success status
  *       403:
- *        description: Forbidden due to capability requirements
+ *         description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/links/sync",
@@ -597,6 +611,8 @@ router.post(
  *         description: Success status
  *       403:
  *        description: Forbidden due to capability requirements
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/links/create",
@@ -719,7 +735,7 @@ router.delete(
 
 /**
  * @swagger
- * /capabilities/getByRoleName:
+ * /capabilities/roles/getByRoleName:
  *   get:
  *     description: Get a capability by passing the name of a role
  *     security:
@@ -737,9 +753,11 @@ router.delete(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getByRoleName",
+    "/roles/getByRoleName",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -790,7 +808,7 @@ router.get(
 
 /**
  * @swagger
- * /capabilities/getByTeamIDs:
+ * /capabilities/teamids/getByTeamIDs:
  *   get:
  *     description: Get a capability by passing the combined string of username and organisation
  *     security:
@@ -810,9 +828,11 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       500:
+ *         description: Internal Server Error
  */
 router.get(
-    "/getByTeamIDs",
+    "/teamids/getByTeamIDs",
     passport.authenticate("jwt", {
         session: false,
     }),
@@ -877,6 +897,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Confirmation of Account Registration
+ *       500:
+ *         description: Internal Server Error
  */
 router.post(
     "/getAllCapabilitesWithTeamAndUsername",

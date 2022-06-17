@@ -113,7 +113,6 @@ router.get("/acknowledgements/", MiddlewareHelper.authenticateWithKey(credential
  */
 router.post("/acknowledgements/report", MiddlewareHelper.authenticateWithKey(credentials.docobo.inboundkey), (req, res, next) => {
     const item = req.body;
-    console.log(JSON.stringify(item));
     const newItem = {
         importFileName: item.importFileName,
         totalPatientsInFile: item.totalPatientsInFile,

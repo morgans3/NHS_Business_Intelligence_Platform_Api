@@ -38,7 +38,7 @@
         "body-parser": "~1.19.0",
         "cors": "~2.8.5",
         "diu-api-logging": "^1.0.11",
-        "diu-data-functions": "^1.2.26",
+        "diu-data-functions": "^1.2.27",
         "express": "~4.17.1",
         "express-rate-limit": "^6.4.0",
         "express-winston": "^4.0.5",
@@ -78,7 +78,6 @@
         "eslint-plugin-rulesdir": "^0.2.1",
         "jest": "^26.6.3",
         "jest-junit": "^12.0.0",
-        "nodemon": "^2.0.6",
         "supertest": "^6.0.1"
     }
 }

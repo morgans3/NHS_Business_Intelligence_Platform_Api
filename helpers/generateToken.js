@@ -1,5 +1,5 @@
 // @ts-check
-const credentials = require("../_credentials/credentials").;
+const credentials = require("../_credentials/credentials");
 const jwt = require("jsonwebtoken");
 
 module.exports.generateToken = function (username) {
@@ -11,7 +11,7 @@ module.exports.generateToken = function (username) {
         organisation: "Testing",
         authentication: "citizen",
     };
-    return jwt.sign(returnUser, credentials.secret, {
+    return jwt.sign(returnUser, credentials.secret || "", {
         expiresIn: 60, // 1 minutes
     });
 };
@@ -33,7 +33,7 @@ module.exports.generateInvalidToken = function (username, newsecret, expired) {
     if (newsecret !== null) {
         secret = newsecret;
     }
-    return jwt.sign(returnUser, secret, {
+    return jwt.sign(returnUser, secret || "", {
         expiresIn: time,
     });
 };
