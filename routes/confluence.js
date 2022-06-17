@@ -27,6 +27,7 @@ const ConfluenceModel = new DIULibrary.Models.ConfluenceModel();
  *        description: Search guides by keyword
  *        type: string
  *        in: query
+ *        example: Nexus
  *     responses:
  *       200:
  *         description: Full list of guides
@@ -57,6 +58,7 @@ router.get("/content/search", (req, res, next) => {
  *        description: Confluence content id
  *        type: string
  *        in: path
+ *        example: 424050693
  *     responses:
  *       200:
  *         description: Confluence document

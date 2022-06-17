@@ -355,6 +355,7 @@ router.get(
  *        description: Username#Organisation
  *        type: string
  *        in: path
+ *        example: testingUser01#Collaborative Partners
  *     responses:
  *       200:
  *         description: The user's profile

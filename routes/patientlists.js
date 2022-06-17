@@ -31,6 +31,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         description: Limit of patients returned to a maximum of 5000
  *         in: query
  *         type: string
+ *         example: 10
  *     responses:
  *       200:
  *         description: Patient List
@@ -104,6 +105,7 @@ router.get(
  *         in: query
  *         required: true
  *         type: string
+ *         example: "0123456789"
  *     responses:
  *       200:
  *         description: Patient Details
@@ -178,10 +180,12 @@ router.get(
  *         description: Limit of patients returned to a maximum of 5000
  *         in: query
  *         type: string
+ *         example: 10
  *       - name: cohort
  *         description: Cohort of patients
  *         in: query
  *         type: string
+ *         example: "{}"
  *     responses:
  *       200:
  *         description: Patient List

@@ -30,6 +30,7 @@ const PGConstruct = PostgresI.init(settings);
  *         description: Post Code
  *         in: query
  *         type: string
+ *         example: FY3 8NP
  *     produces:
  *      - application/json
  *     responses:

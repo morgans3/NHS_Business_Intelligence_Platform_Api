@@ -20,8 +20,28 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
-        url: "/capabilities",
+        url: "/apps/",
+        type: null,
+        method: "get",
+    },
+    {
+        url: "/apps/create",
         type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/apps/update",
+        type: "JWT",
+        method: "put",
+    },
+    {
+        url: "/apps/delete",
+        type: "JWT",
+        method: "delete",
+    },
+    {
+        url: "/capabilities",
+        type: null,
         method: "get",
     },
     {
@@ -32,7 +52,7 @@ module.exports.SecureEndpoints = [
     {
         url: "/capabilities/update",
         type: "JWT",
-        method: "post",
+        method: "put",
     },
     {
         url: "/capabilities/delete",
@@ -40,17 +60,17 @@ module.exports.SecureEndpoints = [
         method: "delete",
     },
     {
-        url: "/capabilities/getByTag",
+        url: "/capabilities/tags/getByTag",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/capabilities/getByTagsAnd",
+        url: "/capabilities/tags/getByTagsAnd",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/capabilities/getByTagsOr",
+        url: "/capabilities/tags/getByTagsOr",
         type: "JWT",
         method: "get",
     },
@@ -70,25 +90,45 @@ module.exports.SecureEndpoints = [
         method: "delete",
     },
     {
-        url: "/capabilities/getByRoleName",
+        url: "/capabilities/roles/getByRoleName",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/capabilities/getByTeamIds",
+        url: "/capabilities/teamids/getByTeamIds",
         type: "JWT",
         method: "get",
     },
-    // {
-    //   url: `/capabilities/getAllCapabilitiesWithTeamAndUsername`,
-    //   type: "JWT",
-    //   method: "post",
-    // },
+    {
+        url: `/capabilities/getAllCapabilitesWithTeamAndUsername`,
+        type: "JWT",
+        method: "post",
+    },
     // {
     //     url: `/{type}/{id}/capabilities`,
     //     type: "JWT",
     //     method: "get",
     // },
+    {
+        url: "/cohorts/",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/cohorts/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/cohorts/update",
+        type: "JWT",
+        method: "put",
+    },
+    {
+        url: "/cohorts/delete",
+        type: "JWT",
+        method: "delete",
+    },
     {
         url: "/confluence/content/search",
         type: null,
@@ -99,6 +139,46 @@ module.exports.SecureEndpoints = [
     //     type: null,
     //     method: "get",
     // },
+    {
+        url: "/cvicohorts/",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/cvicohorts/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/cvicohorts/update",
+        type: "JWT",
+        method: "put",
+    },
+    {
+        url: "/cvicohorts/delete",
+        type: "JWT",
+        method: "delete",
+    },
+    {
+        url: "/dashboards/",
+        type: null,
+        method: "get",
+    },
+    {
+        url: "/dashboards/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/dashboards/update",
+        type: "JWT",
+        method: "put",
+    },
+    {
+        url: "/dashboards/delete",
+        type: "JWT",
+        method: "delete",
+    },
     {
         url: "/demographics/demographicsbynhsnumber",
         type: "JWT",
@@ -138,6 +218,16 @@ module.exports.SecureEndpoints = [
         url: "/docobooutbound/processDocoboInfo",
         type: "JWT",
         method: "get",
+    },
+    {
+        url: "/govuk/callback",
+        type: null,
+        method: "post",
+    },
+    {
+        url: "/govuk/maincallback",
+        type: null,
+        method: "post",
     },
     {
         url: "/gpinpatients/authenticate",
@@ -180,6 +270,21 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
+        url: "/gppractices/",
+        type: null,
+        method: "get",
+    },
+    {
+        url: "/grandindex/",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/isochrone/houses-within-isochrone",
+        type: "JWT",
+        method: "post",
+    },
+    {
         url: "/lpresviewer/generate-validation-key",
         type: "JWT",
         method: "post",
@@ -215,6 +320,31 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
+        url: "/mosaic/",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/newsfeeds/delete",
+        type: "JWT",
+        method: "delete",
+    },
+    {
+        url: "/newsfeeds/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/newsfeeds/update",
+        type: "JWT",
+        method: "put",
+    },
+    {
+        url: "/newsfeeds/",
+        type: "JWT",
+        method: "get",
+    },
+    {
         url: "/niceevidence/evidencesearch",
         type: "JWT",
         method: "post",
@@ -230,9 +360,49 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
+        url: "/organisations/remove",
+        type: "JWT",
+        method: "delete",
+    },
+    {
+        url: "/organisations/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/organisations/update",
+        type: "JWT",
+        method: "put",
+    },
+    {
+        url: "/organisations/",
+        type: null,
+        method: "get",
+    },
+    {
+        url: "/orgboundaries/topo-json",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/outbreak/mapinfo",
+        type: "JWT",
+        method: "get",
+    },
+    {
         url: "/password/update",
         type: null,
-        method: "post",
+        method: "put",
+    },
+    {
+        url: "/patienthistory/patienthistorybynhsnumber",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/patienthistory/districthistorybynhsnumber",
+        type: "JWT",
+        method: "get",
     },
     {
         url: "/patientlists/",
@@ -255,9 +425,49 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
+        url: "/pcninformation/hexgeo-json",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/pcninformation/topo-json",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/pointsofinterest/",
+        type: "JWT",
+        method: "get",
+    },
+    {
         url: "/postcodes/",
         type: "JWT",
         method: "get",
+    },
+    {
+        url: "/postcodes/postcode-lookup",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/real_time_surveillance/",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/real_time_surveillance/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/real_time_surveillance/update",
+        type: "JWT",
+        method: "put",
+    },
+    {
+        url: "/real_time_surveillance/delete",
+        type: "JWT",
+        method: "delete",
     },
     {
         url: "/requests",
@@ -280,34 +490,9 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
-        url: "/teamrequests/create",
-        type: "JWT",
+        url: "/requests/help",
+        type: null,
         method: "post",
-    },
-    {
-        url: "/teamrequests/delete",
-        type: "JWT",
-        method: "delete",
-    },
-    {
-        url: "/teamrequests/update",
-        type: "JWT",
-        method: "put",
-    },
-    {
-        url: "/teamrequests/",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/teamrequests/getRequestsByUsername",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/teamrequests/getRequestsByTeamCode",
-        type: "JWT",
-        method: "get",
     },
     // {
     //     url: `/{type}/{id}/roles`,
@@ -316,7 +501,7 @@ module.exports.SecureEndpoints = [
     // },
     {
         url: "/roles",
-        type: "JWT",
+        type: null,
         method: "get",
     },
     {
@@ -327,7 +512,7 @@ module.exports.SecureEndpoints = [
     {
         url: "/roles/update",
         type: "JWT",
-        method: "post",
+        method: "put",
     },
     {
         url: "/roles/links/sync",
@@ -380,6 +565,46 @@ module.exports.SecureEndpoints = [
         method: "get",
     },
     {
+        url: "/spi_incidentmethods/",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/spi_incidentmethods/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/spi_incidentmethods/update",
+        type: "JWT",
+        method: "put",
+    },
+    {
+        url: "/spi_incidentmethods/delete",
+        type: "JWT",
+        method: "delete",
+    },
+    {
+        url: "/systemalerts/",
+        type: null,
+        method: "get",
+    },
+    {
+        url: "/systemalerts/getActive",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/systemalerts/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/systemalerts/update",
+        type: "JWT",
+        method: "put",
+    },
+    {
         url: "/teammembers/create",
         type: "JWT",
         method: "post",
@@ -410,6 +635,36 @@ module.exports.SecureEndpoints = [
         method: "delete",
     },
     {
+        url: "/teamrequests/create",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/teamrequests/delete",
+        type: "JWT",
+        method: "delete",
+    },
+    {
+        url: "/teamrequests/update",
+        type: "JWT",
+        method: "put",
+    },
+    {
+        url: "/teamrequests/",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/teamrequests/getRequestsByUsername",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/teamrequests/getRequestsByTeamCode",
+        type: "JWT",
+        method: "get",
+    },
+    {
         url: "/teams",
         type: "JWT",
         method: "get",
@@ -422,13 +677,33 @@ module.exports.SecureEndpoints = [
     {
         url: "/teams/update",
         type: "JWT",
-        method: "post",
+        method: "put",
     },
-    // {
-    //     url: `/teams/{id}/delete`,
-    //     type: "JWT",
-    //     method: "delete",
-    // },
+    {
+        url: `/teams/delete`,
+        type: "JWT",
+        method: "delete",
+    },
+    {
+        url: "/teams/getTeamByCode",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/teams/getTeamsByOrgCode",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/teams/getTeamsByPartialTeamName",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/teams/getTeamsByPartialTeamNameAndOrgCode",
+        type: "JWT",
+        method: "get",
+    },
     {
         url: "/trials/",
         type: "JWT",
@@ -466,7 +741,7 @@ module.exports.SecureEndpoints = [
     },
     {
         url: "/users/register",
-        type: null,
+        type: "JWT",
         method: "post",
     },
     {
@@ -480,6 +755,11 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
+        url: "/users/authentication-refresh",
+        type: "JWT",
+        method: "post",
+    },
+    {
         url: "/users/validate",
         type: "JWT",
         method: "get",
@@ -488,17 +768,6 @@ module.exports.SecureEndpoints = [
         url: "/users/delete",
         type: "JWT",
         method: "delete",
-    },
-    {
-        url: "/virtualward/",
-        type: "JWT",
-        method: "get",
-        queryString: "?limit={limit}",
-    },
-    {
-        url: "/virtualward/update",
-        type: "JWT",
-        method: "post",
     },
     {
         url: "/users/send-code",
@@ -511,67 +780,62 @@ module.exports.SecureEndpoints = [
         method: "post",
     },
     {
-        url: "/grandindex/",
+        url: "/virtualward_decision/",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/gppractices/",
-        type: null,
-        method: "get",
-    },
-    {
-        url: "/wards/",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/pcninformation/hexgeo-json",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/pcninformation/topo-json",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/orgboundaries/topo-json",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/isochrone/houses-within-isochrone",
+        url: "/virtualward_decision/getAllByStatus",
         type: "JWT",
         method: "post",
     },
     {
-        url: "/outbreak/mapinfo",
+        url: "/virtualward_decision/status/update",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/virtualward_decision/getAllActioned",
         type: "JWT",
         method: "get",
     },
-    // {
-    //   url: "/payloads/{id}",
-    //   type: "JWT",
-    //   method: "get",
-    // },
+    {
+        url: "/virtualward_decision/contact/update",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/virtualward_decision/contact/clear",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/virtualward_decision/notes/update",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/virtualward_decision/notes/clear",
+        type: "JWT",
+        method: "post",
+    },
+    {
+        url: "/virtualward/",
+        type: "JWT",
+        method: "get",
+    },
+    {
+        url: "/virtualward/update",
+        type: "JWT",
+        method: "put",
+    },
     {
         url: "/warddetails/",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/mosaic/",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/mosaic/",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/pointsofinterest/",
+        url: "/wards/",
         type: "JWT",
         method: "get",
     },
@@ -588,7 +852,7 @@ module.exports.SecureEndpoints = [
     {
         url: "/atomic/payloads/update",
         type: "JWT",
-        method: "post",
+        method: "put",
     },
     {
         url: "/atomic/payloads/delete",
@@ -601,123 +865,28 @@ module.exports.SecureEndpoints = [
     //     method: "get",
     // },
     {
-        url: "/organisations/remove",
-        type: "JWT",
-        method: "delete",
-    },
-    {
-        url: "/organisations/create",
-        type: "JWT",
-        method: "post",
-    },
-    {
-        url: "/organisations/update",
-        type: "JWT",
-        method: "post",
-    },
-    {
-        url: "/organisations/",
-        type: null,
-        method: "get",
-    },
-    {
-        url: "/newsfeeds/remove",
-        type: "JWT",
-        method: "delete",
-    },
-    {
-        url: "/newsfeeds/create",
-        type: "JWT",
-        method: "post",
-    },
-    {
-        url: "/newsfeeds/update",
-        type: "JWT",
-        method: "post",
-    },
-    {
-        url: "/newsfeeds/",
+        url: "/atomic/formdata/",
         type: "JWT",
         method: "get",
     },
     {
-        url: "/systemalerts/",
-        type: null,
-        method: "get",
-    },
-    {
-        url: "/systemalerts/getActive",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/systemalerts/create",
+        url: "/atomic/formdata/create",
         type: "JWT",
         method: "post",
     },
     {
-        url: "/systemalerts/update",
+        url: "/atomic/formdata/update",
         type: "JWT",
         method: "put",
     },
     {
-        url: "/apps/",
-        type: null,
-        method: "get",
-    },
-    {
-        url: "/apps/create",
-        type: "JWT",
-        method: "post",
-    },
-    {
-        url: "/apps/update",
-        type: "JWT",
-        method: "put",
-    },
-    {
-        url: "/apps/delete",
+        url: "/atomic/formdata/delete",
         type: "JWT",
         method: "delete",
     },
-    {
-        url: "/dashboards/",
-        type: null,
-        method: "get",
-    },
-    {
-        url: "/dashboards/create",
-        type: "JWT",
-        method: "post",
-    },
-    {
-        url: "/dashboards/update",
-        type: "JWT",
-        method: "put",
-    },
-    {
-        url: "/dashboards/delete",
-        type: "JWT",
-        method: "delete",
-    },
-    {
-        url: "/real_time_surveillance/",
-        type: "JWT",
-        method: "get",
-    },
-    {
-        url: "/real_time_surveillance/create",
-        type: "JWT",
-        method: "post",
-    },
-    {
-        url: "/real_time_surveillance/update",
-        type: "JWT",
-        method: "put",
-    },
-    {
-        url: "/real_time_surveillance/delete",
-        type: "JWT",
-        method: "delete",
-    },
+    // {
+    //     url: "/atomic/formdata/{id}",
+    //     type: "JWT",
+    //     method: "get",
+    // },
 ];

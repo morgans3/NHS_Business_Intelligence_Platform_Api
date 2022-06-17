@@ -60,7 +60,7 @@ module.exports.checkTeamAdmin = function (username, team, callback) {
                         if (user) {
                             callback(null, true, foundTeam);
                         } else {
-                            callback(null, false);
+                            callback(null, false, foundTeam);
                         }
                     } else {
                         callback(null, false, team);
