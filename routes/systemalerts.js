@@ -312,4 +312,82 @@ router.post(
     }
 );
 
+/**
+ * @swagger
+ * /systemalerts/delete:
+ *   delete:
+ *     security:
+ *      - JWT: []
+ *     description: Removes a System Alert. Requires Hall Monitor
+ *     tags:
+ *      - SystemAlerts
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *       - name: author
+ *         description: Alerts author
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: id
+ *         description: Alert ID
+ *         in: formData
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Confirmation of Alert removal
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *        description: Forbidden due to capability requirements
+ *       404:
+ *         description: Alert not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.delete(
+    "/delete",
+    [
+        passport.authenticate("jwt", {
+            session: false,
+        }),
+        MiddlewareHelper.userHasCapability("Hall Monitor"),
+    ],
+    MiddlewareHelper.validate(
+        "body",
+        {
+            author: { type: "string" },
+            id: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
+    (req, res, next) => {
+        SystemAlerts.delete(
+            {
+                id: req.body.id,
+                author: req.body.author,
+            },
+            (err, event) => {
+                if (err) {
+                    res.status(500).json({
+                        success: false,
+                        msg: "Failed to delete: " + err,
+                    });
+                    return;
+                }
+                if (event.Attributes) {
+                    res.send({ success: true, msg: "Payload deleted", data: event.Attributes });
+                } else {
+                    res.status(404).json({ success: false, msg: "Payload not found" });
+                }
+            }
+        );
+    }
+);
+
 module.exports = router;

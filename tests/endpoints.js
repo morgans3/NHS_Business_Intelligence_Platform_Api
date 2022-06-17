@@ -605,6 +605,11 @@ module.exports.SecureEndpoints = [
         method: "put",
     },
     {
+        url: "/systemalerts/delete",
+        type: "JWT",
+        method: "delete",
+    },
+    {
         url: "/teammembers/create",
         type: "JWT",
         method: "post",
