@@ -543,7 +543,7 @@ router.post(
  *       500:
  *         description: Server Error Processing Result
  */
-router.post(
+router.put(
     "/update",
     passport.authenticate("jwt", {
         session: false,

@@ -31,13 +31,16 @@ const ConfluenceModel = new DIULibrary.Models.ConfluenceModel();
  *     responses:
  *       200:
  *         description: Full list of guides
+ *       404:
+ *         description: No guides found
  *       500:
  *         description: Internal Server Error
  */
 router.get("/content/search", (req, res, next) => {
     ConfluenceModel.searchContent(req.query, (data) => {
         if (data) {
-            res.json(data);
+            if (data.size && data.size !== 0) res.json(data);
+            else res.status(404).json({ results: [] });
         } else {
             res.status(500).json({ message: "An error occurred fetching the content" });
         }
@@ -64,6 +67,8 @@ router.get("/content/search", (req, res, next) => {
  *         description: Confluence document
  *       400:
  *         description: Bad request
+ *       404:
+ *         description: No guides found
  *       500:
  *         description: Internal Server Error
  */
@@ -81,7 +86,8 @@ router.get(
     (req, res, next) => {
         ConfluenceModel.getContentById(req.params.id, (data) => {
             if (data) {
-                res.json(data);
+                if (data.statusCode && data.statusCode === 404) res.status(404).json({ message: "No content found" });
+                else res.json(data);
             } else {
                 res.status(500).json({ message: "An error occurred fetching the content" });
             }
