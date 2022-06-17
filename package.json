@@ -33,6 +33,7 @@
         ]
     },
     "dependencies": {
+        "@types/lodash": "^4.14.182",
         "activedirectory": "^0.7.2",
         "aws-sdk": "^2.540.0",
         "bcryptjs": "~2.4.3",
