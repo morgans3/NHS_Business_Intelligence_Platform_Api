@@ -421,11 +421,11 @@ router.get(
         let tags = req.query.tags;
         if (tags) {
             if (tags.length === 1) {
-                if (req.query.tags[0].indexOf(",") !== -1) {
-                    req.query.tags = req.query.tags[0].split(",");
+                if (tags[0].indexOf(",") !== -1) {
+                    tags = tags[0].split(",");
                 }
             }
-            CapabilitiesModel.getByTagsAnd(req.query.tags, function (err, data) {
+            CapabilitiesModel.getByTagsAnd(tags, function (err, data) {
                 if (err) {
                     res.status(500).json({
                         success: false,
@@ -486,11 +486,11 @@ router.get(
         let tags = req.query.tags;
         if (tags) {
             if (tags.length === 1) {
-                if (req.query.tags[0].indexOf(",") !== -1) {
-                    req.query.tags = req.query.tags[0].split(",");
+                if (tags[0].indexOf(",") !== -1) {
+                    tags = tags[0].split(",");
                 }
             }
-            CapabilitiesModel.getByTagsOr(req.query.tags, function (err, data) {
+            CapabilitiesModel.getByTagsOr(tags, function (err, data) {
                 if (err) {
                     res.status(500).json({
                         success: false,
