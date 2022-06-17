@@ -1,7 +1,7 @@
 // @ts-check
 // Self invocation to allow for top-level async
 (async () => {
-    if (process.env.DEV || true) {
+    if (process.env.DEV) {
         require("dotenv").config();
         const AWSHelper = require("diu-data-functions").Helpers.Aws;
         try {
