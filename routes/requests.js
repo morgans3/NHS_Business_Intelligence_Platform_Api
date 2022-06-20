@@ -2,8 +2,7 @@ const uuid = require("uuid");
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const keyBy = require("lodash");
-const groupBy = require("lodash");
+const { keyBy, groupBy } = require("lodash");
 
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
