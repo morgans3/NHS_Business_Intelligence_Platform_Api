@@ -125,7 +125,7 @@ router.post(
     (req, res, next) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
-        const username = decodedToken["username"];
+        const username = decodedToken["username"] + "#" + decodedToken["organisation"];
         RoleFunctions.checkTeamAdmin(username, { code: req.body.teamcode }, (errCheck, resultCheck) => {
             if (errCheck) {
                 res.status(500).send({ success: false, msg: errCheck });
@@ -230,7 +230,7 @@ router.put(
     (req, res, next) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
-        const username = decodedToken["username"];
+        const username = decodedToken["username"] + "#" + decodedToken["organisation"];
         RoleFunctions.checkTeamAdmin(username, { code: req.body.teamcode }, (errCheck, resultCheck) => {
             if (errCheck) {
                 res.status(500).send({ success: false, msg: errCheck });
