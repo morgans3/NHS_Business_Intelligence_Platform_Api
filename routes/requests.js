@@ -2,8 +2,7 @@ const uuid = require("uuid");
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const keyBy = require("lodash");
-const groupBy = require("lodash");
+const { keyBy, groupBy } = require("lodash");
 
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
@@ -117,7 +116,7 @@ router.get(
  *        type: string
  *
  *      - name: request_sponsor
- *        description: Professional number
+ *        description: Sponsor to approve account
  *        in: formData
  *        required: true
  *        type: object
@@ -221,6 +220,7 @@ router.post(
                         firstname: formData.firstname,
                         surname: formData.surname,
                         email: formData.email,
+                        request_sponsor: formData.request_sponsor,
                         professional_role: formData.professional_role,
                         professional_number: formData.professional_number,
                         organisation: formData.organisation,
@@ -388,6 +388,242 @@ router.get("/account/:id", (req, res, next) => {
  *         description: Internal Server Error
  */
 router.post("/account/complete", (req, res, next) => {
+    // Get form data
+    const formData = req.body;
+
+    if (!formData.parent_id || !formData.action || !formData.date) {
+        res.status(400).json({ success: false, msg: "Missing params" });
+        return;
+    }
+
+    // Get parent request
+
+    // Mark as approve/disapprove
+
+    // If approve
+    // Create account
+    // Get all capabilities
+    // Send email to each authoriser
+
+    // Send email to user with account details
+
+
+
+    // Get parent request
+    formSubmissionsModel.getByKeys(
+        {
+            id: formData.parent_id,
+        },
+        (getRequestError, userAccessRequests) => {
+            // Return error
+            if (getRequestError) {
+                res.status(500).json({ success: false, msg: getRequestError });
+                return;
+            }
+
+            // Return error if no items found
+            if (userAccessRequests.Items.length === 0) {
+                res.status(404).json({ success: false, msg: "Request no longer exists" });
+                return;
+            }
+
+            // Get request
+            const userAccessRequest = userAccessRequests.Items[0];
+
+            // Store action request
+            let formSubmission;
+            if (formData.action === "approve") {
+                formSubmission = {
+                    id: uuid.v1(),
+                    parent_id: formData.parent_id,
+                    type: "AccountRequestComplete",
+                    data: {
+                        action: formData.action,
+                        officer: formData.officer,
+                        officer_job: formData.officer_job,
+                        organisation: formData.organisation,
+                    },
+                    created_at: formData.date,
+                };
+            } else {
+                formSubmission = {
+                    id: uuid.v1(),
+                    parent_id: formData.parent_id,
+                    type: "AccountRequestComplete",
+                    data: {
+                        action: formData.action,
+                        reason: formData.reason,
+                    },
+                    created_at: formData.date,
+                };
+            }
+
+            // Persist action submission
+            formSubmissionsModel.create(formSubmission, (formSubmissionError) => {
+                if (formSubmissionError) {
+                    console.log("Form submission error");
+                    res.status(500).json({ success: false, msg: formSubmissionError });
+                    return;
+                }
+
+                // Set approval status
+                userAccessRequest.data.approved = (formData.action === "approve");
+
+                // Update parent request
+                formSubmissionsModel.update(
+                    { id: formData.parent_id },
+                    {
+                        data: userAccessRequest.data,
+                    },
+                    (accessRequestError, data) => {
+                        if (accessRequestError) {
+                            console.log("Access request error", accessRequestError);
+                            res.status(500).json({ success: false, msg: accessRequestError });
+                            return;
+                        }
+
+                        // Manage approval status
+                        if (userAccessRequest.data.approved === true) {
+                            // Create account
+                            const userAccountPassword = Math.random().toString(36).slice(-8);
+                            UserModel.create(
+                                {
+                                    name: `${userAccessRequest.data.firstname} ${userAccessRequest.data.surname}`,
+                                    email: userAccessRequest.data.email,
+                                    username: userAccessRequest.data.email,
+                                    password: userAccountPassword,
+                                    organisation: "Collaborative Partners",
+                                    linemanager: formSubmission.officer,
+                                },
+                                (userAddError, user) => {
+                                    // Return failed
+                                    if (userAddError) {
+                                        console.log("User create error");
+                                        res.status(500).json({ success: false, msg: "Failed to register user" });
+                                        return;
+                                    }
+
+                                    // Create links array
+                                    RequestsHelper.linkRequestedCapbilities(
+                                        user,
+                                        userAccessRequest.data.capabilities.filter((capability) => capability.approved)
+                                    ).then(
+                                        (links) => {
+                                            // Send user access details
+                                            EmailHelper.sendMail(
+                                                {
+                                                    to: userAccessRequest.data.email,
+                                                    subject: "NHS BI Platform Access",
+                                                    message: `
+                <p>Your access to ${issuer.replace("api.", "")} has been approved, you can now login using the below details...</p>
+                <p>
+                    <b>Username:</b> ${user.username} <br>
+                    <b>Password:</b> ${userAccountPassword} <br>
+                    <b>Organisation:</b> Collaborative Partners
+                </p>
+                <p>When you first login please change your password to keep your account secure.</p>`,
+                                                    actions: [
+                                                        {
+                                                            class: "primary",
+                                                            text: "Login",
+                                                            type: "home_page",
+                                                        },
+                                                    ],
+                                                },
+                                                (error, response) => {
+                                                    if (error) {
+                                                        console.log(
+                                                            "Unable to notify: " + formData.email + ". Reason: " + error.toString()
+                                                        );
+                                                        res.status(500).json({ success: false, msg: error });
+                                                    } else {
+                                                        res.json({ success: true, msg: "Your response has been recorded" });
+                                                    }
+                                                }
+                                            );
+                                        },
+                                        (errors) => {
+                                            if (errors.length > 0) {
+                                                res.status(500).json({ success: false, msg: "Failed to register user" });
+                                            }
+                                        }
+                                    );
+                                }
+                            );
+                        } else if (userAccessRequest.data.approved === false) {
+                            // Send access denied email
+                            EmailHelper.sendMail(
+                                {
+                                    to: userAccessRequest.data.email,
+                                    subject: "BI Platform Access",
+                                    message: `
+                            <p>Your access to ${issuer.replace("api.", "")} has not been approved.</p>
+                            <p><b>Reason:</b> ${formData.reason}</p>`,
+                                    actions: [
+                                        {
+                                            class: "primary",
+                                            text: "Request again",
+                                            type: "account_request",
+                                        },
+                                    ],
+                                },
+                                (error, response) => {
+                                    if (error) {
+                                        console.log(
+                                            "Unable to send approval notification to: " + formData.email + ". Reason: " + error.toString()
+                                        );
+                                        res.status(500).json({ success: false, msg: error });
+                                    } else {
+                                        res.json({ success: true, msg: "Response has been recorded" });
+                                    }
+                                }
+                            );
+                        } else {
+                            // Some capabilities still require approval
+                            res.json({ success: true, msg: "Your response has been recorded" });
+                        }
+                    }
+                );
+            });
+        }
+    );
+});
+
+
+/**
+ * @swagger
+ * /requests/capability/approve:
+ *   post:
+ *     description: Send a request for a user account
+ *     tags:
+ *      - Requests
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *      - name: parent_id
+ *        description: Parent request id
+ *        in: formData
+ *        required: true
+ *        type: string
+ *      - name: action
+ *        description: Action name
+ *        in: formData
+ *        required: true
+ *        type: string
+ *      - name: date
+ *        description: Request completion date
+ *        in: formData
+ *        required: true
+ *        type: string
+ *     responses:
+ *       200:
+ *         description: Form retrieved successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal Server Error
+ */
+router.post("/capability/approve", (req, res, next) => {
     // Get form data
     const formData = req.body;
 
