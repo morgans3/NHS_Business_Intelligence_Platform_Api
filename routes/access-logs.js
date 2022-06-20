@@ -241,7 +241,7 @@ router.get(
             }
 
             // Get data for each period
-            const groupBy = require("lodash/groupBy");
+            const groupBy = require("lodash");
             const response = { periods, data: [] };
 
             // Reformat dates
