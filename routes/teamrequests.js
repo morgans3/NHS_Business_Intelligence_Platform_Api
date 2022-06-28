@@ -67,6 +67,11 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
  *         in: formData
  *         type: string
  *         format: date-time
+ *       - name: emailto
+ *         description: Person to notify
+ *         in: formData
+ *         type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Confirmation of Request Registration
@@ -88,6 +93,7 @@ router.post(
             username: { type: "string" },
             teamcode: { type: "string" },
             requestdate: { type: "string" },
+            emailto: { type: "string" },
         },
         {
             pattern: "Missing query params",
@@ -160,7 +166,7 @@ router.post(
                                 if (req.body.approveddate) newRequest["approveddate"] = { S: req.body.approveddate };
                                 if (req.body.refuseddate) newRequest["refuseddate"] = { S: req.body.refuseddate };
 
-                                Requests.addRequest(newRequest, (err, request) => {
+                                Requests.addRequest(newRequest, req.body.emailto, req.body.username, (err, request) => {
                                     if (err) {
                                         res.json({
                                             success: false,

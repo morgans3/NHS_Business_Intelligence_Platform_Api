@@ -267,9 +267,9 @@ router.post(
                                         EmailHelper.sendMail(
                                             {
                                                 to: authoriser,
-                                                subject: "Nexus BI Platform Access",
+                                                subject: "NHS BI Platform Access",
                                                 message: `
-                                    <p>${formData.firstname} ${formData.surname} has requested access to the Nexus BI Platform.</p>
+                                    <p>${formData.firstname} ${formData.surname} has requested access to the NHS BI Platform.</p>
                                     <p>Click below to view further details...</p>`,
                                                 actions: [
                                                     {
