@@ -353,8 +353,6 @@ router.put(
  *         description: Bad Request
  *       401:
  *         description: Unauthorized
- *       403:
- *         description: Forbidden
  *       404:
  *         description: Not found
  *       500:
@@ -376,45 +374,32 @@ router.delete(
         }
     ),
     (req, res) => {
-        const token = req.header("authorization");
-        const decodedToken = JWT.decode(token.replace("JWT ", ""));
-        const username = decodedToken["username"] + "#" + decodedToken["organisation"];
-        RoleFunctions.checkTeamAdmin(username, { code: req.body.teamcode }, (errCheck, resultCheck) => {
-            if (errCheck) {
-                res.status(500).send({ success: false, msg: errCheck });
-                return;
+        const id = req.body.id;
+        Requests.getRequestById(id, function (err, result) {
+            if (err) {
+                res.status(500).json({
+                    success: false,
+                    msg: "Failed to delete: " + err,
+                });
             }
-            if (!resultCheck) {
-                res.status(403).send({ success: false, msg: "User not authorized to update team" });
-            } else {
-                const id = req.body.id;
-                Requests.getRequestById(id, function (err, result) {
-                    if (err) {
+            if (result.Items.length > 0) {
+                const request = result.Items[0];
+                Requests.remove(request.id, request.teamcode, function (requestRemoveErr) {
+                    if (requestRemoveErr) {
                         res.status(500).json({
                             success: false,
-                            msg: "Failed to delete: " + err,
+                            msg: "Failed to delete: " + requestRemoveErr,
                         });
                     }
-                    if (result.Items.length > 0) {
-                        const request = result.Items[0];
-                        Requests.remove(request.id, request.teamcode, function (requestRemoveErr) {
-                            if (requestRemoveErr) {
-                                res.status(500).json({
-                                    success: false,
-                                    msg: "Failed to delete: " + requestRemoveErr,
-                                });
-                            }
-                            res.json({
-                                success: true,
-                                msg: "Request deleted",
-                            });
-                        });
-                    } else {
-                        res.status(404).json({
-                            success: false,
-                            msg: "Can not find item in database",
-                        });
-                    }
+                    res.json({
+                        success: true,
+                        msg: "Request deleted",
+                    });
+                });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    msg: "Can not find item in database",
                 });
             }
         });
