@@ -366,7 +366,7 @@ router.delete(
             if (err) {
                 res.status(500).json({
                     success: false,
-                    msg: "Failed to archive: " + err,
+                    msg: "Failed to delete: " + err,
                 });
             }
             if (app.Items && app.Items.length > 0) {

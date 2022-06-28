@@ -137,11 +137,6 @@ router.get(
  *         in: formData
  *         type: string
  *         required: true
- *       - name: archive
- *         description: Archive Flag
- *         in: formData
- *         required: true
- *         type: boolean
  *     responses:
  *       200:
  *         description: Confirmation of Alert Update
@@ -182,7 +177,6 @@ router.put(
             status: req.body.status,
             icon: req.body.icon,
             author: req.body.author,
-            archive: req.body.archive,
         };
         SystemAlerts.updateSystemAlert(newAlert, function (err) {
             if (err) {
@@ -249,11 +243,6 @@ router.put(
  *         in: formData
  *         type: string
  *         required: true
- *       - name: archive
- *         description: Archive Flag
- *         in: formData
- *         required: true
- *         type: boolean
  *     responses:
  *       200:
  *         description: Confirmation of Alert Update
@@ -292,7 +281,6 @@ router.post(
             status: { S: req.body.status },
             icon: { S: req.body.icon },
             author: { S: req.body.author },
-            archive: { BOOL: false },
         };
 
         SystemAlerts.addSystemAlert(newSystemAlerts, (err, event) => {
