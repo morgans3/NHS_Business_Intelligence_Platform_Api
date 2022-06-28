@@ -66,7 +66,7 @@ module.exports.updateSystemAlert = function (systemAlert, callback) {
             id: systemAlert.id,
             author: systemAlert.author,
         },
-        UpdateExpression: "set #name=:nm, startdate=:sd, enddate=:ed, #msg=:msg, #status=:st, #icon=:ic, #arc=:arc",
+        UpdateExpression: "set #name=:nm, startdate=:sd, enddate=:ed, #msg=:msg, #status=:st, #icon=:ic",
         ExpressionAttributeValues: {
             ":nm": systemAlert.name,
             ":sd": systemAlert.startdate,
