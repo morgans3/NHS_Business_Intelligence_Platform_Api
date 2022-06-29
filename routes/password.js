@@ -2,8 +2,10 @@
 const passport = require("passport");
 const express = require("express");
 const router = express.Router();
+const JWT = require("jsonwebtoken");
 
 const Authenticate = require("../models/authenticate");
+const AuthenticateHelper = require("../helpers/authenticate");
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
 const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
@@ -73,49 +75,62 @@ router.put("/update", (req, res, next) => {
 
         // Authenticate with jwt or authcode?
         if (payload.code) {
+            // Verify code
             VerificationCodeModel.getCode(payload.code, payload.username, (err, result) => {
                 if (err) {
                     console.error(err);
-                    res.status(500).json({
-                        success: false,
-                        msg: "Failed: " + err,
-                    });
+                    res.status(500).json({ success: false, msg: "Failed: " + err });
                     return;
                 }
+
+                // Code exists?
                 if (result.Items && result.Items.length > 0) {
                     if (payload.username === result.Items[0].username) {
-                        UserModel.updateUser(payload.username, payload.newpassword, (updateErr, updateRes) => {
+                        // Update user's password
+                        UserModel.updateUser(payload.username, payload.newpassword, (updateErr, user) => {
                             if (updateErr) {
                                 console.error(updateErr);
-                                res.status(500).json({
-                                    success: false,
-                                    msg: "Failed: " + updateErr,
-                                });
+                                res.status(500).json({ success: false, msg: "Failed: " + updateErr });
                                 return;
                             }
+
+                            // Delete old verification code
                             VerificationCodeModel.deleteCode(payload.code, payload.username, (delErr, delRes) => {
                                 if (delErr) {
                                     console.error(delErr);
-                                    res.status(500).json({
-                                        success: false,
-                                        msg: "Failed: " + delRes,
-                                    });
+                                    res.status(500).json({ success: false, msg: "Failed: " + delRes });
                                     return;
                                 }
-                                Authenticate.authenticateDemo(updateRes, (boolErr, strToken) => {
-                                    if (boolErr) {
-                                        console.error(boolErr);
-                                        res.status(500).json({
-                                            success: false,
-                                            msg: "Failed: " + strToken,
-                                        });
-                                        return;
-                                    }
-                                    res.json({
-                                        success: true,
-                                        token: strToken,
+
+                                // Authenticate user
+                                AuthenticateHelper.login(
+                                    payload.authmethod,
+                                    user.username,
+                                    payload.newpassword,
+                                    user.organisation,
+                                    (loginError, authenticatedUser) => {
+                                        if (loginError) {
+                                            // Return error
+                                            res.status(401).json({ success: false, msg: err });
+                                            return null;
+                                        } else {
+                                            // Upgrade token
+                                            Authenticate.upgradePassportwithOrganisation(
+                                                JWT.decode(authenticatedUser.jwt),
+                                                false,
+                                                (upgradeError, token) => {
+                                                    if (upgradeError) {
+                                                        console.error(upgradeError);
+                                                        res.status(500).json({ success: false, msg: "Failed: " + upgradeError });
+                                                        return;
+                                                    }
+
+                                                    // Return token
+                                                    res.json({ success: true, token });
+                                                }
+                                            );
+                                        };
                                     });
-                                });
                             });
                         });
                     } else {

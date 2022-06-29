@@ -223,7 +223,7 @@ router.put(
     async (req, res, next) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
-        const username = decodedToken["username"];
+        const username = decodedToken["username"] + "#" + decodedToken["organisation"];
         const payload = req.body;
         RoleFunctions.checkTeamAdmin(username, { code: req.body.code }, (errCheck, resultCheck, teamCheck) => {
             if (errCheck) {
@@ -570,7 +570,7 @@ router.delete(
     (req, res, next) => {
         const token = req.header("authorization");
         const decodedToken = JWT.decode(token.replace("JWT ", ""));
-        const username = decodedToken["username"];
+        const username = decodedToken["username"] + "#" + decodedToken["organisation"];
         RoleFunctions.checkTeamAdmin(username, { code: req.body.code }, (errCheck, resultCheck) => {
             if (errCheck) {
                 res.status(500).send({ success: false, msg: errCheck });

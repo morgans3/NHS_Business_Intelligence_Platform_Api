@@ -37,14 +37,11 @@ module.exports.delete = function (keys, callback) {
 module.exports.getActiveSystemAlerts = function (date, callback) {
     const params = {
         TableName: tablename,
-        FilterExpression: ":DateTime BETWEEN startdate AND enddate AND #arc = :archive",
+        FilterExpression: ":DateTime BETWEEN startdate AND enddate",
         ExpressionAttributeValues: {
             ":DateTime": new Date().toISOString(),
-            ":archive": false,
         },
-        ExpressionAttributeNames: {
-            "#arc": "archive",
-        },
+        ExpressionAttributeNames: {},
     };
     docClient.scan(params, callback);
 };
@@ -69,7 +66,7 @@ module.exports.updateSystemAlert = function (systemAlert, callback) {
             id: systemAlert.id,
             author: systemAlert.author,
         },
-        UpdateExpression: "set #name=:nm, startdate=:sd, enddate=:ed, #msg=:msg, #status=:st, #icon=:ic, #arc=:arc",
+        UpdateExpression: "set #name=:nm, startdate=:sd, enddate=:ed, #msg=:msg, #status=:st, #icon=:ic",
         ExpressionAttributeValues: {
             ":nm": systemAlert.name,
             ":sd": systemAlert.startdate,
@@ -77,10 +74,8 @@ module.exports.updateSystemAlert = function (systemAlert, callback) {
             ":msg": systemAlert.message,
             ":st": systemAlert.status,
             ":ic": systemAlert.icon,
-            ":arc": systemAlert.archive,
         },
         ExpressionAttributeNames: {
-            "#arc": "archive",
             "#name": "name",
             "#msg": "message",
             "#status": "status",
