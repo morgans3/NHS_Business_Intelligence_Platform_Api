@@ -862,7 +862,6 @@ router.post("/permissions/complete", (req, res, next) => {
 
     // Read jwt
     formData = Object.assign({}, formData, jwt.decode(formData.token));
-    console.log(formData);
 
     // Get parent request
     formSubmissionsModel.getByKeys(
@@ -887,16 +886,14 @@ router.post("/permissions/complete", (req, res, next) => {
 
             // Change approved status of each capability & role
             const setApprovalStatus = (type) => {
-                const actionedPermissionIds = formData[type].map((item) => item.id);
                 permissionRequest.data[type] = permissionRequest.data[type].map((item) => {
-                    if (item.approved === null && actionedPermissionIds.includes(item.id)) {
+                    if (item.approved === null && formData[type].includes(item.id)) {
                         item.approved = formData.action === "approve";
                     }
                     return item;
                 });
             };
             setApprovalStatus("roles"); setApprovalStatus("capabilities");
-            console.log(permissionRequest.data);
 
             // Set completion status
             if (permissionRequest.data["capabilities"].concat(permissionRequest.data["roles"]).filter(
@@ -981,10 +978,10 @@ router.post("/permissions/complete", (req, res, next) => {
                             // Manage approval status
                             if (formData.action === "approve") {
                                 // Link approved permissions
-                                await RequestsHelper.linkRequestedCapbilities(
+                                console.log(await RequestsHelper.linkRequestedCapbilities(
                                     permissionRequest.data.user,
                                     getActionedPermissions("capabilities")
-                                );
+                                ));
                                 await RequestsHelper.linkRequestedRoles(
                                     permissionRequest.data.user,
                                     getActionedPermissions("roles")

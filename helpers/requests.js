@@ -159,7 +159,6 @@ class RequestsHelper {
                 .reduce((promises, capabilityLink, i) => {
                     promises.push(new Promise((resolve, reject) => {
                         CapabilityLinkModel.create(capabilityLink, (err, data) => {
-                            console.log(data);
                             if (err) {
                                 reject(err);
                             } else {
