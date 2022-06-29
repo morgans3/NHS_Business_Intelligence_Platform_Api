@@ -1,6 +1,118 @@
 const DIULibrary = require("diu-data-functions");
+const EmailHelper = DIULibrary.Helpers.Email;
+const RoleModel = new DIULibrary.Models.RoleModel();
+const CapabilityModel = new DIULibrary.Models.CapabilityModel();
+const RoleLinkModel = new DIULibrary.Models.RoleLinkModel();
 const CapabilityLinkModel = new DIULibrary.Models.CapabilityLinkModel();
+const { keyBy } = require("lodash");
+
 class RequestsHelper {
+    static emailPermissionsRequestStatus({
+        user,
+        permissions,
+        status = {
+            authorised: true,
+            message: null
+        }
+    }, callback) {
+        // Generate html message
+        let message = "<p>The permissions you requested below have been ";
+        message += status.authorised === true ? "authorised" : "denied";
+        message += " for your account...</p><ul>";
+        permissions.forEach((permission) => {
+            message += `<li><b>${permission.name}</b><br>${permission.description}</li>`;
+        });
+        message += "</ul>";
+        if (status.message) { message += `<p>${status.message}</p>`; }
+
+        // Send email
+        EmailHelper.sendMail(
+            {
+                to: user.email,
+                subject: "BI Platform Access",
+                message,
+                actions: [
+                    {
+                        class: "primary",
+                        text: "Login",
+                        type: "home_page",
+                    },
+                ],
+            },
+            (error, response) => {
+                if (error) {
+                    console.log("Unable to send notification to: " + user.email + ". Reason: " + error.toString());
+                    callback(error, null);
+                } else {
+                    callback(null, "Email sent successfully");
+                }
+            }
+        );
+    }
+
+    static getRequestedCapabilities(capabilities) {
+        return new Promise((resolve, reject) => {
+            CapabilityModel.query(
+                {
+                    text: "SELECT * FROM capabilities WHERE id = ANY($1)",
+                    values: [capabilities],
+                },
+                (capabilityQueryError, data) => {
+                    // Check for error
+                    if (capabilityQueryError) { reject(capabilityQueryError); };
+
+                    // Hydrate capabilties
+                    resolve(keyBy(data, (capability) => capability.id));
+                }
+            );
+        });
+    }
+
+    static getRequestedRoles(roles) {
+        return new Promise((resolve, reject) => {
+            RoleModel.query(
+                {
+                    text: "SELECT * FROM roles WHERE id = ANY($1)",
+                    values: [roles],
+                },
+                (roleQueryError, data) => {
+                    // Check for error
+                    if (roleQueryError) { reject(roleQueryError); };
+
+                    // Hydrate roles
+                    resolve(keyBy(data, (role) => role.id));
+                }
+            );
+        });
+    }
+
+    static linkRequestedRoles(user, roles) {
+        // Persist links
+        if (roles.length > 0) {
+            return Promise.all(roles
+                .reduce((promises, role, i) => {
+                    promises.push(new Promise((resolve, reject) => {
+                        RoleLinkModel.create({
+                            role_id: role.id,
+                            link_id: `${user.username}#${user.organisation}`,
+                            link_type: "user",
+                            approved_by: role.approved_by,
+                        }, (err, data) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(data[0] || data);
+                            }
+                        });
+                    }));
+                    return promises;
+                }, [])
+            );
+        } else {
+            return new Promise((resolve) => { resolve([]); });
+        }
+    }
+
     static linkRequestedCapbilities(user, capabilities) {
         // Create array of links
         const userCapabilityLinks = [];
@@ -42,20 +154,25 @@ class RequestsHelper {
         });
 
         // Persist links
-        return Promise.all(userCapabilityLinks
-            .reduce((promises, capabilityLink, i) => {
-                promises.push(new Promise((resolve, reject) => {
-                    CapabilityLinkModel.create(capabilityLink, (err, link) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(link);
-                        }
-                    });
-                }));
-                return promises;
-            }, [])
-        );
+        if (userCapabilityLinks.length > 0) {
+            return Promise.all(userCapabilityLinks
+                .reduce((promises, capabilityLink, i) => {
+                    promises.push(new Promise((resolve, reject) => {
+                        CapabilityLinkModel.create(capabilityLink, (err, data) => {
+                            console.log(data);
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(data[0] || data);
+                            }
+                        });
+                    }));
+                    return promises;
+                }, [])
+            );
+        } else {
+            return new Promise((resolve) => { resolve([]); });
+        }
     }
 }
 
