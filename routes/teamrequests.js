@@ -9,6 +9,7 @@ const JWT = require("jsonwebtoken");
 const RoleFunctions = require("../helpers/role_functions");
 const DIULibrary = require("diu-data-functions");
 const MiddlewareHelper = DIULibrary.Helpers.Middleware;
+const TeamMemberModel = new DIULibrary.Models.TeamMemberModel();
 
 /**
  * @swagger
@@ -407,6 +408,108 @@ router.delete(
                     success: false,
                     msg: "Can not find item in database",
                 });
+            }
+        });
+    }
+);
+
+/**
+ * @swagger
+ * /teamrequests/action:
+ *   get:
+ *     description: Carries out an action on a request
+ *     tags:
+ *      - TeamRequests
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *       - name: id
+ *         description: Request's ID
+ *         in: query
+ *         required: true
+ *         type: string
+ *       - name: teamcode
+ *         description: Request's Team code
+ *         in: query
+ *         required: true
+ *         type: string
+ *       - name: action
+ *         description: Type of action to perform
+ *         in: query
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Action completed
+ *       400:
+ *         description: Bad Request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get(
+    "/action",
+    MiddlewareHelper.validate(
+        "query",
+        {
+            id: { type: "string" },
+            teamcode: { type: "string" },
+            action: { type: "string" },
+        },
+        {
+            pattern: "Missing query params",
+        }
+    ),
+    (req, res, next) => {
+        Requests.getRequestById(req.query.id, function (err, result) {
+            if (err) {
+                res.status(500).send({ success: false, msg: err });
+            } else {
+                if (result.Items.length > 0) {
+                    const app = result.Items[0];
+                    if (app.approveddate || app.refuseddate) {
+                        res.status(200).send({ success: false, msg: "Action already completed." });
+                        return;
+                    }
+                    const now = new Date().toISOString();
+                    req.query.action === "accept" ? (app.approveddate = now) : (app.refuseddate = now);
+                    Requests.update(app, function (updateError) {
+                        if (updateError) {
+                            res.status(500).json({
+                                success: false,
+                                msg: "Failed to update: " + updateError,
+                            });
+                            return;
+                        }
+
+                        if (req.query.action === "accept") {
+                            const member = {
+                                teamcode: req.query.teamcode,
+                                username: app.username,
+                                joindate: now,
+                                organisation: app.organisation || null,
+                            };
+                            TeamMemberModel.create(member, (errMember, resultMember) => {
+                                if (errMember) {
+                                    res.status(500).json({ success: false, msg: "Failed to create " + errMember });
+                                } else {
+                                    res.json({
+                                        success: true,
+                                        msg: "Action completed",
+                                    });
+                                }
+                            });
+                        } else {
+                            res.json({
+                                success: true,
+                                msg: "Action completed",
+                            });
+                        }
+                    });
+                } else {
+                    res.status(404).send({ success: false, msg: "Can not find item in database" });
+                }
             }
         });
     }
