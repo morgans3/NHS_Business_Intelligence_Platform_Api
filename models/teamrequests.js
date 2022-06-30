@@ -93,7 +93,6 @@ const sendEmail = async function (data, callback) {
         } else {
             if (data.request.requestor) {
                 message = `<p>${data.name} has requested access to the Team.</p>`;
-                // TODO: change emailTo from username#organisation to email address of admin
             }
             EmailHelper.sendMail(
                 {
@@ -108,6 +107,7 @@ const sendEmail = async function (data, callback) {
                             type_params: {
                                 id: data.request.id,
                                 teamcode: data.request.teamcode,
+                                action: "accept",
                             },
                         },
                         {
@@ -117,6 +117,7 @@ const sendEmail = async function (data, callback) {
                             type_params: {
                                 id: data.request.id,
                                 teamcode: data.request.teamcode,
+                                action: "reject",
                             },
                         },
                     ],
