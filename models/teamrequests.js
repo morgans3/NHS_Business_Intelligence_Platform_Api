@@ -49,7 +49,7 @@ module.exports.addRequest = function (newRequest, emailto, name, callback) {
         if (err) callback(err, null);
         else {
             const data = {
-                request: result,
+                request: newRequest,
                 name,
                 emailto,
             };
