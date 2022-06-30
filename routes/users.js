@@ -6,7 +6,6 @@ const JWT = require("jsonwebtoken");
 
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
-// const passwordModel = new DIULibrary.Models.PasswordModel();
 const VerificationCodeModel = new DIULibrary.Models.VerificationCodeModel();
 const Authenticate = require("../models/authenticate");
 const AuthenticateHelper = require("../helpers/authenticate");
@@ -616,22 +615,26 @@ router.post(
     ),
     (req, res, next) => {
         const payload = req.body;
-        VerificationCodeModel.getCode(payload.code, payload.email, (codeErr, codeRes) => {
+        VerificationCodeModel.getCode(payload.code, payload.email, (codeErr, data) => {
+            // Return error
             if (codeErr) {
                 res.status(500).json({ success: false, msg: "Failed: " + codeErr });
                 return;
             }
 
-            if (codeRes && codeRes.Items.length > 0) {
-                VerificationCodeModel.deleteCode(payload.code, payload.email, (errDelete, resDelete) => {
-                    if (errDelete) {
-                        res.status(500).json({ success: false, msg: "Failed: " + errDelete });
-                        return;
-                    }
+            // Check code exists
+            if (data && data.Items.length > 0) {
+                // Check code time
+                const code = data.Items[0];
+                const luxon = require("luxon");
+                if (luxon.DateTime.now().diff(luxon.DateTime.fromISO(code.generated), "hours").as("hours") > 1) {
+                    // Code expired
+                    res.status(400).json({ success: false, msg: "Code not valid." });
+                } else {
                     res.json({ success: true, msg: "Code is valid" });
-                });
+                }
             } else {
-                res.status(404).json({ success: false, msg: "Code not valid." });
+                res.status(400).json({ success: false, msg: "Code not valid." });
             }
         });
     }
