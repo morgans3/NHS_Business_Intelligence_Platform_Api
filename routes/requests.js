@@ -1,10 +1,11 @@
 const uuid = require("uuid");
+const jwt = require("jsonwebtoken");
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const keyBy = require("lodash");
-const groupBy = require("lodash");
+const { uniq } = require("lodash");
 
+const credentials = require("../_credentials/credentials");
 const DIULibrary = require("diu-data-functions");
 const UserModel = new DIULibrary.Models.UserModel();
 const verificationCodesModel = new DIULibrary.Models.VerificationCodeModel();
@@ -12,7 +13,6 @@ const formSubmissionsModel = new DIULibrary.Models.FormSubmissionModel();
 const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const EmailHelper = DIULibrary.Helpers.Email;
 const MsTeamsHelper = DIULibrary.Helpers.MsTeams;
-const CapabilitiesModel = new DIULibrary.Models.CapabilityModel();
 const RequestsHelper = require("../helpers/requests");
 
 const issuer = process.env.SITE_URL || "NHS BI Platform";
@@ -76,6 +76,42 @@ router.get(
     }
 );
 
+
+/**
+ * @swagger
+ * /requests/{id}:
+ *   post:
+ *     description: Get request by id
+ *     tags:
+ *      - Requests
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *      - name: id
+ *        description: Request id
+ *        in: path
+ *        required: true
+ *        type: string
+ *     responses:
+ *       200:
+ *         description: Form retrieved successfully
+ *       404:
+ *         description: Form not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get("/:id", (req, res, next) => {
+    formSubmissionsModel.getById(req.params.id, (err, data) => {
+        if (err) {
+            res.status(500).json({ success: false, msg: "Failed to retrieve request" });
+        } else if (data.Items.length === 0) {
+            res.status(404).json({ success: false, msg: "Request not found" });
+        } else {
+            res.json(data.Items[0]);
+        }
+    });
+});
+
 /**
  * @swagger
  * /requests/account:
@@ -117,7 +153,7 @@ router.get(
  *        type: string
  *
  *      - name: request_sponsor
- *        description: Professional number
+ *        description: Sponsor to approve account
  *        in: formData
  *        required: true
  *        type: object
@@ -156,6 +192,14 @@ router.get(
  *          related_mdt:
  *            type: string
  *
+ *      - name: roles
+ *        type: array
+ *        items:
+ *          type: object
+ *          properties:
+ *            id:
+ *              type: string
+ *
  *      - name: capabilities
  *        type: array
  *        items:
@@ -192,28 +236,15 @@ router.post(
             pattern: "Missing query params",
         }
     ),
-    (req, res, next) => {
-        // Get form data
-        const formData = req.body;
+    async (req, res, next) => {
+        try {
+            // Get form data
+            const formData = req.body;
 
-        // Get capabilities
-        CapabilitiesModel.query(
-            {
-                text: "SELECT * FROM capabilities WHERE id = ANY($1)",
-                values: [formData.capabilities.map((item) => item.id)],
-            },
-            (capabilityQueryError, capabilities) => {
-                // Check for error
-                if (capabilityQueryError) {
-                    res.status(500).json({ success: false, msg: capabilityQueryError });
-                    return;
-                }
-
-                // Key by id
-                capabilities = keyBy(capabilities, (capability) => capability.id);
-
+            // Store request
+            const formSubmission = await new Promise((resolve, reject) => {
                 // Store form in the database
-                const formSubmission = {
+                const formSubmissionData = {
                     id: uuid.v1(),
                     parent_id: null,
                     type: "AccountRequest",
@@ -221,6 +252,7 @@ router.post(
                         firstname: formData.firstname,
                         surname: formData.surname,
                         email: formData.email,
+                        request_sponsor: formData.request_sponsor,
                         professional_role: formData.professional_role,
                         professional_number: formData.professional_number,
                         organisation: formData.organisation,
@@ -231,141 +263,80 @@ router.post(
                             related_ch: formData.pid_access.related_ch,
                             related_mdt: formData.pid_access.related_mdt,
                         },
-                        capabilities: formData.capabilities.map((capability) => {
-                            if (capabilities[capability.id].authoriser == null) {
-                                capability.approved = true;
-                            } else {
-                                capability.approved = null;
-                                capability.approved_by = capabilities[capability.id].authoriser;
-                            }
-                            return capability;
-                        }),
+                        roles: formData.roles,
+                        capabilities: formData.capabilities,
                         approved: null,
                     },
                     created_at: formData.date,
                 };
-                formSubmissionsModel.create(formSubmission, (error) => {
+                formSubmissionsModel.create(formSubmissionData, (error) => {
                     // Check for save error
                     if (error) {
-                        res.status(500).json({ success: false, msg: error });
-                        return;
+                        reject(error);
+                    } else {
+                        resolve(formSubmissionData);
                     }
-
-                    // Delete email verification code
-                    verificationCodesModel.deleteCode(formData.email_verification_code, formData.email);
-
-                    // Group capabilities by authorisers
-                    const authorisers = groupBy(Object.values(capabilities), (capability) => capability.authoriser);
-
-                    // Send email to each authoriser
-                    Promise.all(
-                        Object.keys(authorisers)
-                            .filter((authoriser) => authoriser !== "null")
-                            .reduce((promises, authoriser, i) => {
-                                promises.push(
-                                    new Promise((resolve, reject) => {
-                                        EmailHelper.sendMail(
-                                            {
-                                                to: authoriser,
-                                                subject: "NHS BI Platform Access",
-                                                message: `
-                                    <p>${formData.firstname} ${formData.surname} has requested access to the NHS BI Platform.</p>
-                                    <p>Click below to view further details...</p>`,
-                                                actions: [
-                                                    {
-                                                        class: "primary",
-                                                        text: "View Request",
-                                                        type: "account_request_action",
-                                                        type_params: {
-                                                            id: formSubmission.id,
-                                                            capabilities: authorisers[authoriser].map((item) => item.id),
-                                                        },
-                                                    },
-                                                ],
-                                            },
-                                            (errorSend) => {
-                                                if (errorSend) {
-                                                    console.log(
-                                                        "Unable to send authorization request email to: " +
-                                                            formData.email +
-                                                            ". Reason: " +
-                                                            errorSend.toString()
-                                                    );
-                                                    reject(errorSend);
-                                                } else {
-                                                    resolve(true);
-                                                }
-                                            }
-                                        );
-                                    })
-                                );
-                                return promises;
-                            }, [])
-                    ).then(
-                        () => {
-                            // All emails sent successfully
-                            res.status(200).json({ success: true, msg: "Request submitted successfully" });
-                        },
-                        (errors) => {
-                            // Error occurred with email
-                            if (errors.length > 0) {
-                                res.status(500).json({ success: false, msg: "An error occurred submitting the request" });
-                            }
-                        }
-                    );
                 });
-            }
-        );
+            });
+
+            // Delete email verification code
+            verificationCodesModel.deleteCode(formData.email_verification_code, formData.email);
+
+            // Send email to sponsor
+            EmailHelper.sendMail(
+                {
+                    to: formData.request_sponsor.email,
+                    subject: "Nexus BI Platform Access",
+                    message: `
+        <p>${formData.firstname} ${formData.surname} has requested access to the Nexus BI Platform.</p>
+        <p>Click below to view further details...</p>`,
+                    actions: [
+                        {
+                            class: "primary",
+                            text: "View Request",
+                            type: "account_request_action",
+                            type_params: {
+                                id: formSubmission.id,
+                                token: jwt.sign(
+                                    {
+                                        parent_id: formSubmission.id,
+                                        email: formData.email
+                                    }, credentials.secret, { expiresIn: 5184000 } // 5184000 = 60 days
+                                ),
+                                expiry: new Date(new Date().getTime() + 5184000000).toISOString()
+                            }
+                        },
+                    ],
+                },
+                (errorSend) => {
+                    if (errorSend) {
+                        throw new Error(
+                            "Unable to send authorization request email to: " + formData.request_sponsor.email +
+                            ". Reason: " + errorSend.toString()
+                        );
+                    } else {
+                        res.status(200).json({ success: true, msg: "Request submitted successfully" });
+                    }
+                }
+            );
+        } catch (error) {
+            res.status(500).json({ success: false, msg: error.toString() || "An error occurred submitting the request" });
+        }
     }
 );
 
 /**
  * @swagger
- * /requests/account/{id}:
- *   post:
- *     description: Send a request for a user account
- *     tags:
- *      - Requests
- *     produces:
- *      - application/json
- *     parameters:
- *      - name: id
- *        description: Request id
- *        in: path
- *        required: true
- *        type: string
- *     responses:
- *       200:
- *         description: Form retrieved successfully
- *       404:
- *         description: Form not found
- *       500:
- *         description: Internal Server Error
- */
-router.get("/account/:id", (req, res, next) => {
-    formSubmissionsModel.getById(req.params.id, (err, data) => {
-        if (err) {
-            res.status(500).json({ success: false, msg: "Failed to retrieve request" });
-        } else if (data.Items.length === 0) {
-            res.status(404).json({ success: false, msg: "Request not found" });
-        } else {
-            res.json(data.Items[0]);
-        }
-    });
-});
-
-/**
- * @swagger
  * /requests/account/complete:
  *   post:
- *     description: Send a request for a user account
+ *     description: Complete a request for a user account
  *     tags:
  *      - Requests
  *     produces:
  *      - application/json
  *     parameters:
- *      - name: parent_id
- *        description: Parent request id
+ *      - name: token
+ *        description: The token for authentication the sponsor
  *        in: formData
  *        required: true
  *        type: string
@@ -387,56 +358,50 @@ router.get("/account/:id", (req, res, next) => {
  *       500:
  *         description: Internal Server Error
  */
-router.post("/account/complete", (req, res, next) => {
-    // Get form data
-    const formData = req.body;
+router.post("/account/complete", async (req, res, next) => {
+    try {
+        // Get form data
+        let formData = req.body;
+        if (!formData.token || !formData.action || !formData.date) {
+            res.status(400).json({ success: false, msg: "Missing params" });
+            return;
+        }
 
-    if (!formData.parent_id || !formData.action || !formData.date) {
-        res.status(400).json({ success: false, msg: "Missing params" });
-        return;
-    }
+        // Read jwt
+        formData = Object.assign({}, formData, jwt.decode(formData.token));
 
-    // Get parent request
-    formSubmissionsModel.getByKeys(
-        {
-            id: formData.parent_id,
-        },
-        (getRequestError, userAccessRequests) => {
-            // Return error
-            if (getRequestError) {
-                res.status(500).json({ success: false, msg: getRequestError });
-                return;
-            }
+        // Store request
+        const userAccessRequest = await new Promise((resolve, reject) => {
+            // Get parent request
+            formSubmissionsModel.getByKeys(
+                {
+                    id: formData.parent_id,
+                },
+                (getRequestError, userAccessRequests) => {
+                    // Return error
+                    if (getRequestError) {
+                        reject(getRequestError);
+                        return;
+                    }
 
-            // Return error if no items found
-            if (userAccessRequests.Items.length === 0) {
-                res.status(404).json({ success: false, msg: "Request no longer exists" });
-                return;
-            }
+                    // Return error if no items found
+                    if (userAccessRequests.Items.length === 0) {
+                        reject(new Error("Request no longer exists"));
+                        return;
+                    }
 
-            // Change approved status of each capability
-            const userAccessRequest = userAccessRequests.Items[0];
-            const actionedCapabilityIds = formData.capabilities.map((item) => item.id);
-            userAccessRequest.data.capabilities = userAccessRequest.data.capabilities.map((capability) => {
-                if (capability.approved === null && actionedCapabilityIds.includes(capability.id)) {
-                    capability.approved = formData.action === "approve";
+                    // Get request
+                    resolve(userAccessRequests.Items[0]);
                 }
-                return capability;
-            });
+            );
+        });
 
-            // Check approved status of all capabilities
-            userAccessRequest.data.approved = true;
-            for (let i = 0; i < userAccessRequest.data.capabilities.length; i++) {
-                if (userAccessRequest.data.capabilities[i].approved === null) {
-                    userAccessRequest.data.approved = null;
-                    break;
-                }
-            }
-
+        // Store approval complete
+        await new Promise((resolve, reject) => {
             // Store action request
-            let formSubmission;
+            let completionRequestData;
             if (formData.action === "approve") {
-                formSubmission = {
+                completionRequestData = {
                     id: uuid.v1(),
                     parent_id: formData.parent_id,
                     type: "AccountRequestComplete",
@@ -449,13 +414,519 @@ router.post("/account/complete", (req, res, next) => {
                     created_at: formData.date,
                 };
             } else {
-                formSubmission = {
+                completionRequestData = {
                     id: uuid.v1(),
                     parent_id: formData.parent_id,
                     type: "AccountRequestComplete",
                     data: {
                         action: formData.action,
                         reason: formData.reason,
+                    },
+                    created_at: formData.date,
+                };
+            }
+
+            // Persist action submission
+            formSubmissionsModel.create(completionRequestData, (completionRequestError) => {
+                if (completionRequestError) {
+                    reject(completionRequestError);
+                } else {
+                    resolve(completionRequestData);
+                }
+            });
+        });
+
+        // Set parent request approval status
+        userAccessRequest.data.approved = (formData.action === "approve");
+
+        // Update parent request
+        await new Promise((resolve, reject) => {
+            formSubmissionsModel.update(
+                { id: formData.parent_id },
+                {
+                    data: userAccessRequest.data,
+                },
+                (accessRequestError, data) => {
+                    if (accessRequestError) {
+                        reject(accessRequestError);
+                    } else {
+                        resolve();
+                    }
+                }
+            );
+        });
+
+        // Create user account
+        const user = await new Promise((resolve, reject) => {
+            if (userAccessRequest.data.approved === true) {
+                // Create account
+                const userAccountPassword = Math.random().toString(36).slice(-8);
+                UserModel.create(
+                    {
+                        name: `${userAccessRequest.data.firstname} ${userAccessRequest.data.surname}`,
+                        email: userAccessRequest.data.email,
+                        username: userAccessRequest.data.email,
+                        password: userAccountPassword,
+                        organisation: "Collaborative Partners",
+                        linemanager: formData.officer,
+                    },
+                    (userAddError, newUser) => {
+                        // Return failed
+                        if (userAddError) {
+                            console.log(userAddError);
+                            reject(new Error("Failed to register user"));
+                        }
+
+                        // Send user access details
+                        EmailHelper.sendMail(
+                            {
+                                to: userAccessRequest.data.email,
+                                subject: "NHS BI Platform Access",
+                                message: `
+    <p>Your access to ${issuer.replace("api.", "")} has been approved, you can now login using the below details...</p>
+    <p>
+        <b>Username:</b> ${userAccessRequest.data.email} <br>
+        <b>Password:</b> ${userAccountPassword} <br>
+        <b>Organisation:</b> Collaborative Partners
+    </p>
+    <p>When you first login please change your password to keep your account secure.</p>
+    <p>If you requested access to restricted features of Nexus (roles/capabilities) these may still be awaiting approval,
+    you'll receive an email once each feature has been granted.</p>`,
+                                actions: [
+                                    {
+                                        class: "primary",
+                                        text: "Login",
+                                        type: "home_page",
+                                    },
+                                ],
+                            },
+                            (error) => {
+                                if (error) {
+                                    console.log("Unable to notify: " + formData.email + ". Reason: " + error.toString());
+                                    reject(error);
+                                } else {
+                                    resolve(newUser);
+                                }
+                            }
+                        );
+                    }
+                );
+            } else {
+                // Send access denied email
+                EmailHelper.sendMail(
+                    {
+                        to: userAccessRequest.data.email,
+                        subject: "BI Platform Access",
+                        message: `
+                <p>Your access to ${issuer.replace("api.", "")} has not been approved.</p>
+                <p><b>Reason:</b> ${formData.reason}</p>`,
+                        actions: [
+                            {
+                                class: "primary",
+                                text: "Request again",
+                                type: "account_request",
+                            },
+                        ],
+                    },
+                    (error, response) => {
+                        if (error) {
+                            console.log(
+                                "Unable to send approval notification to: " + formData.email + ". Reason: " + error.toString()
+                            );
+                            reject(error);
+                        } else {
+                            resolve(null);
+                        }
+                    }
+                );
+            }
+        });
+
+        // Request capabilities?
+        if (user) {
+            const permissionsRequestResponse = await requestPermissionsRoute({
+                user_id: `${user.username}#${user.organisation}`,
+                capabilities: userAccessRequest.data.capabilities,
+                roles: userAccessRequest.data.roles,
+                date: new Date().toISOString(),
+            });
+            if (!permissionsRequestResponse.success) {
+                res.status(permissionsRequestResponse.status).json({
+                    success: false,
+                    msg: permissionsRequestResponse.msg || "An error occurred submitting the request"
+                });
+                return;
+            }
+        }
+
+        // Check user
+        res.json({ success: true, msg: "Response has been recorded" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, msg: error.toString() || "An error occurred submitting the request" });
+    }
+});
+
+/**
+ * @swagger
+ * /requests/permissions:
+ *   post:
+ *     description: Send a request for a user account
+ *     tags:
+ *      - Requests
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *      - name: user_id
+ *        description: Username#Organisation
+ *        in: formData
+ *        required: true
+ *        type: string
+ *      - name: roles
+ *        type: array
+ *        items:
+ *          type: object
+ *          properties:
+ *            id:
+ *              type: string
+ *      - name: capabilities
+ *        type: array
+ *        items:
+ *          type: object
+ *          properties:
+ *            id:
+ *              type: string
+ *            valuejson:
+ *              type: string
+ *      - name: date
+ *        description: Request completion date
+ *        in: formData
+ *        required: true
+ *        type: string
+ *     responses:
+ *       200:
+ *         description: Form retrieved successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal Server Error
+ */
+const requestPermissionsRoute = async (formData) => {
+    try {
+        // Get request user
+        const user = await new Promise((resolve, reject) => {
+            UserModel.getByKeys(
+                {
+                    username: formData.user_id.split("#")[0],
+                    organisation: formData.user_id.split("#")[1],
+                },
+                (err, result) => {
+                    if (err) { reject(err); }
+                    if (result.Items.length === 0) {
+                        reject(new Error("User not found"));
+                    } else {
+                        resolve(result.Items[0]);
+                    }
+                }
+            );
+        });
+
+        // Get capabilities
+        const capabilities = await RequestsHelper.getRequestedCapabilities(
+            formData.capabilities.map((item) => item.id)
+        );
+
+        // Get roles
+        const roles = await RequestsHelper.getRequestedRoles(
+            formData.roles.map((item) => item.id)
+        );
+
+        // Create form submission
+        const permissionRequest = await new Promise((resolve, reject) => {
+            const formSubmissionData = {
+                id: uuid.v1(),
+                parent_id: null,
+                type: "PermissionRequest",
+                data: {
+                    user_id: formData.user_id,
+                    user: {
+                        name: user.name,
+                        email: user.email,
+                        username: user.username,
+                        organisation: user.organisation
+                    },
+                    roles: formData.roles.map((role) => {
+                        if (roles[role.id].authoriser == null) {
+                            role.approved = true;
+                        } else {
+                            role.approved = null;
+                            role.approved_by = roles[role.id].authoriser;
+                        }
+                        return role;
+                    }),
+                    capabilities: formData.capabilities.map((capability) => {
+                        if (capabilities[capability.id].authoriser == null) {
+                            capability.approved = true;
+                        } else {
+                            capability.approved = null;
+                            capability.approved_by = capabilities[capability.id].authoriser;
+                        }
+                        return capability;
+                    }),
+                    completed: null
+                },
+                created_at: formData.date
+            };
+            formSubmissionsModel.create(formSubmissionData, (formSubmissionError) => {
+                // Check for save error
+                if (formSubmissionError) {
+                    reject(formSubmissionError);
+                } else {
+                    resolve(formSubmissionData);
+                }
+            });
+        });
+
+        // Add permissions that don't require authoriser
+        const authorisedPermissions = (
+            await RequestsHelper.linkRequestedRoles(
+                user,
+                permissionRequest.data.roles.filter((role) => role.approved)
+            )
+        ).concat(
+            await RequestsHelper.linkRequestedCapbilities(
+                user,
+                permissionRequest.data.capabilities.filter((capability) => capability.approved)
+            )
+        );
+
+        // Send user email detailing approved permissions
+        if (authorisedPermissions.length > 0) {
+            await new Promise((resolve, reject) => {
+                RequestsHelper.emailPermissionsRequestStatus({
+                    user,
+                    permissions: authorisedPermissions.map((item) => {
+                        const permission = item.capability_id ? (capabilities[item.capability_id] || null) : (roles[item.role_id] || null);
+                        item.description = permission.description || "";
+                        item.name = permission.name || "";
+                        return item;
+                    })
+                }, (sendPermissionsError, data) => {
+                    // Check for save error
+                    if (sendPermissionsError) {
+                        reject(sendPermissionsError);
+                    } else {
+                        resolve(sendPermissionsError);
+                    }
+                });
+            });
+        }
+
+        // Get array of authorisers
+        const authorisers = uniq(
+            Object.values(capabilities).concat(Object.values(roles))
+                .map(item => item.authoriser)
+                .filter((authoriser) => authoriser !== "null" && authoriser !== null)
+        );
+
+        // Send email to each authoriser?
+        if (authorisers.length > 0) {
+            await Promise.all(
+                authorisers.reduce((promises, authoriser, i) => {
+                    promises.push(
+                        new Promise((resolve, reject) => {
+                            // Declare params
+                            const typeParams = {
+                                id: permissionRequest.id,
+                                email: authoriser,
+                                roles: Object.values(roles).reduce((filtered, role) => {
+                                    if (role.authoriser === authoriser) {
+                                        filtered.push(role.id);
+                                    }
+                                    return filtered;
+                                }, []),
+                                capabilities: Object.values(capabilities).reduce((filtered, capability) => {
+                                    if (capability.authoriser === authoriser) {
+                                        filtered.push(capability.id);
+                                    }
+                                    return filtered;
+                                }, []),
+                                expiry: new Date(new Date().getTime() + 5184000000).toISOString()
+                            };
+                            typeParams.token = jwt.sign(
+                                typeParams, credentials.secret, { expiresIn: 5184000 } // 5184000 = 60 days
+                            );
+
+                            // Send mail
+                            EmailHelper.sendMail(
+                                {
+                                    to: authoriser,
+                                    subject: "Nexus BI Platform Access",
+                                    message: `
+                        <p>${user.name} has requested further access to the Nexus BI Platform.</p>
+                        <p>Click below to view the request details...</p>`,
+                                    actions: [
+                                        {
+                                            class: "primary",
+                                            text: "View Request",
+                                            type: "permission_request_action",
+                                            type_params: typeParams
+                                        },
+                                    ],
+                                },
+                                (errorSend) => {
+                                    if (errorSend) {
+                                        console.log(
+                                            "Unable to send authorization request email to: " + formData.email +
+                                            ". Reason: " + errorSend.toString()
+                                        );
+                                        reject(errorSend);
+                                    } else {
+                                        resolve(true);
+                                    }
+                                }
+                            );
+                        })
+                    );
+                    return promises;
+                }, [])
+            );
+
+            // All emails sent successfully
+            return { success: true, msg: "Request submitted successfully" };
+        } else {
+            return {
+                success: true,
+                msg: "The permissions have been added to your account",
+                data: {
+                    authorised: true
+                }
+            };
+        }
+    } catch (error) {
+        console.log(error);
+        return { success: false, status: 500, msg: error.toString() || "An error occurred submitting the request" };
+    }
+};
+router.post("/permissions", MiddlewareHelper.validate(
+    "body",
+    { user_id: { type: "string", pattern: "[A-z. 0-9]{1,50}#[A-z. ]{1,50}" } },
+    { pattern: "The user id should be in the format of 'username#organisation'" }
+), (req, res, next) => {
+    requestPermissionsRoute(req.body).then((result) => {
+        res.status(result.status || 200).json(result);
+    });
+});
+
+/**
+ * @swagger
+ * /requests/permissions/complete:
+ *   post:
+ *     description: Complete a request for further permissions
+ *     tags:
+ *      - Requests
+ *     produces:
+ *      - application/json
+ *     parameters:
+ *      - name: token
+ *        description: Token to authenticate authoriser
+ *        in: formData
+ *        required: true
+ *        type: string
+ *      - name: action
+ *        description: Action name
+ *        in: formData
+ *        required: true
+ *        type: string
+ *      - name: date
+ *        description: Request completion date
+ *        in: formData
+ *        required: true
+ *        type: string
+ *     responses:
+ *       200:
+ *         description: Form retrieved successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal Server Error
+ */
+router.post("/permissions/complete", (req, res, next) => {
+    // Get form data
+    let formData = req.body;
+
+    if (!formData.parent_id || !formData.action || !formData.date) {
+        res.status(400).json({ success: false, msg: "Missing params" });
+        return;
+    }
+
+    // Read jwt
+    formData = Object.assign({}, formData, jwt.decode(formData.token));
+
+    // Get parent request
+    formSubmissionsModel.getByKeys(
+        {
+            id: formData.parent_id,
+        },
+        (getRequestError, permissionRequests) => {
+            // Return error
+            if (getRequestError) {
+                res.status(500).json({ success: false, msg: getRequestError });
+                return;
+            }
+
+            // Return error if no items found
+            if (permissionRequests.Items.length === 0) {
+                res.status(404).json({ success: false, msg: "Request no longer exists" });
+                return;
+            }
+
+            // Get request
+            const permissionRequest = permissionRequests.Items[0];
+
+            // Change approved status of each capability & role
+            const setApprovalStatus = (type) => {
+                permissionRequest.data[type] = permissionRequest.data[type].map((item) => {
+                    if (item.approved === null && formData[type].includes(item.id)) {
+                        item.approved = formData.action === "approve";
+                    }
+                    return item;
+                });
+            };
+            setApprovalStatus("roles"); setApprovalStatus("capabilities");
+
+            // Set completion status
+            if (permissionRequest.data["capabilities"].concat(permissionRequest.data["roles"]).filter(
+                (item) => item.approved == null).length === 0
+            ) {
+                permissionRequest.data.completed = true;
+            }
+
+            // Store action request
+            let formSubmission;
+            if (formData.action === "approve") {
+                formSubmission = {
+                    id: uuid.v1(),
+                    parent_id: formData.parent_id,
+                    type: "PermissionRequestComplete",
+                    data: {
+                        action: formData.action,
+                        officer: formData.officer,
+                        officer_job: formData.officer_job,
+                        authoriser: formData.email,
+                        organisation: formData.organisation,
+                    },
+                    created_at: formData.date,
+                };
+            } else {
+                formSubmission = {
+                    id: uuid.v1(),
+                    parent_id: formData.parent_id,
+                    type: "PermissionRequestComplete",
+                    data: {
+                        action: formData.action,
+                        reason: formData.reason,
+                        authoriser: formData.email
                     },
                     created_at: formData.date,
                 };
@@ -473,115 +944,75 @@ router.post("/account/complete", (req, res, next) => {
                 formSubmissionsModel.update(
                     { id: formData.parent_id },
                     {
-                        data: userAccessRequest.data,
+                        data: permissionRequest.data,
                     },
-                    (accessRequestError, data) => {
-                        if (accessRequestError) {
-                            console.log("Access request error", accessRequestError);
-                            res.status(500).json({ success: false, msg: accessRequestError });
+                    (permissionRequestError, data) => {
+                        if (permissionRequestError) {
+                            console.log("Permission request error", permissionRequestError);
+                            res.status(500).json({ success: false, msg: permissionRequestError });
                             return;
                         }
 
                         // Manage approval status
-                        if (userAccessRequest.data.approved === true) {
-                            // Create account
-                            const userAccountPassword = Math.random().toString(36).slice(-8);
-                            UserModel.create(
-                                {
-                                    name: `${userAccessRequest.data.firstname} ${userAccessRequest.data.surname}`,
-                                    email: userAccessRequest.data.email,
-                                    username: userAccessRequest.data.email,
-                                    password: userAccountPassword,
-                                    organisation: "Collaborative Partners",
-                                    linemanager: formSubmission.officer,
-                                },
-                                (userAddError, user) => {
-                                    // Return failed
-                                    if (userAddError) {
-                                        console.log("User create error");
-                                        res.status(500).json({ success: false, msg: "Failed to register user" });
-                                        return;
-                                    }
+                        (async () => {
+                            // Get actioned permissions
+                            const getActionedPermissions = (type) => {
+                                return permissionRequest.data[type].filter((item) =>
+                                    formData[type].includes(item.id)
+                                );
+                            };
 
-                                    // Create links array
-                                    RequestsHelper.linkRequestedCapbilities(
-                                        user,
-                                        userAccessRequest.data.capabilities.filter((capability) => capability.approved)
-                                    ).then(
-                                        (links) => {
-                                            // Send user access details
-                                            EmailHelper.sendMail(
-                                                {
-                                                    to: userAccessRequest.data.email,
-                                                    subject: "NHS BI Platform Access",
-                                                    message: `
-                <p>Your access to ${issuer.replace("api.", "")} has been approved, you can now login using the below details...</p>
-                <p>
-                    <b>Username:</b> ${user.username} <br>
-                    <b>Password:</b> ${userAccountPassword} <br>
-                    <b>Organisation:</b> Collaborative Partners
-                </p>
-                <p>When you first login please change your password to keep your account secure.</p>`,
-                                                    actions: [
-                                                        {
-                                                            class: "primary",
-                                                            text: "Login",
-                                                            type: "home_page",
-                                                        },
-                                                    ],
-                                                },
-                                                (error, response) => {
-                                                    if (error) {
-                                                        console.log(
-                                                            "Unable to notify: " + formData.email + ". Reason: " + error.toString()
-                                                        );
-                                                        res.status(500).json({ success: false, msg: error });
-                                                    } else {
-                                                        res.json({ success: true, msg: "Your response has been recorded" });
-                                                    }
-                                                }
-                                            );
-                                        },
-                                        (errors) => {
-                                            if (errors.length > 0) {
-                                                res.status(500).json({ success: false, msg: "Failed to register user" });
-                                            }
+                            // Create email data
+                            const email = {
+                                user: permissionRequest.data.user,
+                                permissions: [].concat(
+                                    Object.values(await RequestsHelper.getRequestedCapabilities(
+                                        getActionedPermissions("capabilities").map((item) => item.id)
+                                    )),
+                                    Object.values(await RequestsHelper.getRequestedRoles(
+                                        getActionedPermissions("roles").map((item) => item.id)
+                                    ))
+                                ),
+                            };
+
+                            // Manage approval status
+                            if (formData.action === "approve") {
+                                // Link approved permissions
+                                console.log(await RequestsHelper.linkRequestedCapbilities(
+                                    permissionRequest.data.user,
+                                    getActionedPermissions("capabilities")
+                                ));
+                                await RequestsHelper.linkRequestedRoles(
+                                    permissionRequest.data.user,
+                                    getActionedPermissions("roles")
+                                );
+                            } else {
+                                // Set denied status
+                                email.status = {
+                                    authorised: false,
+                                    message: `<b>Reason:</b> ${formData.reason}`
+                                };
+                            }
+
+                            // Send status email
+                            await new Promise((resolve, reject) => {
+                                RequestsHelper.emailPermissionsRequestStatus(
+                                    email,
+                                    (sendPermissionsError) => {
+                                        // Check for save error
+                                        if (sendPermissionsError) {
+                                            reject(sendPermissionsError);
+                                        } else {
+                                            resolve(true);
                                         }
-                                    );
-                                }
-                            );
-                        } else if (userAccessRequest.data.approved === false) {
-                            // Send access denied email
-                            EmailHelper.sendMail(
-                                {
-                                    to: userAccessRequest.data.email,
-                                    subject: "BI Platform Access",
-                                    message: `
-                            <p>Your access to ${issuer.replace("api.", "")} has not been approved.</p>
-                            <p><b>Reason:</b> ${formData.reason}</p>`,
-                                    actions: [
-                                        {
-                                            class: "primary",
-                                            text: "Request again",
-                                            type: "account_request",
-                                        },
-                                    ],
-                                },
-                                (error, response) => {
-                                    if (error) {
-                                        console.log(
-                                            "Unable to send approval notification to: " + formData.email + ". Reason: " + error.toString()
-                                        );
-                                        res.status(500).json({ success: false, msg: error });
-                                    } else {
-                                        res.json({ success: true, msg: "Response has been recorded" });
                                     }
-                                }
-                            );
-                        } else {
-                            // Some capabilities still require approval
+                                );
+                            });
+                        })().then(() => {
                             res.json({ success: true, msg: "Your response has been recorded" });
-                        }
+                        }).catch((error) => {
+                            res.status(500).json({ success: false, msg: error.toString() || "An error occurred submitting the request" });
+                        });
                     }
                 );
             });

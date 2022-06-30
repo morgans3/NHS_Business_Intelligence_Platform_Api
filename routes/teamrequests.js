@@ -315,7 +315,7 @@ router.put(
                             }
                             res.json({
                                 success: true,
-                                msg: "Install updated",
+                                msg: "Request updated",
                             });
                         });
                     } else {
