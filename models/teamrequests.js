@@ -87,13 +87,16 @@ const sendEmail = async function (data, callback) {
     This will give you the same access permissions as other members of the team.</p>`;
     const emailTo = data.emailto;
 
-    getTeamInfo(data.request.teamcode, (errTeam, infoTeam) => {
+    const dataItem = AWS.DynamoDB.Converter.unmarshall(data.request);
+
+    getTeamInfo(dataItem.teamcode, (errTeam, infoTeam) => {
         if (errTeam) {
             callback(errTeam, null);
         } else {
-            if (data.request.requestor) {
+            if (dataItem.requestor) {
                 message = `<p>${data.name} has requested access to the Team.</p>`;
             }
+            console.log(dataItem);
             EmailHelper.sendMail(
                 {
                     to: emailTo,
@@ -105,8 +108,8 @@ const sendEmail = async function (data, callback) {
                             text: "Accept Request",
                             type: "team_request_action",
                             type_params: {
-                                id: data.request.id,
-                                teamcode: data.request.teamcode,
+                                id: dataItem.id,
+                                teamcode: dataItem.teamcode,
                                 action: "accept",
                             },
                         },
@@ -115,8 +118,8 @@ const sendEmail = async function (data, callback) {
                             text: "Reject Request",
                             type: "team_request_action",
                             type_params: {
-                                id: data.request.id,
-                                teamcode: data.request.teamcode,
+                                id: dataItem.id,
+                                teamcode: dataItem.teamcode,
                                 action: "reject",
                             },
                         },
@@ -126,7 +129,7 @@ const sendEmail = async function (data, callback) {
                     if (emailErr) {
                         callback(emailErr, null);
                     } else {
-                        callback(null, data.request);
+                        callback(null, dataItem);
                     }
                 }
             );
