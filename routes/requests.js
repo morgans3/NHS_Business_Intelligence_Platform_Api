@@ -14,6 +14,7 @@ const MiddlewareHelper = DIULibrary.Helpers.Middleware;
 const EmailHelper = DIULibrary.Helpers.Email;
 const MsTeamsHelper = DIULibrary.Helpers.MsTeams;
 const RequestsHelper = require("../helpers/requests");
+const TeamModel = new DIULibrary.Models.TeamModel();
 
 const issuer = process.env.SITE_URL || "NHS BI Platform";
 
@@ -545,7 +546,12 @@ router.post("/account/complete", async (req, res, next) => {
         // Request capabilities?
         if (user) {
             const permissionsRequestResponse = await requestPermissionsRoute({
-                user_id: `${user.username}#${user.organisation}`,
+                type: "user",
+                type_id: `${user.username}#${user.organisation}`,
+                user: {
+                    id: `${user.username}#${user.organisation}`,
+                    email: user.email
+                },
                 capabilities: userAccessRequest.data.capabilities,
                 roles: userAccessRequest.data.roles,
                 date: new Date().toISOString(),
@@ -577,11 +583,28 @@ router.post("/account/complete", async (req, res, next) => {
  *     produces:
  *      - application/json
  *     parameters:
- *      - name: user_id
- *        description: Username#Organisation
+ *      - name: type
+ *        description: Model type
  *        in: formData
  *        required: true
  *        type: string
+ *      - name: type_id
+ *        description: Model id
+ *        in: formData
+ *        required: true
+ *        type: string
+ *      - name: user
+ *        description: User who's making the request
+ *        in: formData
+ *        required: true
+ *        type: object
+ *        properties:
+ *          id:
+ *            type: string
+ *            description: Username#Organisation
+ *          email:
+ *            type: string
+ *            description: User's email
  *      - name: roles
  *        type: array
  *        items:
@@ -617,8 +640,8 @@ const requestPermissionsRoute = async (formData) => {
         const user = await new Promise((resolve, reject) => {
             UserModel.getByKeys(
                 {
-                    username: formData.user_id.split("#")[0],
-                    organisation: formData.user_id.split("#")[1],
+                    username: formData.user.id.split("#")[0],
+                    organisation: formData.user.id.split("#")[1],
                 },
                 (err, result) => {
                     if (err) { reject(err); }
@@ -641,6 +664,53 @@ const requestPermissionsRoute = async (formData) => {
             formData.roles.map((item) => item.id)
         );
 
+        // Get model details
+        const model = await new Promise((resolve, reject) => {
+            switch (formData.type) {
+                case "user":
+                    if (formData.user.id === formData.type_id) {
+                        resolve({
+                            name: user.name,
+                            organisation: user.organisation,
+                            email: user.email
+                        });
+                    } else {
+                        UserModel.getByKeys(
+                            {
+                                username: formData.type_id.split("#")[0],
+                                organisation: formData.type_id.split("#")[1],
+                            },
+                            (err, result) => {
+                                if (err) { reject(err); }
+                                if (result.Items.length === 0) {
+                                    reject(new Error(formData.type + " model not found"));
+                                } else {
+                                    resolve({
+                                        name: result.Items[0].name,
+                                        organisation: result.Items[0].organisation,
+                                        email: result.Items[0].email
+                                    });
+                                }
+                            }
+                        );
+                    }
+                    break;
+                case "team":
+                    TeamModel.getByCode(formData.type_id, (err, result) => {
+                        if (err) { throw err; }
+                        if (result.Items.length === 0) {
+                            reject(new Error(formData.type + " model not found"));
+                        } else {
+                            resolve({
+                                name: result.Items[0].name,
+                                "organisation code": result.Items[0].organisationcode,
+                            });
+                        }
+                    });
+                    break;
+            }
+        });
+
         // Create form submission
         const permissionRequest = await new Promise((resolve, reject) => {
             const formSubmissionData = {
@@ -648,12 +718,12 @@ const requestPermissionsRoute = async (formData) => {
                 parent_id: null,
                 type: "PermissionRequest",
                 data: {
-                    user_id: formData.user_id,
+                    type: formData.type,
+                    type_id: formData.type_id,
+                    model,
                     user: {
-                        name: user.name,
-                        email: user.email,
-                        username: user.username,
-                        organisation: user.organisation
+                        id: formData.user.id,
+                        email: formData.user.email,
                     },
                     roles: formData.roles.map((role) => {
                         if (roles[role.id].authoriser == null) {
@@ -690,12 +760,12 @@ const requestPermissionsRoute = async (formData) => {
         // Add permissions that don't require authoriser
         const authorisedPermissions = (
             await RequestsHelper.linkRequestedRoles(
-                user,
+                { type: permissionRequest.data.type, id: permissionRequest.data.type_id },
                 permissionRequest.data.roles.filter((role) => role.approved)
             )
         ).concat(
             await RequestsHelper.linkRequestedCapbilities(
-                user,
+                { type: permissionRequest.data.type, id: permissionRequest.data.type_id },
                 permissionRequest.data.capabilities.filter((capability) => capability.approved)
             )
         );
@@ -705,6 +775,7 @@ const requestPermissionsRoute = async (formData) => {
             await new Promise((resolve, reject) => {
                 RequestsHelper.emailPermissionsRequestStatus({
                     user,
+                    type: permissionRequest.data.type,
                     permissions: authorisedPermissions.map((item) => {
                         const permission = item.capability_id ? (capabilities[item.capability_id] || null) : (roles[item.role_id] || null);
                         item.description = permission.description || "";
@@ -754,7 +825,7 @@ const requestPermissionsRoute = async (formData) => {
                                 expiry: new Date(new Date().getTime() + 5184000000).toISOString()
                             };
                             typeParams.token = jwt.sign(
-                                typeParams, credentials.secret, { expiresIn: 5184000 } // 5184000 = 60 days
+                                typeParams, credentials.secretkey, { expiresIn: 5184000 } // 5184000 = 60 days
                             );
 
                             // Send mail
@@ -763,7 +834,9 @@ const requestPermissionsRoute = async (formData) => {
                                     to: authoriser,
                                     subject: "Nexus BI Platform Access",
                                     message: `
-                        <p>${user.name} has requested further access to the Nexus BI Platform.</p>
+                        <p>${user.name} has requested further access to the Nexus BI Platform for ${
+    user.id === permissionRequest.data.type_id ? "themselves" : "another " + permissionRequest.data.type
+}.</p>
                         <p>Click below to view the request details...</p>`,
                                     actions: [
                                         {
@@ -810,7 +883,15 @@ const requestPermissionsRoute = async (formData) => {
 };
 router.post("/permissions", MiddlewareHelper.validate(
     "body",
-    { user_id: { type: "string", pattern: "[A-z. 0-9]{1,50}#[A-z. ]{1,50}" } },
+    {
+        type: { type: "string" },
+        type_id: { type: "string" },
+        user: {
+            $$type: "object",
+            id: { type: "string", pattern: "[A-z. 0-9]{1,50}#[A-z. ]{1,50}" },
+            email: { type: "string" }
+        }
+    },
     { pattern: "The user id should be in the format of 'username#organisation'" }
 ), (req, res, next) => {
     requestPermissionsRoute(req.body).then((result) => {
@@ -965,6 +1046,7 @@ router.post("/permissions/complete", (req, res, next) => {
                             // Create email data
                             const email = {
                                 user: permissionRequest.data.user,
+                                type: permissionRequest.data.type,
                                 permissions: [].concat(
                                     Object.values(await RequestsHelper.getRequestedCapabilities(
                                         getActionedPermissions("capabilities").map((item) => item.id)
@@ -978,12 +1060,12 @@ router.post("/permissions/complete", (req, res, next) => {
                             // Manage approval status
                             if (formData.action === "approve") {
                                 // Link approved permissions
-                                console.log(await RequestsHelper.linkRequestedCapbilities(
-                                    permissionRequest.data.user,
+                                await RequestsHelper.linkRequestedCapbilities(
+                                    { type: permissionRequest.data.type, id: permissionRequest.data.type_id },
                                     getActionedPermissions("capabilities")
-                                ));
+                                );
                                 await RequestsHelper.linkRequestedRoles(
-                                    permissionRequest.data.user,
+                                    { type: permissionRequest.data.type, id: permissionRequest.data.type_id },
                                     getActionedPermissions("roles")
                                 );
                             } else {
@@ -996,17 +1078,14 @@ router.post("/permissions/complete", (req, res, next) => {
 
                             // Send status email
                             await new Promise((resolve, reject) => {
-                                RequestsHelper.emailPermissionsRequestStatus(
-                                    email,
-                                    (sendPermissionsError) => {
-                                        // Check for save error
-                                        if (sendPermissionsError) {
-                                            reject(sendPermissionsError);
-                                        } else {
-                                            resolve(true);
-                                        }
+                                RequestsHelper.emailPermissionsRequestStatus(email, (sendPermissionsError) => {
+                                    // Check for save error
+                                    if (sendPermissionsError) {
+                                        reject(sendPermissionsError);
+                                    } else {
+                                        resolve(true);
                                     }
-                                );
+                                });
                             });
                         })().then(() => {
                             res.json({ success: true, msg: "Your response has been recorded" });
