@@ -9,6 +9,7 @@ const { keyBy } = require("lodash");
 class RequestsHelper {
     static emailPermissionsRequestStatus({
         user,
+        type,
         permissions,
         status = {
             authorised: true,
@@ -16,7 +17,7 @@ class RequestsHelper {
         }
     }, callback) {
         // Generate html message
-        let message = "<p>The permissions you requested below have been ";
+        let message = `<p>The ${type} permissions you requested below have been `;
         message += status.authorised === true ? "authorised" : "denied";
         message += " for your account...</p><ul>";
         permissions.forEach((permission) => {
@@ -86,7 +87,7 @@ class RequestsHelper {
         });
     }
 
-    static linkRequestedRoles(user, roles) {
+    static linkRequestedRoles(link = { id: "", type: "" }, roles) {
         // Persist links
         if (roles.length > 0) {
             return Promise.all(roles
@@ -94,8 +95,8 @@ class RequestsHelper {
                     promises.push(new Promise((resolve, reject) => {
                         RoleLinkModel.create({
                             role_id: role.id,
-                            link_id: `${user.username}#${user.organisation}`,
-                            link_type: "user",
+                            link_id: link.id,
+                            link_type: link.type,
                             approved_by: role.approved_by,
                         }, (err, data) => {
                             if (err) {
@@ -113,15 +114,15 @@ class RequestsHelper {
         }
     }
 
-    static linkRequestedCapbilities(user, capabilities) {
+    static linkRequestedCapbilities(link = { id: "", type: "" }, capabilities) {
         // Create array of links
         const userCapabilityLinks = [];
         capabilities.forEach((parentCapability) => {
             // Add main link
             userCapabilityLinks.push({
                 capability_id: parentCapability.id,
-                link_id: `${user.username}#${user.organisation}`,
-                link_type: "user",
+                link_id: link.id,
+                link_type: link.type,
                 approved_by: parentCapability.approved_by,
                 valuejson: parentCapability.valuejson
             });
@@ -133,8 +134,8 @@ class RequestsHelper {
                     if (!(childCapability.valuejson instanceof Array)) {
                         userCapabilityLinks.push({
                             capability_id: childCapability.id,
-                            link_id: `${user.username}#${user.organisation}`,
-                            link_type: "user",
+                            link_id: link.id,
+                            link_type: link.type,
                             approved_by: parentCapability.approved_by,
                             valuejson: childCapability.valuejson
                         });
@@ -142,8 +143,8 @@ class RequestsHelper {
                         childCapability.valuejson.forEach((valuejson) => {
                             userCapabilityLinks.push({
                                 capability_id: childCapability.id,
-                                link_id: `${user.username}#${user.organisation}`,
-                                link_type: "user",
+                                link_id: link.id,
+                                link_type: link.type,
                                 approved_by: parentCapability.approved_by,
                                 valuejson
                             });

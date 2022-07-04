@@ -887,8 +887,8 @@ router.get(
  *         in: formData
  *         required: true
  *         type: string
- *       - name: teamname
- *         description: The combined string of the username and organisation
+ *       - name: teamcodes
+ *         description: A comma separated list of team codes
  *         in: formData
  *         required: true
  *         type: array
@@ -907,10 +907,10 @@ router.post(
     }),
     (req, res, next) => {
         const username = req.body.username;
-        const teamname = req.body.teamname.split(",");
-        if (username && teamname) {
+        const teamcodes = req.body.teamcodes.split(",");
+        if (username && teamcodes) {
             // Get all team roles
-            CapabilitiesModel.getAllCapabilitiesFromTeamArrayAndUserID(teamname, username, function (err, capabilitiesData) {
+            CapabilitiesModel.getAllCapabilitiesFromTeamArrayAndUserID(teamcodes, username, function (err, capabilitiesData) {
                 if (err) {
                     res.status(500).json({
                         success: false,

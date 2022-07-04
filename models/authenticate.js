@@ -9,34 +9,38 @@ module.exports.upgradePassportwithOrganisation = (previousToken, mfa, callback) 
     const capabilities = [];
     const memberships = previousToken.memberships || [];
     const usernameAndOrganisation = previousToken.username + "#" + previousToken.organisation;
-    CapabilityModel.getAllCapabilitiesFromTeamArrayAndUserID(memberships, usernameAndOrganisation, (err, result) => {
-        if (err) {
-            callback(err, null);
-        } else {
-            if (result && result.length > 0) {
-                result.forEach((capability) => {
-                    const obj = {};
-                    obj[capability["name"]] = capability["valuejson"];
-                    capabilities.push(obj);
+    CapabilityModel.getAllCapabilitiesFromTeamArrayAndUserID(
+        memberships.map((item) => item.teamcode),
+        usernameAndOrganisation,
+        (err, result) => {
+            if (err) {
+                callback(err, null);
+            } else {
+                if (result && result.length > 0) {
+                    result.forEach((capability) => {
+                        const obj = {};
+                        obj[capability["name"]] = capability["valuejson"];
+                        capabilities.push(obj);
+                    });
+                }
+                const upgrade = {
+                    id: previousToken.id,
+                    name: previousToken.name,
+                    username: previousToken.username,
+                    email: previousToken.email,
+                    organisation: previousToken.organisation,
+                    authentication: previousToken.authentication,
+                    memberships,
+                    mfa,
+                    capabilities,
+                };
+                token = jwt.sign(upgrade, credentials.secret, {
+                    expiresIn: 86400, // 1 day
                 });
+                callback(null, token);
             }
-            const upgrade = {
-                id: previousToken.id,
-                name: previousToken.name,
-                username: previousToken.username,
-                email: previousToken.email,
-                organisation: previousToken.organisation,
-                authentication: previousToken.authentication,
-                memberships,
-                mfa,
-                capabilities,
-            };
-            token = jwt.sign(upgrade, credentials.secret, {
-                expiresIn: 86400, // 1 day
-            });
-            callback(null, token);
         }
-    });
+    );
 };
 
 module.exports.authenticateDemo = function (user, callback) {
